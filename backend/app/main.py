@@ -5,7 +5,7 @@ main.py — Punto de entrada de la aplicación FastAPI
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.routes import auth, supervisor
+from app.routes import auth, supervisor, administrador
 
 # =============================================
 # CREAR APLICACIÓN FASTAPI
@@ -34,6 +34,7 @@ app.add_middleware(
 # =============================================
 app.include_router(auth.router)
 app.include_router(supervisor.router)
+app.include_router(administrador.router)
 
 # =============================================
 # HEALTH CHECK - VERIFICAR QUE LA API ESTÁ VIVA
