@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reportes</title>
+    <link rel="stylesheet" href="../css/estilos.css" />
+  </head>
+  <body class="app-body">
+    <aside class="sidebar" id="sidebar-root"></aside>
+    <div class="main-area">
+      <header class="page-header">
+        <h1>Reportes</h1>
+        <p>Indicadores de gestión sobre volantes y recaudación.</p>
+      </header>
+
+      <div class="tabs">
+        <button type="button" id="tb1" class="active">1 · Listado general</button>
+        <button type="button" id="tb2">2 · Ingreso esperado</button>
+        <button type="button" id="tb3">3 · Pendientes</button>
+        <button type="button" id="tb4">4 · Ingreso real</button>
+        <button type="button" id="tb5">5 · Cartera (crédito)</button>
+      </div>
+
+      <section id="p1" class="card">
+        <h2>Listado por período</h2>
+        <div class="form-group" style="max-width: 280px">
+          <label for="r1-per">Período</label>
+          <select id="r1-per"></select>
+        </div>
+        <button type="button" class="btn btn-primary mt-1" id="btn-r1">Generar</button>
+        <div class="table-wrap mt-1">
+          <table>
+            <thead>
+              <tr>
+                <th>Carné</th>
+                <th>Estudiante</th>
+                <th>Programa</th>
+                <th>Modalidad</th>
+                <th class="numeric">Monto volante</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="r1-tb"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="p2" class="card" hidden>
+        <h2>Ingreso esperado</h2>
+        <div class="form-group" style="max-width: 280px">
+          <label for="r2-per">Período</label>
+          <select id="r2-per"></select>
+        </div>
+        <button type="button" class="btn btn-primary mt-1" id="btn-r2">Generar</button>
+        <div class="table-wrap mt-1">
+          <table>
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th>Programa</th>
+                <th class="numeric">Total esperado</th>
+              </tr>
+            </thead>
+            <tbody id="r2-tb"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="p3" class="card" hidden>
+        <h2>Pendientes de pago</h2>
+        <p id="r3-msg" class="alert alert-info">
+          Elija obligatoriamente un <strong>programa académico</strong> antes de generar este reporte.
+        </p>
+        <div class="grid-2" style="max-width: 520px">
+          <div class="form-group">
+            <label for="r3-prog">Programa (obligatorio)</label>
+            <select id="r3-prog" required></select>
+          </div>
+          <div class="form-group">
+            <label for="r3-per">Período</label>
+            <select id="r3-per"></select>
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary mt-1" id="btn-r3">Generar</button>
+        <div class="table-wrap mt-1">
+          <table>
+            <thead>
+              <tr>
+                <th>Carné</th>
+                <th>Estudiante</th>
+                <th class="numeric">Cobrado</th>
+                <th class="numeric">Pagado</th>
+                <th class="numeric">Saldo</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="r3-tb"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="p4" class="card" hidden>
+        <h2>Ingreso real</h2>
+        <p>Historial de recaudación total por período académico.</p>
+        <button type="button" class="btn btn-primary mt-1" id="btn-r4">Actualizar reporte</button>
+        <div class="table-wrap mt-1">
+          <table>
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th class="numeric">Total recaudado</th>
+              </tr>
+            </thead>
+            <tbody id="r4-tb"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="p5" class="card" hidden>
+        <h2>Cartera (crédito financiero)</h2>
+        <div class="form-group" style="max-width: 280px">
+          <label for="r5-per">Período</label>
+          <select id="r5-per"></select>
+        </div>
+        <button type="button" class="btn btn-primary mt-1" id="btn-r5">Generar</button>
+        <p class="mt-1 mb-0">
+          <strong>Total cartera objeto:</strong> <span id="r5-total">—</span>
+        </p>
+        <div class="table-wrap mt-1">
+          <table>
+            <thead>
+              <tr>
+                <th>Carné</th>
+                <th>Estudiante</th>
+                <th>Programa</th>
+                <th class="numeric">Valor crédito</th>
+              </tr>
+            </thead>
+            <tbody id="r5-tb"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+    <div id="toast-stack"></div>
+    <script>
+      window.__IS_PAGE__ = true;
+    </script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+      auth.initPage({ perm: "VER_REPORTES", activeFile: "reportes.html" });
+    </script>
+    <script src="../js/reportes.js"></script>
+  </body>
+</html>

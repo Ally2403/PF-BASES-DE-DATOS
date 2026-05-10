@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Catálogo de asignaturas</title>
+    <link rel="stylesheet" href="../css/estilos.css" />
+  </head>
+  <body class="app-body">
+    <aside class="sidebar" id="sidebar-root"></aside>
+    <div class="main-area">
+      <header class="page-header">
+        <h1>Catálogo de asignaturas</h1>
+        <p>Listado unificado de materias, créditos y planes de estudio institucional.</p>
+      </header>
+
+      <div class="card">
+        <h2>Asignaturas (catálogo)</h2>
+        <div class="btn-row" style="margin-bottom: 0.75rem">
+          <div class="form-group" style="flex: 1; max-width: 520px; margin: 0">
+            <label for="filtro-asig">Buscar (filtra mientras escribe)</label>
+            <input type="text" id="filtro-asig" placeholder="Nombre de la asignatura" />
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-nuevo-asig">Nueva asignatura</button>
+        </div>
+        <p id="lbl-total-asig" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0"></p>
+        <div class="table-wrap mt-1">
+          <table>
+            <thead>
+              <tr>
+                <th>NOMBRE</th>
+                <th>CANT_CREDITOS</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-asig"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Plan de estudio — vincular asignaturas</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0">
+          Seleccione un programa y un semestre para vincular/quitar una asignatura del plan.
+        </p>
+        <div class="grid-2" style="max-width: min(100%, 720px)">
+          <div class="form-group">
+            <label for="pea-prog">Programa</label>
+            <select id="pea-prog"></select>
+          </div>
+          <div class="form-group">
+            <label for="pea-sem">SEMESTRE (1–10)</label>
+            <input type="number" id="pea-sem" min="1" max="10" step="1" placeholder="1–10" />
+          </div>
+        </div>
+        <div class="form-group" style="max-width: min(100%, 720px)">
+          <label for="pea-asig">Asignatura</label>
+          <select id="pea-asig"></select>
+        </div>
+        <div class="btn-row mt-1">
+          <button type="button" class="btn btn-secondary" id="btn-pea-add">Vincular al plan</button>
+          <button type="button" class="btn btn-danger" id="btn-pea-del">Quitar del plan</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="asig-modal" aria-hidden="true">
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="asig-modal-title">
+        <div class="modal-header">
+          <h3 id="asig-modal-title">Editar asignatura</h3>
+          <button type="button" class="btn btn-ghost" id="btn-close-asig-modal">Cerrar</button>
+        </div>
+        <form id="form-asig-modal" class="stack" style="max-width: 520px">
+          <input type="hidden" id="asig-id" />
+          <div class="form-group">
+            <label for="asig-nombre">NOMBRE</label>
+            <input type="text" id="asig-nombre" required maxlength="200" />
+          </div>
+          <div class="form-group">
+            <label for="asig-cred">CANT_CREDITOS (1–10)</label>
+            <input type="number" id="asig-cred" min="1" max="10" step="1" required />
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn btn-secondary">Guardar</button>
+            <button type="button" class="btn btn-ghost" id="btn-cancel-asig-modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div id="toast-stack"></div>
+    <script>
+      window.__IS_PAGE__ = true;
+    </script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+      auth.initPage({
+        perm: ["GESTIONAR_ASIGNATURAS", "GESTIONAR_PROGRAMAS"],
+        activeFile: "asignaturas-catalogo.html",
+      });
+    </script>
+    <script src="../js/asignaturas-catalogo.js"></script>
+  </body>
+</html>

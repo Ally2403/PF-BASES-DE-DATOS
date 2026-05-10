@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Consultar pagos</title>
+    <link rel="stylesheet" href="../css/estilos.css" />
+  </head>
+  <body class="app-body">
+    <aside class="sidebar" id="sidebar-root"></aside>
+    <div class="main-area">
+      <header class="page-header">
+        <h1>Consultar pagos</h1>
+        <p>Búsqueda y detalle de transacciones registradas en el sistema.</p>
+      </header>
+
+      <div class="card stack">
+        <h2 style="margin-top: 0">Búsqueda rápida</h2>
+        <div class="form-group">
+          <label for="f-busqueda">Buscar transacciones</label>
+          <input type="text" id="f-busqueda" placeholder="ID, Referencia, Carné, Nombre o Concepto..." />
+        </div>
+        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem">
+          <button type="button" class="btn btn-ghost" id="btn-limpiar">Limpiar búsqueda</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.5rem">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Estudiante</th>
+                <th>Referencia</th>
+                <th>Medio</th>
+                <th class="numeric">Valor</th>
+                <th class="text-center">Detalle</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-pagos">
+              <tr>
+                <td colspan="7" class="text-center" style="padding: 2rem; color: var(--text-muted)">
+                  Cargando transacciones...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de detalle (simulado con overlay simple) -->
+    <div id="modal-detalle" class="combo-search-wrap" style="display:none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.8); align-items: center; justify-content: center;">
+        <div class="card" style="width: 500px; max-width: 95%;">
+            <h2 id="det-titulo">Detalle de Transacción</h2>
+            <div id="det-body" class="stack" style="margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+                <!-- Rellenado por JS -->
+            </div>
+            <div style="margin-top: 1.5rem; text-align: right;">
+                <button class="btn btn-primary" onclick="cerrarDetalle()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-stack"></div>
+    <script>
+      window.__IS_PAGE__ = true;
+    </script>
+    <script src="../js/api.js?t=1715200000"></script>
+    <script src="../js/auth.js?t=1715200000"></script>
+    <script>
+      auth.initPage({ perm: "VER_REPORTES", activeFile: "consultar-pagos.html" });
+    </script>
+    <script src="../js/consultar-pagos.js?t=1715200000"></script>
+  </body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cuenta corriente</title>
+    <link rel="stylesheet" href="../css/estilos.css" />
+  </head>
+  <body class="app-body">
+    <aside class="sidebar" id="sidebar-root"></aside>
+    <div class="main-area">
+      <header class="page-header">
+        <h1>Cuenta corriente</h1>
+        <p>Movimientos del período: primero cobros (débito), luego pagos (crédito).</p>
+      </header>
+
+      <div class="card">
+        <div class="grid-2" style="align-items: end">
+          <div class="gc-est-bubble" aria-labelledby="cc-est-bubble-title" style="grid-column: 1 / -1; margin-bottom: 1.5rem;">
+            <h3 id="cc-est-bubble-title" class="gc-est-bubble-title">Seleccionar estudiante</h3>
+            <p class="gc-est-bubble-hint">
+              Busque y pulse una fila para ver el historial.
+            </p>
+            <div class="form-group" style="margin-bottom: 0.75rem">
+              <label for="cc-filtro-est">Buscar (filtra mientras escribe)</label>
+              <input
+                type="text"
+                id="cc-filtro-est"
+                autocomplete="off"
+                placeholder="Nombre, apellido, carné, correo o programa"
+              />
+              <input type="hidden" id="cc-est" value="" />
+            </div>
+            <p id="cc-lbl-est" class="gc-est-lbl"></p>
+            <div class="table-wrap mt-1 gc-est-scroll" style="max-height: 200px;">
+              <table class="table-selectable">
+                <thead>
+                  <tr>
+                    <th>Carné</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Correo</th>
+                    <th>Programa</th>
+                  </tr>
+                </thead>
+                <tbody id="cc-tbl-est"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="cc-per">Período</label>
+            <select id="cc-per"></select>
+          </div>
+        </div>
+      </div>
+
+      <div id="cc-msg" class="alert alert-error" hidden role="alert"></div>
+
+      <div id="cc-banner" class="saldo-hero" hidden>
+        <div class="saldo-tile">
+          <span>Total cobros</span>
+          <strong id="cc-total-cobros">—</strong>
+        </div>
+        <div class="saldo-tile">
+          <span>Total pagos</span>
+          <strong id="cc-total-pagos">—</strong>
+        </div>
+        <div class="saldo-tile saldo-highlight" id="cc-saldo-tile">
+          <span>COBROS - PAGOS</span>
+          <strong id="cc-saldo-neto">—</strong>
+        </div>
+        <div class="saldo-tile" style="grid-column: 1 / -1">
+          <span>Estado</span>
+          <strong id="cc-estado-banner"></strong>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Movimientos</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Código</th>
+                <th>Descripción</th>
+                <th class="numeric">COBRO</th>
+                <th class="numeric">PAGO</th>
+                <th class="text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="cc-tbl"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div id="toast-stack"></div>
+    <script>
+      window.__IS_PAGE__ = true;
+    </script>
+    <script src="../js/api.js?t=1715200000"></script>
+    <script src="../js/auth.js?t=1715200000"></script>
+    <script>
+      auth.initPage({ perm: "VER_CUENTA", activeFile: "cuenta-corriente.html" });
+    </script>
+    <script src="../js/cuenta-corriente.js?t=1715200000"></script>
+  </body>
+</html>

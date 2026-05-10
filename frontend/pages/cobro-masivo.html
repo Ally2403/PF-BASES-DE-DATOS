@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cobro masivo</title>
+    <link rel="stylesheet" href="../css/estilos.css" />
+  </head>
+  <body class="app-body">
+    <aside class="sidebar" id="sidebar-root"></aside>
+    <div class="main-area">
+      <header class="page-header">
+        <h1>Generación masiva de volantes</h1>
+        <p>
+          Crea volantes en modalidad <strong>GLOBAL</strong> para todos los estudiantes del programa
+          que aún no tengan volante en el período seleccionado.
+        </p>
+      </header>
+
+      <div class="card">
+        <form id="form-mas" class="stack" style="max-width: 520px">
+          <div class="form-group">
+            <label for="m-per">Período</label>
+            <select id="m-per" required></select>
+          </div>
+          <div class="form-group">
+            <label for="m-prog">Programa</label>
+            <select id="m-prog" required></select>
+          </div>
+          <input type="hidden" id="m-sem" value="1" />
+          <input type="hidden" id="m-mod" value="GLOBAL" />
+          <button type="submit" class="btn btn-primary">Ejecutar</button>
+        </form>
+      </div>
+      <div id="m-result" class="card stack" hidden>
+        <div id="m-result-summary" class="alert alert-info mb-0" role="status"></div>
+        <div id="m-result-table-wrap" class="table-wrap" hidden>
+          <p class="mb-0" style="font-size: 0.85rem; color: var(--text-muted)">
+            Volantes generados en esta ejecución (máx. 80 en pantalla).
+          </p>
+          <table style="margin-top: 0.5rem">
+            <thead>
+              <tr>
+                <th># Volante</th>
+                <th>Estudiante</th>
+                <th>Período</th>
+                <th class="numeric">Monto total</th>
+              </tr>
+            </thead>
+            <tbody id="m-result-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div id="toast-stack"></div>
+    <script>
+      window.__IS_PAGE__ = true;
+    </script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+      auth.initPage({ perm: "GENERAR_COBRO_MAS", activeFile: "cobro-masivo.html" });
+      (function () {
+        var COP = new Intl.NumberFormat("es-CO", {
+          style: "currency",
+          currency: "COP",
+          maximumFractionDigits: 0,
+        });
+
+        function esc(t) {
+          var d = document.createElement("div");
+          d.textContent = String(t ?? "");
+          return d.innerHTML;
+        }
+
+        function renderMasivoResult(r) {
+          var box = document.getElementById("m-result");
+          var sumEl = document.getElementById("m-result-summary");
+          var wrap = document.getElementById("m-result-table-wrap");
+          var tbody = document.getElementById("m-result-tbody");
+
+          var n = Number(r.creados);
+          var det = Array.isArray(r.detalle) ? r.detalle : [];
+          if (!Number.isFinite(n)) n = det.length;
+
+          var htmlSum =
+            "<p style='margin:0 0 .35rem;font-size:.95rem'>" +
+            "<strong>Proceso finalizado correctamente.</strong> " +
+            "Se crearon <strong>" +
+            n +
+            "</strong> volante(s) nuevo(s) en esta ejecución." +
+            "</p>";
+          if (typeof r.omitidos === "number") {
+            htmlSum +=
+              "<p style='margin:0;font-size:.85rem;color:var(--text-muted)'>" +
+              "Estudiantes omitidos (ya tenían volante en el período): <strong>" +
+              r.omitidos +
+              "</strong>.</p>";
+          } else if (n === 0) {
+            htmlSum +=
+              "<p style='margin:.35rem 0 0;font-size:.85rem;color:var(--text-muted)'>" +
+              "No se generaron volantes nuevos para este programa/período (posiblemente todos los estudiantes ya tenían volante)." +
+              "</p>";
+          }
+          sumEl.innerHTML = htmlSum;
+
+          tbody.innerHTML = "";
+          var preview = det.slice(0, 80);
+          if (preview.length) {
+            preview.forEach(function (v) {
+              var tr = document.createElement("tr");
+              tr.innerHTML =
+                "<td>" +
+                esc(v.id_volante != null ? v.id_volante : "—") +
+                "</td><td>" +
+                esc(v.nombre_estudiante != null ? v.nombre_estudiante : "") +
+                "</td><td>" +
+                esc(v.nombre_periodo != null ? v.nombre_periodo : "") +
+                "</td><td class='numeric'>" +
+                COP.format(Number(v.monto_total || 0)) +
+                "</td>";
+              tbody.appendChild(tr);
+            });
+            wrap.hidden = false;
+          } else {
+            wrap.hidden = true;
+          }
+          box.hidden = false;
+        }
+
+        async function inicializarMasivo() {
+          var per = await api.getPeriodos();
+          per = Array.isArray(per) ? per : [];
+          if (typeof api.sortPeriodosRecientesPrimero === "function") {
+            per = api.sortPeriodosRecientesPrimero(per.slice());
+          }
+          var prog = await api.getProgramas();
+          prog = Array.isArray(prog) ? prog : [];
+          var selP = document.getElementById("m-per");
+          var selG = document.getElementById("m-prog");
+          selP.innerHTML = "";
+          selG.innerHTML = "";
+          var phP = document.createElement("option");
+          phP.value = "";
+          phP.textContent = "— Elija período —";
+          selP.appendChild(phP);
+          var phG = document.createElement("option");
+          phG.value = "";
+          phG.textContent = "— Elija programa —";
+          selG.appendChild(phG);
+          per.forEach(function (p) {
+            var o = document.createElement("option");
+            o.value = p.id_periodo;
+            o.textContent = p.nombre_periodo;
+            selP.appendChild(o);
+          });
+          prog.forEach(function (p) {
+            var o = document.createElement("option");
+            o.value = p.id_programa;
+            o.textContent = p.nombre_programa;
+            selG.appendChild(o);
+          });
+          selP.value = "";
+          selG.value = "";
+          document.getElementById("m-sem").value = "";
+          document.getElementById("m-mod").value = "";
+        }
+
+        inicializarMasivo().catch(function (err) {
+          auth.showToast(err.message || "Error al cargar catálogo", "error");
+        });
+
+        document.getElementById("form-mas").addEventListener("submit", async function (ev) {
+          ev.preventDefault();
+          document.getElementById("m-result").hidden = true;
+          try {
+            var idPer = document.getElementById("m-per").value;
+            var idProg = document.getElementById("m-prog").value;
+            if (!idPer || !idProg) {
+              auth.showToast("Seleccione período y programa.", "error");
+              return;
+            }
+            var mSem = "1";
+            var mMod = "GLOBAL";
+            var r = await api.postVolantesMasivo({
+              id_periodo: idPer,
+              id_programa: idProg,
+              modalidad: mMod,
+              semestre: mSem,
+            });
+            var nVol = Number(r.creados);
+            var msg =
+              typeof nVol === "number" && !Number.isNaN(nVol) ?
+                "Proceso completado: " + nVol + " volante(s) creado(s)." :
+              "Proceso completado.";
+            auth.showToast(msg);
+            renderMasivoResult(r);
+            document.getElementById("m-per").value = "";
+            document.getElementById("m-prog").value = "";
+            document.getElementById("m-sem").value = "";
+            document.getElementById("m-mod").value = "";
+          } catch (e) {
+            auth.showToast(e.message, "error");
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

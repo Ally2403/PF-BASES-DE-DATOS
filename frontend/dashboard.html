@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gestión Estudiantil · Panel Principal</title>
+    <link rel="stylesheet" href="css/estilos.css" />
+    <style>
+      /* Overrides for landing page without sidebar */
+      body.dashboard-landing {
+        display: block;
+        background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+        min-height: 100vh;
+      }
+      .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 3rem 2rem;
+      }
+      .dashboard-header {
+        margin-bottom: 3rem;
+        text-align: center;
+      }
+      .dashboard-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(to right, #fff, #94a3b8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .dashboard-header p {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+      }
+      .user-info-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(30, 41, 59, 0.5);
+        backdrop-filter: blur(8px);
+        padding: 0.75rem 1.5rem;
+        border-radius: 100px;
+        border: 1px solid rgba(255,255,255,0.1);
+        margin-bottom: 2rem;
+      }
+    </style>
+  </head>
+  <body class="dashboard-landing">
+    <div class="dashboard-container">
+      <div class="user-info-bar">
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <span id="user-badge" style="background: var(--accent); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;"></span>
+          <div>
+            <strong id="user-name" style="display: block; font-size: 0.9rem;"></strong>
+            <span id="user-role" style="font-size: 0.8rem; color: var(--text-muted);"></span>
+          </div>
+        </div>
+        <button class="btn btn-ghost" onclick="auth.logout()">Cerrar sesión</button>
+      </div>
+
+      <header class="dashboard-header">
+        <h1 id="dash-greeting">Centro de Aplicaciones</h1>
+        <p>Seleccione el módulo que desea gestionar el día de hoy.</p>
+      </header>
+
+      <div id="launchpad" class="launchpad-grid">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <div id="toast-stack"></div>
+    <script>
+      window.__IS_PAGE__ = false;
+    </script>
+    <script src="js/api.js?t=1715200000"></script>
+    <script src="js/auth.js?t=1715200000"></script>
+    <script>
+      (function() {
+        try {
+          auth.requireAuth();
+          const session = auth.getSession();
+          if (!session) return;
+
+          console.log("Dashboard: Sesión iniciada para", session.username);
+          
+          // Header info
+          const greeting = "Bienvenido, " + (session.nombre || "") + " " + (session.apellido || "");
+          document.getElementById("dash-greeting").textContent = greeting;
+          document.getElementById("user-name").textContent = session.username || "Usuario";
+          document.getElementById("user-role").textContent = session.perfil || "Sin perfil";
+          document.getElementById("user-badge").textContent = (session.username || "U").charAt(0).toUpperCase();
+
+          const grid = document.getElementById("launchpad");
+          const navItems = auth.NAV || [];
+          
+          const items = navItems.filter(item => {
+            if (item.dash === "dashboard.html") return false;
+            return auth.can(item.perm);
+          });
+
+          console.log("Dashboard: Mostrando", items.length, "módulos autorizados.");
+
+          if (items.length === 0) {
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem;">No tiene módulos asignados a su perfil. Contacte al administrador.</div>';
+          } else {
+            grid.innerHTML = items.map(item => `
+              <a href="${auth.navHref(item)}" class="launchpad-card">
+                <div class="icon-box">${item.icon || '📦'}</div>
+                <h3>${item.label}</h3>
+                <p>${item.desc || 'Acceder al módulo.'}</p>
+              </a>
+            `).join('');
+          }
+        } catch (err) {
+          console.error("Error en Dashboard:", err);
+          document.getElementById("launchpad").innerHTML = '<div class="alert alert-error">Error al cargar el panel: ' + err.message + '</div>';
+        }
+      })();
+    </script>
+  </body>
+</html>

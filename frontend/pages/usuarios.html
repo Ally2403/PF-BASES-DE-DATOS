@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Usuarios</title>
+    <link rel="stylesheet" href="../css/estilos.css" />
+  </head>
+  <body class="app-body">
+    <aside class="sidebar" id="sidebar-root"></aside>
+    <div class="main-area">
+      <header class="page-header">
+        <h1>Usuarios del sistema</h1>
+        <p>Gestión de cuentas técnicas. El envío de contraseña por correo lo implementará el servidor.</p>
+      </header>
+
+      <div class="card">
+        <h2>Registro de nuevo usuario</h2>
+        <p class="mb-1" style="font-size: 0.85rem; color: var(--text-muted)">
+          Ingrese los datos del usuario y la información personal vinculada (Persona).
+        </p>
+        <form id="form-u" class="stack" style="max-width: 650px">
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="u-us">Usuario (Username)</label>
+              <input type="text" id="u-us" autocomplete="username" placeholder="ej. jdoe" required />
+            </div>
+            <div class="form-group">
+              <label for="u-pw">Contraseña inicial</label>
+              <input type="password" id="u-pw" autocomplete="new-password" placeholder="••••••••" required />
+            </div>
+            <div class="form-group">
+              <label for="u-cc">Número de Cédula</label>
+              <input type="number" id="u-cc" placeholder="Sin puntos ni comas" required />
+            </div>
+            <div class="form-group">
+              <label for="u-perf">Perfil / Rol</label>
+              <select id="u-perf" required></select>
+            </div>
+            <div class="form-group">
+              <label for="u-nom">Nombres</label>
+              <input type="text" id="u-nom" placeholder="Nombres completos" required />
+            </div>
+            <div class="form-group">
+              <label for="u-ape">Apellidos</label>
+              <input type="text" id="u-ape" placeholder="Apellidos completos" required />
+            </div>
+            <div class="form-group">
+              <label for="u-mail">Correo electrónico</label>
+              <input type="email" id="u-mail" placeholder="usuario@uni.edu.co" required />
+            </div>
+            <div class="form-group">
+              <label for="u-tel">Teléfono</label>
+              <input type="tel" id="u-tel" placeholder="ej. 3001234567" required />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: fit-content">Registrar Usuario</button>
+        </form>
+      </div>
+
+      <div class="card mt-2">
+        <div class="header-with-action">
+          <h2>Listado de usuarios y acciones</h2>
+          <div class="form-group" style="min-width: 300px; margin: 0">
+            <input type="text" id="filtro-usuarios" placeholder="🔍 Buscar por nombre, usuario, CC o correo..." />
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Cédula</th>
+                <th>Persona</th>
+                <th>Contacto</th>
+                <th>Perfil</th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="u-tbl"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Editar Usuario -->
+    <div class="modal-backdrop" id="modal-edit-user">
+      <div class="modal-panel" style="max-width: 600px">
+        <div class="modal-header">
+          <h3>Editar Cuenta de Usuario</h3>
+          <button type="button" class="btn btn-ghost" onclick="cerrarModal()">✕</button>
+        </div>
+        <form id="form-u-edit" class="stack mt-1">
+          <input type="hidden" id="ue-id" />
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="ue-us">Username</label>
+              <input type="text" id="ue-us" required />
+            </div>
+            <div class="form-group">
+              <label for="ue-pw">Nueva contraseña (dejar vacío para no cambiar)</label>
+              <input type="password" id="ue-pw" placeholder="••••••••" />
+            </div>
+            <div class="form-group">
+              <label for="ue-nom">Nombres</label>
+              <input type="text" id="ue-nom" required />
+            </div>
+            <div class="form-group">
+              <label for="ue-ape">Apellidos</label>
+              <input type="text" id="ue-ape" required />
+            </div>
+            <div class="form-group">
+              <label for="ue-mail">Correo</label>
+              <input type="email" id="ue-mail" required />
+            </div>
+            <div class="form-group">
+              <label for="ue-tel">Teléfono</label>
+              <input type="tel" id="ue-tel" required />
+            </div>
+            <div class="form-group">
+              <label for="ue-perf">Perfil / Rol</label>
+              <select id="ue-perf" required></select>
+            </div>
+          </div>
+          <div class="btn-row mt-1">
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            <button type="button" class="btn btn-ghost" onclick="cerrarModal()">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="toast-stack"></div>
+    <script>
+      window.__IS_PAGE__ = true;
+    </script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+      auth.initPage({ perm: "VER_USUARIOS", activeFile: "usuarios.html" });
+    </script>
+    <script>
+      let usuariosCache = [];
+
+      async function cargarPerf() {
+        var p = await api.getPerfiles();
+        var s = document.getElementById("u-perf");
+        var sEdit = document.getElementById("ue-perf");
+        s.innerHTML = "";
+        sEdit.innerHTML = "";
+        var ph = document.createElement("option");
+        ph.value = "";
+        ph.textContent = "— Elija perfil —";
+        s.appendChild(ph);
+        
+        p.forEach(function (x) {
+          var o = document.createElement("option");
+          o.value = x.id_perfil;
+          o.textContent = x.nombre_perfil;
+          s.appendChild(o);
+          var o2 = document.createElement("option");
+          o2.value = x.id_perfil;
+          o2.textContent = x.nombre_perfil;
+          sEdit.appendChild(o2);
+        });
+      }
+
+      window.notificar = function(mail, user) {
+        auth.showToast("Contraseña enviada a " + mail + " (Usuario: " + user + ")");
+      };
+
+      window.abrirEditar = function(id) {
+        const u = usuariosCache.find(x => x.id_user === id);
+        if (!u) return;
+        document.getElementById("ue-id").value = u.id_user;
+        document.getElementById("ue-us").value = u.username;
+        document.getElementById("ue-pw").value = "";
+        document.getElementById("ue-nom").value = u.nombre;
+        document.getElementById("ue-ape").value = u.apellido;
+        document.getElementById("ue-mail").value = u.correo;
+        document.getElementById("ue-tel").value = u.telefono || "";
+        document.getElementById("ue-perf").value = u.id_perfil;
+        document.getElementById("modal-edit-user").classList.add("open");
+      };
+
+      window.cerrarModal = function() {
+        document.getElementById("modal-edit-user").classList.remove("open");
+      };
+
+      window.eliminarUsuario = async function(id, name) {
+        if (!window.confirm("¿Seguro que desea eliminar al usuario " + name + " (ID: " + id + ")? Esta acción no se puede deshacer.")) return;
+        try {
+          await api.deleteUsuario(id);
+          auth.showToast("Usuario eliminado correctamente.");
+          await cargarTabla();
+        } catch (e) {
+          auth.showToast(e.message, "error");
+        }
+      };
+
+      async function cargarTabla() {
+        usuariosCache = await api.getUsuarios();
+        renderizarTabla(usuariosCache);
+      }
+
+      function renderizarTabla(rows) {
+        var tb = document.getElementById("u-tbl");
+        tb.innerHTML = "";
+        rows.forEach(function (u) {
+          var tr = document.createElement("tr");
+          tr.innerHTML =
+            "<td>" + u.id_user + "</td>" +
+            "<td><strong>" + esc(u.username) + "</strong></td>" +
+            "<td>" + esc(u.cedula) + "</td>" +
+            "<td>" + esc(u.nombre + " " + u.apellido) + "</td>" +
+            "<td><div style='font-size:0.8rem'>" + esc(u.correo) + "<br><span class='text-muted'>" + esc(u.telefono) + "</span></div></td>" +
+            "<td><span class='badge'>" + esc(u.nombre_perfil) + "</span></td>" +
+            "<td class='text-center'>" +
+              "<div class='btn-row' style='justify-content: center; gap: 0.25rem'>" +
+                "<button class='btn btn-small btn-ghost' title='Notificar' onclick='notificar(\"" + esc(u.correo) + "\", \"" + esc(u.username) + "\")'>🔔</button>" +
+                "<button class='btn btn-small btn-secondary' onclick='abrirEditar(" + u.id_user + ")'>✏️</button>" +
+                "<button class='btn btn-small btn-danger' onclick='eliminarUsuario(" + u.id_user + ", \"" + esc(u.username) + "\")'>🗑️</button>" +
+              "</div>" +
+            "</td>";
+          tb.appendChild(tr);
+        });
+      }
+
+      document.getElementById("filtro-usuarios").addEventListener("input", function(e) {
+        const busqueda = e.target.value.toLowerCase();
+        const filtrados = usuariosCache.filter(u => 
+          u.username.toLowerCase().includes(busqueda) ||
+          u.nombre.toLowerCase().includes(busqueda) ||
+          u.apellido.toLowerCase().includes(busqueda) ||
+          String(u.cedula).includes(busqueda) ||
+          u.correo.toLowerCase().includes(busqueda) ||
+          u.nombre_perfil.toLowerCase().includes(busqueda)
+        );
+        renderizarTabla(filtrados);
+      });
+
+      function esc(x) {
+        var d = document.createElement("div");
+        d.textContent = String(x ?? "");
+        return d.innerHTML;
+      }
+
+      document.getElementById("form-u").addEventListener("submit", async function (ev) {
+        ev.preventDefault();
+        try {
+          await api.postUsuario({
+            username: document.getElementById("u-us").value.trim(),
+            contrasena: document.getElementById("u-pw").value,
+            cedula: document.getElementById("u-cc").value,
+            id_perfil: Number(document.getElementById("u-perf").value),
+            nombre: document.getElementById("u-nom").value.trim(),
+            apellido: document.getElementById("u-ape").value.trim(),
+            correo: document.getElementById("u-mail").value.trim(),
+            telefono: document.getElementById("u-tel").value.trim(),
+          });
+          auth.showToast("Usuario registrado con éxito.");
+          ev.target.reset();
+          await cargarTabla();
+        } catch (e) {
+          auth.showToast(e.message, "error");
+        }
+      });
+
+      document.getElementById("form-u-edit").addEventListener("submit", async function (ev) {
+        ev.preventDefault();
+        try {
+          const body = {
+            username: document.getElementById("ue-us").value.trim(),
+            nombre: document.getElementById("ue-nom").value.trim(),
+            apellido: document.getElementById("ue-ape").value.trim(),
+            correo: document.getElementById("ue-mail").value.trim(),
+            telefono: document.getElementById("ue-tel").value.trim(),
+            id_perfil: Number(document.getElementById("ue-perf").value),
+          };
+          const pw = document.getElementById("ue-pw").value;
+          if (pw) body.contrasena = pw;
+
+          await api.putUsuario(Number(document.getElementById("ue-id").value), body);
+          auth.showToast("Datos de usuario actualizados.");
+          cerrarModal();
+          await cargarTabla();
+        } catch (e) {
+          auth.showToast(e.message, "error");
+        }
+      });
+
+      cargarPerf().then(cargarTabla);
+    </script>
+  </body>
+</html>
