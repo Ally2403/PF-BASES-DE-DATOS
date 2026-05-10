@@ -637,6 +637,8 @@ async function login({ username, contrasena }) {
     return {
       id_user: u.id_user,
       username: u.username,
+      nombre: u.nombre,
+      apellido: u.apellido,
       perfil: u.perfil,
       permisos: [...u.permisos],
     };

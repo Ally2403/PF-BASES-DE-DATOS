@@ -1,0 +1,16 @@
+# Frontend / general
+.env
+.env.local
+*.log
+.DS_Store
+Thumbs.db
+
+# Python (backend típico)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# IDE
+.idea/
+*.swp
