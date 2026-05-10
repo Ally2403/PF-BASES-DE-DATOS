@@ -1,0 +1,162 @@
+"""
+services/programa.py — Lógica de negocio para PROGRAMA_ACADEMICO
+
+Operaciones:
+- Listar todos los programas
+- Crear un nuevo programa
+- Obtener programa por ID
+- Actualizar programa
+- Eliminar programa
+"""
+
+from app.services.database import execute_query, execute_update
+from typing import List, Dict, Any, Optional
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def get_all_programas() -> List[Dict[str, Any]]:
+    """
+    Obtiene todos los programas académicos.
+    
+    Returns:
+        Lista de diccionarios con los programas
+        
+    Raises:
+        Exception: Si hay error en la BD
+    """
+    try:
+        query = "SELECT ID_PROGRAMA, NOMBRE_PROGRAMA FROM PROGRAMA_ACADEMICO ORDER BY ID_PROGRAMA"
+        results = execute_query(query)
+        logger.info(f"✓ Se obtuvieron {len(results)} programas")
+        return results
+    except Exception as e:
+        logger.error(f"✗ Error al obtener programas: {e}")
+        raise
+
+
+def get_programa_by_id(id_programa: int) -> Optional[Dict[str, Any]]:
+    """
+    Obtiene un programa por ID.
+    
+    Args:
+        id_programa: ID del programa
+        
+    Returns:
+        Diccionario con los datos del programa o None si no existe
+        
+    Raises:
+        Exception: Si hay error en la BD
+    """
+    try:
+        query = "SELECT ID_PROGRAMA, NOMBRE_PROGRAMA FROM PROGRAMA_ACADEMICO WHERE ID_PROGRAMA = :id"
+        results = execute_query(query, {"id": id_programa})
+        
+        if results:
+            logger.info(f"✓ Programa obtenido: ID {id_programa}")
+            return results[0]
+        else:
+            logger.warning(f"✗ Programa no encontrado: ID {id_programa}")
+            return None
+    except Exception as e:
+        logger.error(f"✗ Error al obtener programa: {e}")
+        raise
+
+
+def create_programa(nombre_programa: str) -> Dict[str, Any]:
+    """
+    Crea un nuevo programa académico.
+    
+    La BD genera automáticamente el ID usando la secuencia SEQ_PROGRAMA.
+    
+    Args:
+        nombre_programa: Nombre del programa
+        
+    Returns:
+        Diccionario con los datos del programa creado (incluye ID generado)
+        
+    Raises:
+        Exception: Si hay error en la BD
+    """
+    try:
+        # Obtener el siguiente ID de la secuencia
+        seq_result = execute_query("SELECT SEQ_PROGRAMA.NEXTVAL AS ID_PROGRAMA FROM DUAL")
+        new_id = seq_result[0]['ID_PROGRAMA']
+        
+        # Insertar con el ID obtenido
+        query = """
+            INSERT INTO PROGRAMA_ACADEMICO (ID_PROGRAMA, NOMBRE_PROGRAMA)
+            VALUES (:id, :nombre)
+        """
+        execute_update(query, {"id": new_id, "nombre": nombre_programa})
+        
+        # Retornar el programa creado (con keys en mayúsculas para Pydantic alias)
+        return {
+            "ID_PROGRAMA": new_id,
+            "NOMBRE_PROGRAMA": nombre_programa
+        }
+            
+    except Exception as e:
+        logger.error(f"✗ Error al crear programa: {e}")
+        raise
+
+
+def update_programa(id_programa: int, nombre_programa: str) -> bool:
+    """
+    Actualiza un programa académico.
+    
+    Args:
+        id_programa: ID del programa
+        nombre_programa: Nuevo nombre
+        
+    Returns:
+        True si se actualizó correctamente
+        
+    Raises:
+        Exception: Si hay error en la BD
+    """
+    try:
+        query = "UPDATE PROGRAMA_ACADEMICO SET NOMBRE_PROGRAMA = :nombre WHERE ID_PROGRAMA = :id"
+        affected = execute_update(query, {"nombre": nombre_programa, "id": id_programa})
+        
+        if affected > 0:
+            logger.info(f"✓ Programa actualizado: ID {id_programa}")
+            return True
+        else:
+            logger.warning(f"✗ Programa no encontrado para actualizar: ID {id_programa}")
+            return False
+    except Exception as e:
+        logger.error(f"✗ Error al actualizar programa: {e}")
+        raise
+
+
+def delete_programa(id_programa: int) -> bool:
+    """
+    Elimina un programa académico.
+    
+    NOTA: Esto solo funciona si no hay registros dependientes.
+    Oracle validará las foreign keys.
+    
+    Args:
+        id_programa: ID del programa
+        
+    Returns:
+        True si se eliminó correctamente
+        
+    Raises:
+        Exception: Si hay error en la BD (ej: hay dependencias)
+    """
+    try:
+        query = "DELETE FROM PROGRAMA_ACADEMICO WHERE ID_PROGRAMA = :id"
+        affected = execute_update(query, {"id": id_programa})
+        
+        if affected > 0:
+            logger.info(f"✓ Programa eliminado: ID {id_programa}")
+            return True
+        else:
+            logger.warning(f"✗ Programa no encontrado para eliminar: ID {id_programa}")
+            return False
+    except Exception as e:
+        logger.error(f"✗ Error al eliminar programa: {e}")
+        raise
