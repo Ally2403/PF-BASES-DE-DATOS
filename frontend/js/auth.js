@@ -148,14 +148,14 @@ function clearSession() {
 function logout() {
   clearSession();
   const inPage = !!window.__IS_PAGE__;
-  window.location.href = (inPage ? "../" : "") + "index.html";
+  window.location.href = (inPage ? "../" : "") + "login.html";
 }
 
 function requireAuth() {
   const s = getSession();
   if (!s || !s.username) {
     const inPage = !!window.__IS_PAGE__;
-    window.location.href = (inPage ? "../" : "") + "index.html";
+    window.location.href = (inPage ? "../" : "") + "login.html";
   }
 }
 

@@ -100,7 +100,14 @@ async def login(credentials: LoginRequest) -> LoginResponse:
             data=TokenResponse(
                 access_token=result["access_token"],
                 token_type=result["token_type"],
-                user=result["user"]
+                id_user=result["id_user"],
+                username=result["username"],
+                perfil=result["perfil"],
+                cedula=result.get("cedula"),
+                nombre=result.get("nombre"),
+                apellido=result.get("apellido"),
+                correo=result.get("correo"),
+                permisos=result.get("permisos", [])
             )
         )
         

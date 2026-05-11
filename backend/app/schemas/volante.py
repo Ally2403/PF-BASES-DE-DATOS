@@ -22,7 +22,6 @@ class VolanteResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     
     id_volante: int = Field(..., validation_alias="ID_VOLANTE", description="ID único")
-    estado: str = Field(..., validation_alias="ESTADO", description="PENDIENTE, PARCIAL, PAGADO")
     monto_total: float = Field(..., validation_alias="MONTO_TOTAL", description="Monto total")
     id_estudiante: int = Field(..., validation_alias="ID_ESTUDIANTE", description="ID Estudiante")
     id_periodo: int = Field(..., validation_alias="ID_PERIODO", description="ID Período")

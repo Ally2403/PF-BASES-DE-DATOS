@@ -14,7 +14,7 @@ def get_all_volantes() -> List[Dict[str, Any]]:
     """Obtiene todos los volantes."""
     try:
         query = """
-            SELECT ID_VOLANTE, ESTADO, SEMESTRE_QUE_COBRA, FECHA_GENERACION, 
+            SELECT ID_VOLANTE, SEMESTRE_QUE_COBRA, FECHA_GENERACION, 
                    TIPO_GENERACION, MONTO_TOTAL, ID_ESTUDIANTE, ID_PERIODO, MODALIDAD, ID_PROGRAMA
             FROM VOLANTE_MATRICULA ORDER BY ID_VOLANTE DESC
         """
@@ -30,7 +30,7 @@ def get_volante_by_id(id_volante: int) -> Optional[Dict[str, Any]]:
     """Obtiene un volante por ID."""
     try:
         query = """
-            SELECT ID_VOLANTE, ESTADO, SEMESTRE_QUE_COBRA, FECHA_GENERACION, 
+            SELECT ID_VOLANTE, SEMESTRE_QUE_COBRA, FECHA_GENERACION, 
                    TIPO_GENERACION, MONTO_TOTAL, ID_ESTUDIANTE, ID_PERIODO, MODALIDAD, ID_PROGRAMA
             FROM VOLANTE_MATRICULA WHERE ID_VOLANTE = :id
         """
@@ -45,7 +45,7 @@ def get_volantes_by_estudiante(id_estudiante: int) -> List[Dict[str, Any]]:
     """Obtiene todos los volantes de un estudiante."""
     try:
         query = """
-            SELECT ID_VOLANTE, ESTADO, SEMESTRE_QUE_COBRA, FECHA_GENERACION, 
+            SELECT ID_VOLANTE, SEMESTRE_QUE_COBRA, FECHA_GENERACION, 
                    TIPO_GENERACION, MONTO_TOTAL, ID_ESTUDIANTE, ID_PERIODO, MODALIDAD, ID_PROGRAMA
             FROM VOLANTE_MATRICULA WHERE ID_ESTUDIANTE = :id_est
             ORDER BY FECHA_GENERACION DESC
@@ -68,8 +68,8 @@ def create_volante_individual(id_estudiante: int, id_periodo: int, id_programa: 
         query = """
             INSERT INTO VOLANTE_MATRICULA 
             (ID_VOLANTE, ID_ESTUDIANTE, ID_PERIODO, ID_PROGRAMA, MODALIDAD, SEMESTRE_QUE_COBRA, 
-             TIPO_GENERACION, ESTADO, FECHA_GENERACION)
-            VALUES (:id, :id_est, :id_per, :id_prog, :mod, :sem, 'INDIVIDUAL', 'PENDIENTE', SYSDATE)
+             TIPO_GENERACION, FECHA_GENERACION)
+            VALUES (:id, :id_est, :id_per, :id_prog, :mod, :sem, 'INDIVIDUAL', SYSDATE)
         """
         execute_update(query, {
             "id": new_id,
@@ -124,12 +124,4 @@ def create_volante_masiva(id_periodo: int, id_programa: int, modalidad: str, sem
         raise
 
 
-def get_estado_volante(id_volante: int) -> Optional[str]:
-    """Obtiene el estado actual de un volante."""
-    try:
-        query = "SELECT ESTADO FROM VOLANTE_MATRICULA WHERE ID_VOLANTE = :id"
-        results = execute_query(query, {"id": id_volante})
-        return results[0]['ESTADO'] if results else None
-    except Exception as e:
-        logger.error(f"✗ Error al obtener estado del volante: {e}")
-        raise
+

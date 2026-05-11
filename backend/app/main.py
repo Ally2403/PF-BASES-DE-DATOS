@@ -4,11 +4,13 @@ main.py — Punto de entrada de la aplicación FastAPI
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from app.config import settings
 from app.routes import auth, supervisor, administrador, asistente
 from app.routes import cuenta_corriente, reportes
 import logging
+import os
 
 # Configurar logging
 logging.basicConfig(
@@ -57,7 +59,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 
 # =============================================
-# REGISTRAR RUTAS
+# REGISTRAR RUTAS PRIMERO
 # =============================================
 # Etapa 3 — Autenticación
 app.include_router(auth.router)
@@ -71,6 +73,18 @@ app.include_router(asistente.router)
 app.include_router(cuenta_corriente.router)
 # Etapa 8 — Reportes
 app.include_router(reportes.router)
+
+# =============================================
+# CONFIGURAR ARCHIVOS ESTÁTICOS (FRONTEND)
+# Se monta DESPUÉS de las rutas para que /api/* tenga precedencia
+# =============================================
+# Ruta a la carpeta frontend (relativa a este archivo o absoluta)
+frontend_path = os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
+if os.path.exists(frontend_path):
+    app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
+    logger.info(f"✓ Archivos estáticos servidos desde: {frontend_path}")
+else:
+    logger.warning(f"⚠ Carpeta frontend no encontrada en: {frontend_path}")
 
 # =============================================
 # HEALTH CHECK - VERIFICAR QUE LA API ESTÁ VIVA
@@ -87,14 +101,15 @@ async def health_check():
         "service": "backend-universidad"
     }
 
-@app.get("/", tags=["Root"])
+@app.get("/", tags=["Root"], include_in_schema=False)
 async def root():
     """
-    Mensaje de bienvenida.
+    Redirigir a documentación o frontend.
     """
     return {
-        "message": "Bienvenido a la API de Cuenta Corriente del Estudiante",
+        "message": "API de Cuenta Corriente del Estudiante",
         "docs": "/docs",
+        "frontend": "/frontend/index.html",
         "version": "1.0.0"
     }
 

@@ -1,11 +1,11 @@
 /**
- * Capa única de acceso al backend Flask (Oracle).
+ * Capa única de acceso al backend FastAPI (Oracle).
  * Producción/mock: cambie solo USAR_MOCK cuando el servidor esté listo.
  */
 
-const USAR_MOCK = true;
+const USAR_MOCK = false;
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = "http://localhost:8000";
 
 const MOCK_USERS = [
   {
@@ -643,10 +643,12 @@ async function login({ username, contrasena }) {
       permisos: [...u.permisos],
     };
   }
-  return fetchJson("/auth/login", {
+  const response = await fetchJson("/api/auth/login", {
     method: "POST",
-    body: JSON.stringify({ username, contrasena }),
+    body: JSON.stringify({ username, password: contrasena }),
   });
+  // Retornar solo el user object (data), no el wrapper {success, message, data}
+  return response.data;
 }
 
 /**
@@ -672,7 +674,7 @@ async function getEstudiantes(params = {}) {
     }
     return list;
   }
-  const raw = await fetchJson(q ? `/estudiantes/?${q}` : "/estudiantes/");
+  const raw = await fetchJson(q ? `/api/estudiantes/?${q}` : "/api/estudiantes/");
   return normalizarListaEstudiantes(raw);
 }
 
@@ -683,7 +685,7 @@ async function getEstudiante(id) {
     if (!e) throw new Error("Estudiante no encontrado");
     return e;
   }
-  return fetchJson(`/estudiantes/${id}`);
+  return fetchJson(`/api/api/estudiantes/${id}`);
 }
 
 async function postEstudiante(body) {
@@ -700,7 +702,7 @@ async function postEstudiante(body) {
     _mockStore.estudiantes.push(nuevo);
     return nuevo;
   }
-  return fetchJson("/estudiantes/", { method: "POST", body: JSON.stringify(body) });
+  return fetchJson("/api/estudiantes/", { method: "POST", body: JSON.stringify(body) });
 }
 
 async function putEstudiante(id, body) {
@@ -716,7 +718,7 @@ async function putEstudiante(id, body) {
     if (prog) _mockStore.estudiantes[i].nombre_programa = prog.nombre_programa;
     return _mockStore.estudiantes[i];
   }
-  return fetchJson(`/estudiantes/${id}`, { method: "PUT", body: JSON.stringify(body) });
+  return fetchJson(`/api/api/estudiantes/${id}`, { method: "PUT", body: JSON.stringify(body) });
 }
 
 async function deleteEstudiante(id) {
@@ -727,7 +729,7 @@ async function deleteEstudiante(id) {
     _mockStore.estudiantes.splice(i, 1);
     return { ok: true };
   }
-  return fetchJson(`/estudiantes/${id}`, { method: "DELETE" });
+  return fetchJson(`/api/api/estudiantes/${id}`, { method: "DELETE" });
 }
 
 async function getProgramas(params = {}) {
@@ -748,7 +750,7 @@ async function getProgramas(params = {}) {
     }
     return list;
   }
-  return fetchJson(q ? `/programas/?${q}` : "/programas/");
+  return fetchJson(q ? `/api/programas/?${q}` : "/api/programas/");
 }
 
 async function postPrograma(body) {
@@ -762,7 +764,7 @@ async function postPrograma(body) {
     _mockStore.programas.push(row);
     return row;
   }
-  return fetchJson("/programas/", { method: "POST", body: JSON.stringify(body) });
+  return fetchJson("/api/programas/", { method: "POST", body: JSON.stringify(body) });
 }
 
 async function putPrograma(id, body) {
@@ -778,7 +780,7 @@ async function putPrograma(id, body) {
     });
     return _mockStore.programas[i];
   }
-  return fetchJson(`/programas/${id}`, { method: "PUT", body: JSON.stringify(body) });
+  return fetchJson(`/api/api/programas/${id}`, { method: "PUT", body: JSON.stringify(body) });
 }
 
 async function deletePrograma(id) {
@@ -801,7 +803,7 @@ async function deletePrograma(id) {
     _mockStore.programas.splice(i, 1);
     return { ok: true };
   }
-  return fetchJson(`/programas/${id}`, { method: "DELETE" });
+  return fetchJson(`/api/api/programas/${id}`, { method: "DELETE" });
 }
 
 function planKey(semestre, idPrograma) {
@@ -842,7 +844,7 @@ async function getCatalogoAsignaturas() {
       Number(a.id_asignatura) - Number(b.id_asignatura),
     );
   }
-  return fetchJson("/asignaturas-catalogo/");
+  return fetchJson("/api/asignaturas-catalogo/");
 }
 
 async function postAsignaturaCatalog(body) {
@@ -860,7 +862,7 @@ async function postAsignaturaCatalog(body) {
     _mockStore.asignaturas_catalogo.push(row);
     return row;
   }
-  return fetchJson("/asignaturas-catalogo/", {
+  return fetchJson("/api/asignaturas-catalogo/", {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -886,7 +888,7 @@ async function putAsignaturaCatalog(id, body) {
     syncPeaCopiesFromCatalog(id);
     return _mockStore.asignaturas_catalogo[i];
   }
-  return fetchJson(`/asignaturas-catalogo/${id}`, {
+  return fetchJson(`/api/api/asignaturas-catalogo/${id}`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
@@ -903,7 +905,7 @@ async function deleteAsignaturaCatalog(id) {
     _mockStore.asignaturas_catalogo.splice(i, 1);
     return { ok: true };
   }
-  return fetchJson(`/asignaturas-catalogo/${id}`, { method: "DELETE" });
+  return fetchJson(`/api/api/asignaturas-catalogo/${id}`, { method: "DELETE" });
 }
 
 /** PLAN_ESTUDIO en mock: existe fila si hay clave semestre-id_programa en asignaturas_por_semestre */
@@ -922,7 +924,7 @@ async function postPlanEstudioSemestre(id_programa, semestre) {
     if (!_mockStore.asignaturas_por_semestre[k]) _mockStore.asignaturas_por_semestre[k] = [];
     return { semestre: sem, id_programa: pid };
   }
-  return fetchJson(`/programas/${pid}/plan-estudio/semestres`, {
+  return fetchJson(`/api/api/programas/${pid}/plan-estudio/semestres`, {
     method: "POST",
     body: JSON.stringify({ semestre: sem }),
   });
@@ -936,7 +938,7 @@ async function deletePlanEstudioSemestre(id_programa, semestre) {
     delete _mockStore.asignaturas_por_semestre[planKey(sem, pid)];
     return { ok: true };
   }
-  return fetchJson(`/programas/${pid}/plan-estudio/semestres/${sem}`, { method: "DELETE" });
+  return fetchJson(`/api/api/programas/${pid}/plan-estudio/semestres/${sem}`, { method: "DELETE" });
 }
 
 async function postPlanEstudioAsignatura(id_programa, semestre, id_asignatura) {
@@ -962,7 +964,7 @@ async function postPlanEstudioAsignatura(id_programa, semestre, id_asignatura) {
     });
     return { semestre: sem, id_programa: pid, id_asignatura: aid };
   }
-  return fetchJson(`/programas/${pid}/plan-estudio/asignaturas`, {
+  return fetchJson(`/api/api/programas/${pid}/plan-estudio/asignaturas`, {
     method: "POST",
     body: JSON.stringify({ semestre: sem, id_asignatura: aid }),
   });
@@ -980,7 +982,7 @@ async function deletePlanEstudioAsignatura(id_programa, semestre, id_asignatura)
     _mockStore.asignaturas_por_semestre[k] = arr.filter((x) => Number(x.id_asignatura) !== aid);
     return { ok: true };
   }
-  return fetchJson(`/programas/${pid}/plan-estudio/asignaturas/${sem}/${aid}`, {
+  return fetchJson(`/api/api/programas/${pid}/plan-estudio/asignaturas/${sem}/${aid}`, {
     method: "DELETE",
   });
 }
@@ -995,7 +997,7 @@ async function getPeriodos(params = {}) {
     return r;
   }
   const q = new URLSearchParams(params).toString();
-  const raw = await fetchJson(q ? `/periodos/?${q}` : "/periodos/");
+  const raw = await fetchJson(q ? `/api/periodos/?${q}` : "/api/periodos/");
   let r = normalizarListaPeriodosRaw(raw);
   if (params.id_periodo != null && String(params.id_periodo).trim() !== "") {
     r = r.filter((x) => String(x.id_periodo) === String(params.id_periodo));
@@ -1016,7 +1018,7 @@ async function postPeriodo(body) {
     _mockStore.periodos.push(row);
     return row;
   }
-  return fetchJson("/periodos/", { method: "POST", body: JSON.stringify(body) });
+  return fetchJson("/api/periodos/", { method: "POST", body: JSON.stringify(body) });
 }
 
 async function putPeriodo(id, body) {
@@ -1027,7 +1029,7 @@ async function putPeriodo(id, body) {
     Object.assign(_mockStore.periodos[i], body);
     return _mockStore.periodos[i];
   }
-  return fetchJson(`/periodos/${id}`, {
+  return fetchJson(`/api/api/periodos/${id}`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
@@ -1048,7 +1050,7 @@ async function deletePeriodo(id) {
     _mockStore.periodos.splice(i, 1);
     return { ok: true };
   }
-  return fetchJson(`/periodos/${id}`, { method: "DELETE" });
+  return fetchJson(`/api/api/periodos/${id}`, { method: "DELETE" });
 }
 
 async function getReglasCobro(params = {}) {
@@ -1060,7 +1062,7 @@ async function getReglasCobro(params = {}) {
     if (params.periodo) r = r.filter((x) => String(x.id_periodo) === String(params.periodo));
     return r;
   }
-  return fetchJson(`/reglas-cobro/?${q}`);
+  return fetchJson(`/api/api/reglas-cobro/?${q}`);
 }
 
 function findReglaIndex(id_programa, id_periodo, modalidad) {
@@ -1103,7 +1105,7 @@ async function postReglaCobro(body) {
     _mockStore.reglas_cobro.push(row);
     return row;
   }
-  return fetchJson("/reglas-cobro/", { method: "POST", body: JSON.stringify(body) });
+  return fetchJson("/api/reglas-cobro/", { method: "POST", body: JSON.stringify(body) });
 }
 
 async function putReglaCobro(id_programa, id_periodo, modalidad, body) {
@@ -1125,7 +1127,7 @@ async function putReglaCobro(id_programa, id_periodo, modalidad, body) {
     return _mockStore.reglas_cobro[i];
   }
   const m = encodeURIComponent(String(modalidad));
-  return fetchJson(`/reglas-cobro/${id_programa}/${id_periodo}/${m}`, {
+  return fetchJson(`/api/reglas-cobro/${id_programa}/${id_periodo}/${m}`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
@@ -1140,7 +1142,7 @@ async function deleteReglaCobro(id_programa, id_periodo, modalidad) {
     return { ok: true };
   }
   const m = encodeURIComponent(String(modalidad));
-  return fetchJson(`/reglas-cobro/${id_programa}/${id_periodo}/${m}`, { method: "DELETE" });
+  return fetchJson(`/api/reglas-cobro/${id_programa}/${id_periodo}/${m}`, { method: "DELETE" });
 }
 
 function codigoDetalleEnUsoEnMock(cod) {
@@ -1160,7 +1162,7 @@ async function getCodigosDetalle() {
       String(a.codigo_detalle).localeCompare(String(b.codigo_detalle)),
     );
   }
-  return fetchJson("/codigos-detalle/");
+  return fetchJson("/api/codigos/");
 }
 
 async function postCodigoDetalle(body) {
@@ -1188,7 +1190,7 @@ async function postCodigoDetalle(body) {
     _mockStore.codigos_detalle.push(row);
     return row;
   }
-  return fetchJson("/codigos-detalle/", { method: "POST", body: JSON.stringify(body) });
+  return fetchJson("/api/codigos/", { method: "POST", body: JSON.stringify(body) });
 }
 
 async function putCodigoDetalle(codigo, body) {
@@ -1210,7 +1212,7 @@ async function putCodigoDetalle(codigo, body) {
     }
     return _mockStore.codigos_detalle[i];
   }
-  return fetchJson(`/codigos-detalle/${encodeURIComponent(key)}`, {
+  return fetchJson(`/api/codigos/${encodeURIComponent(key)}`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
@@ -1228,7 +1230,7 @@ async function deleteCodigoDetalle(codigo) {
     _mockStore.codigos_detalle.splice(i, 1);
     return { ok: true };
   }
-  return fetchJson(`/codigos-detalle/${encodeURIComponent(key)}`, { method: "DELETE" });
+  return fetchJson(`/api/api/codigos-detalle/${encodeURIComponent(key)}`, { method: "DELETE" });
 }
 
 async function getAsignaturas(params = {}) {
@@ -1240,7 +1242,7 @@ async function getAsignaturas(params = {}) {
     return [...(_mockStore.asignaturas_por_semestre[key] || [])];
   }
   const q = new URLSearchParams(params).toString();
-  return fetchJson(`/asignaturas/?${q}`);
+  return fetchJson(`/api/api/asignaturas/?${q}`);
 }
 
 function getPlanPorProgramaMock(id_programa) {
@@ -1340,7 +1342,7 @@ async function postVolante(body) {
     syncReportListadoFromVolantes();
     return clone(vol);
   }
-  return fetchJson("/volantes/", { method: "POST", body: JSON.stringify(body) });
+  return fetchJson("/api/asistente/volantes/individual", { method: "POST", body: JSON.stringify(body) });
 }
 
 function syncReportListadoFromVolantes() {
@@ -1402,7 +1404,7 @@ async function postVolantesMasivo(body) {
     }
     return { ok: true, creados: creados.length, omitidos, detalle: creados };
   }
-  return fetchJson("/volantes/masivo", { method: "POST", body: JSON.stringify(body) });
+  return fetchJson("/api/asistente/volantes/masiva", { method: "POST", body: JSON.stringify(body) });
 }
 
 async function postCobroAdicional(body) {
@@ -1438,7 +1440,7 @@ async function postCobroAdicional(body) {
     syncReportListadoFromVolantes();
     return { ok: true };
   }
-  return fetchJson("/cobros-adicionales", { method: "POST", body: JSON.stringify(body) });
+  return fetchJson("/api/asistente/cobros-adicionales", { method: "POST", body: JSON.stringify(body) });
 }
 
 async function deleteMovimiento(id_mov) {
@@ -1462,7 +1464,7 @@ async function deleteMovimiento(id_mov) {
     if (!found) throw new Error("Movimiento no encontrado");
     return { ok: true };
   }
-  return fetchJson("/movimientos/" + id_mov, { method: "DELETE" });
+  return fetchJson("/api/cuenta-corriente/movimientos/" + id_mov, { method: "DELETE" });
 }
 
 function computeSaldo(rows, est, nombrePeriodo, idPeriodo) {
@@ -1503,7 +1505,7 @@ async function getCuentaCorriente(params = {}) {
     });
   }
   const q = new URLSearchParams(params).toString();
-  return fetchJson(`/cuenta-corriente?${q}`);
+  return fetchJson(`/api/cuenta-corriente?${q}`);
 }
 
 async function getSaldo(params = {}) {
@@ -1523,7 +1525,7 @@ async function getSaldo(params = {}) {
     );
   }
   const q = new URLSearchParams(params).toString();
-  return fetchJson(`/saldo?${q}`);
+  return fetchJson(`/api/saldo?${q}`);
 }
 
 function recalcularEstadoVolante(vol) {
@@ -1595,7 +1597,7 @@ async function postPago(body) {
     syncReportListadoFromVolantes();
     return movPago;
   }
-  return fetchJson("/pagos/", {
+  return fetchJson("/api/asistente/pagos/", {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -1641,7 +1643,7 @@ async function getPagos(filtros = {}) {
     return rows;
   }
   const q = new URLSearchParams(filtros).toString();
-  return fetchJson(`/pagos?${q}`);
+  return fetchJson(`/api/pagos?${q}`);
 }
 
 async function getMovimientosPendientes(id_estudiante, id_periodo) {
@@ -1659,7 +1661,7 @@ async function getMovimientosPendientes(id_estudiante, id_periodo) {
         };
     });
   }
-  return fetchJson(`/pendientes/${id_estudiante}/${id_periodo}`);
+  return fetchJson(`/api/pendientes/${id_estudiante}/${id_periodo}`);
 }
 
 async function reporteListadoGeneral(periodo) {
@@ -1674,7 +1676,7 @@ async function reporteListadoGeneral(periodo) {
     return rows;
   }
   const q = new URLSearchParams({ periodo }).toString();
-  return fetchJson(`/reportes/listado-general?${q}`);
+  return fetchJson(`/api/reportes/listado-general?${q}`);
 }
 
 async function reporteIngresoEsperado(periodo) {
@@ -1702,7 +1704,7 @@ async function reporteIngresoEsperado(periodo) {
     return Object.values(results);
   }
   const q = new URLSearchParams({ periodo }).toString();
-  return fetchJson(`/reportes/ingreso-esperado?${q}`);
+  return fetchJson(`/api/reportes/ingreso-esperado?${q}`);
 }
 
 async function reportePendientes(programa, periodo) {
@@ -1718,7 +1720,7 @@ async function reportePendientes(programa, periodo) {
     return rows;
   }
   const q = new URLSearchParams({ programa, periodo }).toString();
-  return fetchJson(`/reportes/pendientes?${q}`);
+  return fetchJson(`/api/reportes/pendientes?${q}`);
 }
 
 async function reporteIngresoReal() {
@@ -1738,7 +1740,7 @@ async function reporteIngresoReal() {
     // Ordenar por nombre de periodo DESC (2026-30 > 2026-10)
     return Object.values(results).sort((a, b) => b.nombre_periodo.localeCompare(a.nombre_periodo));
   }
-  return fetchJson(`/reportes/ingreso-real`);
+  return fetchJson(`/api/reportes/ingreso-real`);
 }
 
 async function reporteCartera(periodo) {
@@ -1752,7 +1754,7 @@ async function reporteCartera(periodo) {
     return rows;
   }
   const q = new URLSearchParams({ periodo }).toString();
-  return fetchJson(`/reportes/cartera?${q}`);
+  return fetchJson(`/api/reportes/cartera?${q}`);
 }
 
 async function getUsuarios() {
@@ -1760,7 +1762,7 @@ async function getUsuarios() {
     ensureMockStore();
     return [..._mockStore.usuarios];
   }
-  return fetchJson("/usuarios/");
+  return fetchJson("/api/administrador/usuarios/");
 }
 
 async function postUsuario(body) {
@@ -1784,7 +1786,7 @@ async function postUsuario(body) {
     _mockStore.usuarios.push(nuevo);
     return nuevo;
   }
-  return fetchJson("/usuarios/", {
+  return fetchJson("/api/administrador/usuarios/", {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -1802,7 +1804,7 @@ async function putUsuario(id, body) {
     }
     return _mockStore.usuarios[i];
   }
-  return fetchJson(`/usuarios/${id}`, {
+  return fetchJson(`/api/usuarios/${id}`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
@@ -1816,7 +1818,7 @@ async function deleteUsuario(id) {
     _mockStore.usuarios.splice(i, 1);
     return { ok: true };
   }
-  return fetchJson(`/usuarios/${id}`, { method: "DELETE" });
+  return fetchJson(`/api/usuarios/${id}`, { method: "DELETE" });
 }
 
 async function getPerfiles() {
@@ -1824,7 +1826,7 @@ async function getPerfiles() {
     ensureMockStore();
     return [..._mockStore.perfiles];
   }
-  return fetchJson("/perfiles/");
+  return fetchJson("/api/administrador/perfiles/");
 }
 
 async function getMenus() {
@@ -1832,7 +1834,7 @@ async function getMenus() {
     ensureMockStore();
     return [...(_mockStore.menus || [])];
   }
-  return fetchJson("/menus/");
+  return fetchJson("/api/administrador/menus/");
 }
 
 async function postPerfil(body) {
@@ -1842,7 +1844,7 @@ async function postPerfil(body) {
     _mockStore.perfiles.push(n);
     return n;
   }
-  return fetchJson("/perfiles/", { method: "POST", body: JSON.stringify(body) });
+  return fetchJson("/api/administrador/perfiles/", { method: "POST", body: JSON.stringify(body) });
 }
 
 async function deletePerfil(id) {
@@ -1851,7 +1853,7 @@ async function deletePerfil(id) {
     _mockStore.perfiles = _mockStore.perfiles.filter(p => String(p.id_perfil) !== String(id));
     return { ok: true };
   }
-  return fetchJson("/perfiles/" + id, { method: "DELETE" });
+  return fetchJson("/api/administrador/perfiles/" + id, { method: "DELETE" });
 }
 
 async function postMenu(body) {
@@ -1862,7 +1864,7 @@ async function postMenu(body) {
     _mockStore.menus.push(n);
     return n;
   }
-  return fetchJson("/menus/", { method: "POST", body: JSON.stringify(body) });
+  return fetchJson("/api/administrador/menus/", { method: "POST", body: JSON.stringify(body) });
 }
 
 async function deleteMenu(id) {
@@ -1871,7 +1873,7 @@ async function deleteMenu(id) {
     _mockStore.menus = (_mockStore.menus || []).filter(m => String(m.id_menu) !== String(id));
     return { ok: true };
   }
-  return fetchJson("/menus/" + id, { method: "DELETE" });
+  return fetchJson("/api/administrador/menus/" + id, { method: "DELETE" });
 }
 
 async function postPermiso(body) {
@@ -1882,7 +1884,7 @@ async function postPermiso(body) {
     _mockStore.permisos_catalogo.push(n);
     return n;
   }
-  return fetchJson("/permisos/", { method: "POST", body: JSON.stringify(body) });
+  return fetchJson("/api/administrador/permisos/", { method: "POST", body: JSON.stringify(body) });
 }
 
 async function deletePermiso(id) {
@@ -1891,7 +1893,7 @@ async function deletePermiso(id) {
     _mockStore.permisos_catalogo = (_mockStore.permisos_catalogo || []).filter(p => String(p.id_permiso) !== String(id));
     return { ok: true };
   }
-  return fetchJson("/permisos/" + id, { method: "DELETE" });
+  return fetchJson("/api/administrador/permisos/" + id, { method: "DELETE" });
 }
 
 async function postPerfilPermiso(idPerfil, idPermiso) {
@@ -1900,7 +1902,7 @@ async function postPerfilPermiso(idPerfil, idPermiso) {
     // Simular asociación
     return { ok: true };
   }
-  return fetchJson(`/perfiles/${idPerfil}/permisos/${idPermiso}`, { method: "POST" });
+  return fetchJson(`/api/perfiles/${idPerfil}/permisos/${idPermiso}`, { method: "POST" });
 }
 
 async function getPermisos() {
@@ -1908,7 +1910,7 @@ async function getPermisos() {
     ensureMockStore();
     return [...(_mockStore.permisos_catalogo?.length ? _mockStore.permisos_catalogo : [])];
   }
-  return fetchJson("/permisos/");
+  return fetchJson("/api/administrador/permisos/");
 }
 
 /**
@@ -1925,7 +1927,7 @@ async function getVolantes(filters = {}) {
     return v;
   }
   const q = new URLSearchParams(filters).toString();
-  return fetchJson(`/volantes/?${q}`);
+  return fetchJson(`/api/asistente/volantes?${q}`);
 }
 
 window.api = {

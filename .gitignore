@@ -1,16 +1,136 @@
-# Frontend / general
+# ============================================
+# VARIABLES DE ENTORNO Y CONFIGURACIÓN
+# ============================================
 .env
 .env.local
-*.log
-.DS_Store
-Thumbs.db
+.env.*.local
+.env.production
 
-# Python (backend típico)
+# ============================================
+# PYTHON & BACKEND (FastAPI)
+# ============================================
+# Bytecode and compiled files
 __pycache__/
 *.py[cod]
-.venv/
-venv/
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# IDE
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+.ENV/
+
+# Pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Uvicorn/FastAPI
+*.pid
+app.db
+*.sqlite
+*.sqlite3
+
+# ============================================
+# FRONTEND (Vanilla JS - sin node_modules)
+# ============================================
+# No hay node_modules en este proyecto (vanilla JS)
+# pero incluimos por si se agrega npm en el futuro
+node_modules/
+package-lock.json
+npm-debug.log
+yarn-error.log
+
+# ============================================
+# IDE Y EDITORES
+# ============================================
+.vscode/
 .idea/
+.DS_Store
+Thumbs.db
 *.swp
+*.swo
+*~
+.sublime-project
+.sublime-workspace
+
+# ============================================
+# LOGS Y DATOS TEMPORALES
+# ============================================
+*.log
+*.log.*
+tmp/
+temp/
+logs/
+
+# ============================================
+# BASES DE DATOS Y CACHE
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+*.dbm
+*.rdb
+.cache/
+
+# ============================================
+# ARCHIVOS DEL SISTEMA
+# ============================================
+.DS_Store
+Thumbs.db
+.directory
+._.DS_Store
+
+# ============================================
+# COMPILADOS Y DISTRIBUCIÓN
+# ============================================
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/

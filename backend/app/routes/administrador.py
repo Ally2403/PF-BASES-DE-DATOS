@@ -151,16 +151,17 @@ async def obtener_perfil(id_perfil: int, current_user: dict = Depends(require_pe
         raise HTTPException(status_code=500, detail="Error al obtener perfil")
 
 
-@router.post("/perfiles", response_model=PerfilDetailResponse, status_code=201)
-async def crear_perfil_endpoint(data: PerfilCreate, current_user: dict = Depends(require_perfil(PERMISOS))):
-    """Crear nuevo perfil."""
-    try:
-        nuevo = create_perfil(data.nombre_perfil)
-        logger.info(f"✓ Usuario {current_user.get('username')} creó perfil: {data.nombre_perfil}")
-        return PerfilDetailResponse(success=True, message="Perfil creado", data=PerfilResponse.model_validate(nuevo))
-    except Exception as e:
-        logger.error(f"✗ Error: {e}")
-        raise HTTPException(status_code=500, detail="Error al crear perfil")
+# DESACTIVADO EN TAREA 3: Gestión de perfiles es solo lectura (configuración fija del sistema)
+# @router.post("/perfiles", response_model=PerfilDetailResponse, status_code=201)
+# async def crear_perfil_endpoint(data: PerfilCreate, current_user: dict = Depends(require_perfil(PERMISOS))):
+#     """Crear nuevo perfil."""
+#     try:
+#         nuevo = create_perfil(data.nombre_perfil)
+#         logger.info(f"✓ Usuario {current_user.get('username')} creó perfil: {data.nombre_perfil}")
+#         return PerfilDetailResponse(success=True, message="Perfil creado", data=PerfilResponse.model_validate(nuevo))
+#     except Exception as e:
+#         logger.error(f"✗ Error: {e}")
+#         raise HTTPException(status_code=500, detail="Error al crear perfil")
 
 
 # ==========================================
@@ -195,13 +196,14 @@ async def obtener_menu(id_menu: int, current_user: dict = Depends(require_perfil
         raise HTTPException(status_code=500, detail="Error al obtener menú")
 
 
-@router.post("/menus", response_model=MenuDetailResponse, status_code=201)
-async def crear_menu_endpoint(data: MenuCreate, current_user: dict = Depends(require_perfil(PERMISOS))):
-    """Crear nuevo menú."""
-    try:
-        nuevo = create_menu(data.nombre_funcion, data.url_acceso)
-        logger.info(f"✓ Usuario {current_user.get('username')} creó menú: {data.nombre_funcion}")
-        return MenuDetailResponse(success=True, message="Menú creado", data=MenuResponse.model_validate(nuevo))
-    except Exception as e:
-        logger.error(f"✗ Error: {e}")
-        raise HTTPException(status_code=500, detail="Error al crear menú")
+# DESACTIVADO EN TAREA 3: Gestión de menús es solo lectura (configuración fija del sistema)
+# @router.post("/menus", response_model=MenuDetailResponse, status_code=201)
+# async def crear_menu_endpoint(data: MenuCreate, current_user: dict = Depends(require_perfil(PERMISOS))):
+#     """Crear nuevo menú."""
+#     try:
+#         nuevo = create_menu(data.nombre_funcion, data.url_acceso)
+#         logger.info(f"✓ Usuario {current_user.get('username')} creó menú: {data.nombre_funcion}")
+#         return MenuDetailResponse(success=True, message="Menú creado", data=MenuResponse.model_validate(nuevo))
+#     except Exception as e:
+#         logger.error(f"✗ Error: {e}")
+#         raise HTTPException(status_code=500, detail="Error al crear menú")

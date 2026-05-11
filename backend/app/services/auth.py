@@ -141,7 +141,7 @@ def authenticate_user(username: str, password: str) -> Optional[Dict[str, Any]]:
         password: Contraseña en texto plano
         
     Returns:
-        Diccionario con datos del usuario (id_user, username, perfil, etc.) si es válido
+        Diccionario con datos del usuario (id_user, username, perfil, permisos, etc.) si es válido
         None si el usuario no existe o contraseña es incorrecta
         
     Raises:
@@ -151,6 +151,7 @@ def authenticate_user(username: str, password: str) -> Optional[Dict[str, Any]]:
         user = authenticate_user("cmendoza", "password123")
         if user:
             print(f"Bienvenido {user['username']} ({user['perfil']})")
+            print(f"Permisos: {user['permisos']}")
         else:
             print("Credenciales inválidas")
     """
@@ -178,7 +179,18 @@ def authenticate_user(username: str, password: str) -> Optional[Dict[str, Any]]:
             logger.warning(f"✗ Contraseña incorrecta para usuario: {username}")
             return None
         
-        # Contraseña correcta, retornar datos del usuario
+        # Obtener permisos del usuario según su perfil
+        permisos_query = """
+            SELECT DISTINCT pm.NOMBRE_OPERACION
+            FROM PERFIL_PERMISO pp
+            JOIN PERMISO pm ON pp.ID_PERMISO = pm.ID_PERMISO
+            WHERE pp.ID_PERFIL = :id_perfil
+            ORDER BY pm.NOMBRE_OPERACION
+        """
+        permisos_results = execute_query(permisos_query, (user_data['ID_PERFIL'],))
+        permisos = [p['NOMBRE_OPERACION'] for p in permisos_results] if permisos_results else []
+        
+        # Contraseña correcta, retornar datos del usuario con permisos
         logger.info(f"✓ Usuario autenticado exitosamente: {username}")
         return {
             "id_user": user_data['ID_USER'],
@@ -187,7 +199,8 @@ def authenticate_user(username: str, password: str) -> Optional[Dict[str, Any]]:
             "cedula": user_data['CEDULA'],
             "nombre": user_data['NOMBRE'],
             "apellido": user_data['APELLIDO'],
-            "correo": user_data['CORREO']
+            "correo": user_data['CORREO'],
+            "permisos": permisos
         }
         
     except Exception as e:
@@ -204,21 +217,22 @@ def login_user(username: str, password: str) -> Optional[Dict[str, Any]]:
         password: Contraseña
         
     Returns:
-        Diccionario con token y datos del usuario si es exitoso
+        Diccionario con token y datos del usuario (estructura plana) si es exitoso
         None si fallan las credenciales
         
     Example:
         result = login_user("cmendoza", "password123")
         if result:
+            # result contiene: id_user, username, perfil, permisos, access_token, token_type, etc.
             token = result["access_token"]
-            user = result["user"]
+            username = result["username"]
     """
-    # Autenticar usuario
+    # Autenticar usuario (ahora incluye permisos)
     user = authenticate_user(username, password)
     if not user:
         return None
     
-    # Crear token JWT
+    # Crear token JWT con datos básicos
     token_data = {
         "id_user": user["id_user"],
         "username": user["username"],
@@ -226,8 +240,17 @@ def login_user(username: str, password: str) -> Optional[Dict[str, Any]]:
     }
     access_token = create_access_token(token_data)
     
+    # Devolver estructura PLANA con todos los datos
+    # Esto coincide con lo que el frontend espera en sessionStorage
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": user
+        "id_user": user["id_user"],
+        "username": user["username"],
+        "perfil": user["perfil"],
+        "cedula": user.get("cedula"),
+        "nombre": user.get("nombre"),
+        "apellido": user.get("apellido"),
+        "correo": user.get("correo"),
+        "permisos": user.get("permisos", [])
     }

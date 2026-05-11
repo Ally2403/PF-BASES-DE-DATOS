@@ -41,22 +41,36 @@ class UserInfo(BaseModel):
 
 class TokenResponse(BaseModel):
     """
-    Respuesta del endpoint de login con el token JWT.
+    Respuesta del endpoint de login con el token JWT y datos del usuario.
+    
+    ESTRUCTURA PLANA: Todos los campos en el nivel raíz (sin anidación).
+    Esto coincide con la estructura que el frontend espera en sessionStorage.
     
     Ejemplo:
         {
             "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
             "token_type": "bearer",
-            "user": {
-                "id_user": 1,
-                "username": "cmendoza",
-                "perfil": "ADMINISTRADOR"
-            }
+            "id_user": 1,
+            "username": "cmendoza",
+            "perfil": "ADMINISTRADOR",
+            "cedula": 1001234567,
+            "nombre": "Carlos",
+            "apellido": "Mendoza",
+            "correo": "cmendoza@example.com",
+            "permisos": ["GESTIONAR_PROGRAMAS", "GESTIONAR_ESTUDIANTES", ...]
         }
     """
     access_token: str = Field(..., description="Token JWT para autenticación")
     token_type: str = Field(default="bearer", description="Tipo de token (siempre 'bearer')")
-    user: UserInfo = Field(..., description="Información del usuario autenticado")
+    id_user: int = Field(..., description="ID único del usuario")
+    username: str = Field(..., description="Nombre de usuario")
+    perfil: str = Field(..., description="Perfil: ADMINISTRADOR, SUPERVISOR, ASISTENTE")
+    cedula: Optional[int] = Field(None, description="Cédula de la persona")
+    nombre: Optional[str] = Field(None, description="Nombre de la persona")
+    apellido: Optional[str] = Field(None, description="Apellido de la persona")
+    correo: Optional[str] = Field(None, description="Correo de la persona")
+    permisos: List[str] = Field(default_factory=list, description="Array de permisos del usuario")
+
 
 
 class LoginResponse(BaseModel):
