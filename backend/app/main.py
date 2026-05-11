@@ -2,10 +2,20 @@
 main.py — Punto de entrada de la aplicación FastAPI
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.config import settings
-from app.routes import auth, supervisor, administrador
+from app.routes import auth, supervisor, administrador, asistente
+from app.routes import cuenta_corriente, reportes
+import logging
+
+# Configurar logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(name)s | %(levelname)s | %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 # =============================================
 # CREAR APLICACIÓN FASTAPI
@@ -30,11 +40,37 @@ app.add_middleware(
 )
 
 # =============================================
+# MANEJO GLOBAL DE ERRORES (Etapa 9)
+# =============================================
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Captura excepciones no manejadas y retorna JSON consistente."""
+    logger.error(f"✗ Error no manejado en {request.method} {request.url}: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={
+            "success": False,
+            "message": f"Error interno del servidor: {str(exc)}",
+            "data": None
+        }
+    )
+
+
+# =============================================
 # REGISTRAR RUTAS
 # =============================================
+# Etapa 3 — Autenticación
 app.include_router(auth.router)
+# Etapa 4 — CRUD de entidades base (SUPERVISOR)
 app.include_router(supervisor.router)
+# Etapa 5 — Gestión de usuarios (ADMINISTRADOR)
 app.include_router(administrador.router)
+# Etapa 6 — Lógica de cobro (ASISTENTE)
+app.include_router(asistente.router)
+# Etapa 7 — Cuenta corriente
+app.include_router(cuenta_corriente.router)
+# Etapa 8 — Reportes
+app.include_router(reportes.router)
 
 # =============================================
 # HEALTH CHECK - VERIFICAR QUE LA API ESTÁ VIVA
@@ -63,13 +99,13 @@ async def root():
     }
 
 # =============================================
-# RUTAS (se importarán en etapas posteriores)
-# Estructura:
-#   - app/routes/auth.py → POST /api/auth/login ✅ (Etapa 3)
-#   - app/routes/supervisor.py → CRUD de datos base ✅ (Etapa 4)
-#   - app/routes/admin.py → Gestión de usuarios y perfiles (Etapa 5)
-#   - app/routes/asistente.py → Gestión de cobros (Etapa 6)
-#   - app/routes/reportes.py → Reportes desde vistas (Etapa 8)
+# RUTAS REGISTRADAS:
+#   - app/routes/auth.py            → POST /api/auth/login              ✅ (Etapa 3)
+#   - app/routes/supervisor.py      → CRUD de datos base                ✅ (Etapa 4)
+#   - app/routes/administrador.py   → Gestión de usuarios y perfiles    ✅ (Etapa 5)
+#   - app/routes/asistente.py       → Gestión de cobros y pagos         ✅ (Etapa 6)
+#   - app/routes/cuenta_corriente.py→ Cuenta corriente del estudiante   ✅ (Etapa 7)
+#   - app/routes/reportes.py        → Reportes desde vistas Oracle      ✅ (Etapa 8)
 # =============================================
 
 if __name__ == "__main__":

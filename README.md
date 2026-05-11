@@ -1,4 +1,4 @@
-# README — Backend API Cuenta Corriente del Estudiante
+# Backend API — Cuenta Corriente del Estudiante
 
 ## 📋 Estructura del Proyecto
 
@@ -6,18 +6,31 @@
 backend/
 ├── Dockerfile              # Imagen Docker del backend
 ├── requirements.txt        # Dependencias Python
+├── tests/                  # Scripts de prueba por etapa
 └── app/
     ├── __init__.py
     ├── main.py            # Aplicación FastAPI principal
     ├── config.py          # Configuración (variables de entorno)
-    ├── routes/            # Endpoints de la API (etapas 3-8)
-    ├── services/          # Lógica de negocio y conexión BD (etapa 2)
-    ├── models/            # Modelos de datos (acceso a BD)
+    ├── routes/            # Endpoints de la API
+    │   ├── auth.py        # Etapa 3: POST /api/auth/login
+    │   ├── supervisor.py  # Etapa 4: CRUD datos base
+    │   ├── administrador.py # Etapa 5: Gestión usuarios/perfiles
+    │   ├── asistente.py   # Etapa 6: Cobros y pagos
+    │   ├── cuenta_corriente.py # Etapa 7: Cuenta corriente
+    │   └── reportes.py    # Etapa 8: Reportes desde vistas
+    ├── services/          # Lógica de negocio y conexión BD
+    │   ├── database.py    # Conexión Oracle (oracledb)
+    │   ├── auth.py        # Autenticación SHA-256 + JWT
+    │   ├── permissions.py # Control de permisos por perfil
+    │   ├── programa.py, asignatura.py, ... # CRUD por entidad
+    │   ├── volante.py     # Lógica de volantes de matrícula
+    │   ├── movimiento.py  # Cobros adicionales, pagos, eliminación
+    │   ├── cuenta_corriente.py # Consultas a VW_CUENTA_CORRIENTE_*
+    │   └── reportes.py    # Consultas a vistas de reportes
     └── schemas/           # Esquemas Pydantic (validación)
 
 docker-compose.yml         # Orquestación: backend + Oracle
 .env                       # Variables de entorno (secreto, no subir)
-.env.example              # Template de .env (sin valores reales)
 ```
 
 ---
@@ -45,33 +58,16 @@ docker-compose.yml         # Orquestación: backend + Oracle
    docker logs -f oracle-universidad
    # Esperar a ver: "DATABASE IS READY TO USE!"
    ```
+4. **Ejecutar el DDL** (una sola vez):
+   ```bash
+   # Conectarse como app_user y ejecutar el script
+   docker exec -i oracle-universidad sqlplus app_user/AppPass1234@//localhost:1521/XEPDB1 < entregable3_ddl_final_final.sql
+   ```
 
-### OPCIÓN 1: Con script bash/PowerShell (recomendado)
-
-**PowerShell (Windows):**
-```powershell
-cd c:\Users\juanp\Desktop\PF Bases
-.\run_dev.ps1
-```
-
-**CMD (Windows):**
-```cmd
-cd c:\Users\juanp\Desktop\PF Bases
-run_dev.bat
-```
-
-### OPCIÓN 2: Comando directo
-
-**Desde la raíz del proyecto:**
+### Levantar el backend localmente
 ```bash
-cd c:\Users\juanp\Desktop\PF Bases\backend
-python -m uvicorn app.main:app --reload
-```
-
-**O desde cualquier lado:**
-```bash
-cd c:\Users\juanp\Desktop\PF Bases
-python -m uvicorn app.main:app --reload --app-dir backend
+cd backend
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### La API estará en:
@@ -82,121 +78,106 @@ python -m uvicorn app.main:app --reload --app-dir backend
 
 ---
 
-## 📝 Archivos de configuración
+## 📡 Endpoints del Sistema
 
-### `.env` (NO subir a repositorio)
-Contiene credenciales reales de BD, secret JWT, etc.
-
-```
-DB_HOST=oracle-universidad
-DB_PORT=1521
-DB_SERVICE=XEPDB1
-DB_USER=app_user
-DB_PASSWORD=AppPass1234
-JWT_SECRET_KEY=tu_clave_muy_segura_min_32_caracteres
-```
-
-### `.env.example` (SÍ subir a repositorio)
-Template sin valores reales, para que otros sepan qué configurar.
-
----
-
-## 🔧 Qué hace cada archivo
-
-### `main.py` (Aplicación FastAPI)
-- Crea la aplicación FastAPI
-- Configura CORS para que el frontend pueda consumir la API
-- Health check (`/health`) para verificar que el backend está vivo
-- Importará rutas de las etapas 3-8
-
-### `config.py` (Configuración centralizada)
-- Lee variables del archivo `.env` automáticamente
-- Usa `pydantic_settings` para validación de tipos
-- Instancia global `settings` que se importa en toda la app
-
-### `Dockerfile` (Imagen del contenedor)
-- Base: `python:3.10-slim`
-- Instala gcc (necesario para compilar oracledb)
-- Copia requirements e instala dependencias
-- Expone puerto 8000
-
-### `docker-compose.yml` (Orquestación)
-- Servicio `backend`: levanta la API en puerto 8000
-- Variables de entorno mapeadas desde `.env`
-- Red: conecta a `universidad-net` donde Oracle corre
-- Volume: mapea `./backend` (live reload en desarrollo)
-- Comando: `uvicorn` con `--reload` para desarrollo
-
----
-
-## 📦 Dependencias (requirements.txt)
-
-| Paquete | Versión | Para qué |
-|---------|---------|---------|
-| FastAPI | 0.104.1 | Framework web |
-| uvicorn | 0.24.0 | Servidor ASGI |
-| pydantic | 2.5.0 | Validación de datos |
-| python-dotenv | 1.0.0 | Leer `.env` (DEPRECATED, ya no se usa con pydantic-settings) |
-| python-jose | 3.3.0 | JWT tokens |
-| passlib | 1.7.4 | Hash de contraseñas |
-| oracledb | 1.4.1 | **Driver de Oracle** (python-oracledb) |
-| pydantic-settings | 2.1.0 | Leer variables de entorno |
-
----
-
-## 🔗 Endpoints base (ETAPA 1)
-
+### Autenticación (Etapa 3)
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/` | Mensaje de bienvenida |
-| GET | `/health` | Health check (OK si API está viva) |
-| GET | `/docs` | Documentación interactiva Swagger |
-| GET | `/redoc` | Documentación ReDoc |
+| POST | `/api/auth/login` | Login con username + password, retorna JWT |
+
+### CRUD Datos Base — SUPERVISOR (Etapa 4)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET/POST | `/api/programas` | Programas académicos |
+| GET/POST | `/api/asignaturas` | Asignaturas |
+| GET/POST | `/api/periodos` | Períodos académicos |
+| GET/POST | `/api/estudiantes` | Estudiantes |
+| PUT | `/api/estudiantes/{id}` | Editar estudiante |
+| GET/POST | `/api/programas/{id}/planes` | Planes de estudio |
+| GET/POST | `/api/programas/{id}/planes/{sem}/asignaturas` | Asignaturas del plan |
+| GET/POST | `/api/programas/{id}/periodos/{id}/reglas` | Reglas de cobro |
+| GET/POST | `/api/codigos` | Códigos de detalle |
+
+### Gestión de Usuarios — ADMINISTRADOR (Etapa 5)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET/POST | `/api/personas` | Personas (datos civiles) |
+| GET/POST | `/api/usuarios` | Usuarios del sistema |
+| GET/POST | `/api/perfiles` | Perfiles con permisos |
+| GET/POST | `/api/menus` | Menús del sistema |
+
+### Lógica de Cobro — ASISTENTE (Etapa 6)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/asistente/volantes` | Listar volantes |
+| GET | `/api/asistente/volantes/{id}` | Detalle de un volante |
+| POST | `/api/asistente/volantes/individual` | Generar volante individual |
+| POST | `/api/asistente/volantes/masiva` | Generar volantes masivos |
+| GET | `/api/asistente/volantes/{id}/movimientos` | Movimientos de un volante |
+| POST | `/api/asistente/cobros-adicionales` | Agregar cobro (PCAR, PLAB, PEXA) |
+| POST | `/api/asistente/pagos` | Registrar pago |
+| DELETE | `/api/asistente/movimientos/{id}` | Eliminar movimiento |
+
+### Cuenta Corriente (Etapa 7)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/cuenta-corriente/{id_estudiante}` | Detalle completo (VW_CUENTA_CORRIENTE_DETALLE) |
+| GET | `/api/cuenta-corriente/{id_estudiante}/saldo` | Saldo por periodo (VW_SALDO_PERIODO) |
+
+### Reportes (Etapa 8)
+| Método | Ruta | Vista Oracle |
+|--------|------|-------------|
+| GET | `/api/reportes/listado-estudiantes` | VW_LISTADO_ESTUDIANTES |
+| GET | `/api/reportes/ingreso-esperado` | VW_INGRESO_ESPERADO |
+| GET | `/api/reportes/pendientes-pago?id_programa={id}` | VW_PENDIENTES_PAGO |
+| GET | `/api/reportes/ingreso-real` | VW_INGRESO_REAL |
+| GET | `/api/reportes/cartera` | VW_CARTERA |
+| GET | `/api/reportes/consulta-pagos` | VW_CONSULTA_PAGOS |
 
 ---
 
-## 📡 Próximas etapas
+## 🔒 Perfiles y Permisos
 
-### Etapa 2: Conexión a BD
-- `app/services/database.py` → Módulo de conexión a Oracle con oracledb
-- `test_conexion.py` → Script de prueba SELECT 1 FROM DUAL
-
-### Etapa 3: Autenticación
-- `app/routes/auth.py` → POST /api/auth/login
-- `app/schemas/auth.py` → LoginRequest, LoginResponse
-- `app/services/auth.py` → Lógica de validación y generación de JWT
-
-### Etapas 4-8: CRUD y reportes
-- Rutas para cada entidad (programas, estudiantes, volantes, etc.)
-- Servicios para cada operación
-- Esquemas de validación
+| Perfil | Acceso |
+|--------|--------|
+| **ADMINISTRADOR** | Todo el sistema |
+| **SUPERVISOR** | Programas, asignaturas, estudiantes, reglas, códigos, reportes |
+| **ASISTENTE** | Volantes, cobros, pagos, cuenta corriente, reportes |
 
 ---
 
-## 🧪 Verificar que todo funciona
+## ⚙️ Triggers de Oracle (lógica en BD)
 
-Después de levantarlo:
+| Trigger | Función |
+|---------|---------|
+| `TR_CREAR_CUENTA_CORRIENTE` | Crea cuenta al primer volante del estudiante |
+| `TR_CALCULAR_MONTO_VOLANTE` | Calcula monto GLOBAL o por CREDITOS |
+| `TR_RECALCULAR_MONTO_CREDITOS` | Recalcula al agregar/quitar asignaturas |
+| `TR_ACTUALIZAR_ESTADO_VOLANTE` | PENDIENTE → PARCIAL → PAGADO |
+| `TR_VALIDAR_MOVIMIENTO_CUENTA` | Verifica movimiento en cuenta correcta |
+| `TR_RECALCULAR_MONTO_VOLANTE` | Recalcula al insertar cobros adicionales |
+| `TR_BORRAR_VOLANTE_POR_MOVIMIENTO` | Borra volante si se elimina cobro principal |
 
-1. **Health check**:
-   ```bash
-   curl http://localhost:8000/health
-   ```
-   Debe retornar: `{"status":"ok","environment":"development","service":"backend-universidad"}`
-
-2. **Ver documentación Swagger**:
-   Ir a http://localhost:8000/docs en el navegador
-
-3. **Logs del contenedor**:
-   ```bash
-   docker-compose logs -f backend
-   ```
+> **Importante:** El backend NO duplica esta lógica — solo inserta/consulta y deja que Oracle ejecute los triggers.
 
 ---
 
-## 💡 Notas
+## 🧪 Usuarios de prueba
 
-- El backend está configurado con `--reload` para desarrollo, detecta cambios automáticamente
-- CORS está abierto (`allow_origins=["*"]`), en producción especificar dominios exactos
-- Todas las variables sensibles están en `.env`, nunca se hardcodean
-- La BD no se levanta en Docker Compose, ya corre por separado
+| Username | Password | Perfil |
+|----------|----------|--------|
+| `cmendoza` | `password123` | ADMINISTRADOR |
+| `aperez` | `password123` | SUPERVISOR |
+| `ltorres` | `password123` | ASISTENTE |
+
+---
+
+## 💡 Stack Tecnológico
+
+- **Python** + **FastAPI** — Framework web
+- **oracledb** (python-oracledb) — Driver de Oracle (modo thin)
+- **JWT** (python-jose) — Autenticación
+- **Pydantic v2** — Validación de datos
+- **Docker** + **Docker Compose** — Contenedores
+- **Oracle XE** (gvenzl/oracle-xe) — Base de datos
 
