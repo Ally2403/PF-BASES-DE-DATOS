@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reglas de cobro</title>
+    <link rel="stylesheet" href="../css/estilos.css" />
+  </head>
+  <body class="app-body">
+    <aside class="sidebar" id="sidebar-root"></aside>
+    <div class="main-area">
+      <header class="page-header">
+        <h1>Reglas de cobro</h1>
+        <p>Valor global y valor por crédito por programa y periodo (modalidad GLOBAL o CREDITOS).</p>
+      </header>
+
+      <div class="card">
+        <h2>Reglas</h2>
+        <div class="btn-row" style="margin-bottom: 0.75rem">
+          <div class="form-group" style="flex: 1; max-width: 520px; margin: 0">
+            <label for="filtro-regla">Buscar (filtra mientras escribe)</label>
+            <input
+              type="text"
+              id="filtro-regla"
+              placeholder="Modalidad, programa o periodo"
+            />
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-nueva-regla">Nueva regla</button>
+        </div>
+        <p id="lbl-total-regla" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0"></p>
+        <div class="table-wrap mt-1">
+          <table>
+            <thead>
+              <tr>
+                <th>Modalidad</th>
+                <th>Programa</th>
+                <th>Periodo</th>
+                <th class="numeric">Valor global</th>
+                <th class="numeric">Valor crédito</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-reglas"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="rc-modal" aria-hidden="true">
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="rc-modal-title" style="max-width: 640px">
+        <div class="modal-header">
+          <h3 id="rc-modal-title">Nueva regla</h3>
+          <button type="button" class="btn btn-ghost" id="btn-close-rc-modal">Cerrar</button>
+        </div>
+        <form id="form-rc-modal" class="stack" novalidate>
+          <input type="hidden" id="rc-form-mode" value="new" />
+          <div class="form-group">
+            <label for="rc-modalidad">Modalidad</label>
+            <select id="rc-modalidad" required>
+              <option value="">— Elija modalidad —</option>
+              <option value="GLOBAL">GLOBAL</option>
+              <option value="CREDITOS">CREDITOS</option>
+            </select>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="rc-programa">Programa</label>
+              <select id="rc-programa" required></select>
+            </div>
+            <div class="form-group">
+              <label for="rc-periodo">Periodo</label>
+              <select id="rc-periodo" required></select>
+            </div>
+          </div>
+          <div class="form-group" id="wrap-rc-global">
+            <label for="rc-val-global">Valor global (COP)</label>
+            <input type="number" id="rc-val-global" min="0" step="1" />
+          </div>
+          <div class="form-group" id="wrap-rc-cred" style="display: none">
+            <label for="rc-val-cred">Valor por crédito (COP)</label>
+            <input type="number" id="rc-val-cred" min="0" step="1" />
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn btn-secondary">Guardar</button>
+            <button type="button" class="btn btn-ghost" id="btn-cancel-rc-modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="toast-stack"></div>
+    <script>
+      window.__IS_PAGE__ = true;
+    </script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+      auth.initPage({ perm: "GESTIONAR_REGLAS", activeFile: "reglas-cobro.html" });
+    </script>
+    <script src="../js/reglas-cobro.js"></script>
+    <script>
+      if (typeof window.reglasCobroPageReady === "function") {
+        window.reglasCobroPageReady();
+      }
+    </script>
+  </body>
+</html>

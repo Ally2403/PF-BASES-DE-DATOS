@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Programas y planes</title>
+    <link rel="stylesheet" href="../css/estilos.css" />
+  </head>
+  <body class="app-body">
+    <aside class="sidebar" id="sidebar-root"></aside>
+    <div class="main-area">
+      <header class="page-header">
+        <h1>Programas académicos</h1>
+        <p>Administración de facultades y oferta educativa institucional.</p>
+      </header>
+
+      <div class="card">
+        <h2>Programas</h2>
+        <div class="btn-row" style="margin-bottom: 0.75rem">
+          <div class="form-group" style="flex: 1; max-width: 520px; margin: 0">
+            <label for="filtro-prog">Buscar (filtra mientras escribe)</label>
+            <input type="text" id="filtro-prog" placeholder="Nombre del programa" />
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-nuevo-prog">Nuevo programa</button>
+        </div>
+        <p id="lbl-total-prog" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0"></p>
+        <div class="table-wrap mt-1">
+          <table>
+            <thead>
+              <tr>
+                <th>NOMBRE_PROGRAMA</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-programas"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Plan de estudio (por programa)</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0">
+          Seleccione un programa para ver su plan. La vinculación de asignaturas al plan se gestiona
+          desde <strong>Asignaturas (catálogo)</strong>.
+        </p>
+        <div class="grid-2" style="max-width: min(100%, 560px)">
+          <div class="form-group">
+            <label for="sel-prog-plan">Programa</label>
+            <select id="sel-prog-plan"></select>
+          </div>
+          <div class="form-group">
+            <label for="filtro-sem-plan">Filtrar por semestre</label>
+            <select id="filtro-sem-plan">
+              <option value="">Todos los semestres</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row mt-1">
+          <button type="button" class="btn btn-primary" id="btn-add-sem">Agregar semestre</button>
+        </div>
+        <div id="plan-vista-cont"></div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="prog-modal" aria-hidden="true">
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="prog-modal-title">
+        <div class="modal-header">
+          <h3 id="prog-modal-title">Editar programa</h3>
+          <button type="button" class="btn btn-ghost" id="btn-close-prog-modal">Cerrar</button>
+        </div>
+        <form id="form-prog-modal" class="stack">
+          <input type="hidden" id="prog-id" />
+          <div class="form-group">
+            <label for="prog-nombre">NOMBRE_PROGRAMA</label>
+            <input type="text" id="prog-nombre" required maxlength="200" />
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn btn-secondary">Guardar</button>
+            <button type="button" class="btn btn-ghost" id="btn-cancel-prog-modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="sem-modal" aria-hidden="true">
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="sem-modal-title">
+        <div class="modal-header">
+          <h3 id="sem-modal-title">Agregar semestre</h3>
+          <button type="button" class="btn btn-ghost" id="btn-close-sem-modal">Cerrar</button>
+        </div>
+        <form id="form-sem-modal" class="stack" style="max-width: 360px">
+          <div class="form-group">
+            <label for="sem-num">SEMESTRE (1–10)</label>
+            <input type="number" id="sem-num" min="1" max="10" step="1" required />
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn btn-primary">Agregar</button>
+            <button type="button" class="btn btn-ghost" id="btn-cancel-sem-modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="toast-stack"></div>
+    <script>
+      window.__IS_PAGE__ = true;
+    </script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+      auth.initPage({ perm: "GESTIONAR_PROGRAMAS", activeFile: "programas.html" });
+    </script>
+    <script src="../js/programas.js"></script>
+  </body>
+</html>

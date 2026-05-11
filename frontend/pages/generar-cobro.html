@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Generar cobro individual</title>
+    <link rel="stylesheet" href="../css/estilos.css" />
+  </head>
+  <body class="app-body">
+    <aside class="sidebar" id="sidebar-root"></aside>
+    <div class="main-area">
+      <header class="page-header">
+        <h1>Generar cobro individual</h1>
+        <p>Genera el volante principal de matrícula (GLOBAL o CREDITOS).</p>
+      </header>
+
+      <div class="steps">
+        <span class="step-dot on" id="st1">Volante principal</span>
+      </div>
+
+      <div class="card">
+        <h2>Volante principal</h2>
+        <form id="form-paso1" class="stack">
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="gc-per">Período</label>
+              <select id="gc-per" required></select>
+              <small style="display: block; margin-top: 0.35rem; color: var(--text-muted); font-size: 0.8rem">
+                Lista ordenada del período más reciente al más antiguo (AAAA-30, -20, -10).
+              </small>
+            </div>
+            <div class="form-group">
+              <label for="gc-sem">Semestre a cobrar</label>
+              <select id="gc-sem" required>
+                <option value="">— Elija semestre —</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="gc-mod">Modalidad</label>
+              <select id="gc-mod" required>
+                <option value="">— Elija modalidad —</option>
+                <option value="GLOBAL">GLOBAL</option>
+                <option value="CREDITOS">CREDITOS</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="box-global" class="alert alert-info" hidden>
+            <strong>Monto global de la regla:</strong>
+            <span id="gc-monto-global"></span>
+          </div>
+
+          <div id="box-cred" class="card" hidden style="margin: 0; border-style: dashed">
+            <p class="mb-0">
+              Valor por crédito: <strong id="gc-valor-credit"></strong> · Créditos seleccionados:
+              <strong id="gc-creds-sel">0</strong> · <strong>Total matrícula créditos:</strong>
+              <span id="gc-monto-cred"></span>
+            </p>
+            <p style="margin: 0.75rem 0 0; font-weight: 600">Asignaturas del semestre</p>
+            <div id="gc-asig-list" class="check-grid mt-1"></div>
+          </div>
+
+          <div class="gc-est-bubble" aria-labelledby="gc-est-bubble-title">
+            <h3 id="gc-est-bubble-title" class="gc-est-bubble-title">Seleccionar estudiante</h3>
+            <p class="gc-est-bubble-hint">
+              Busque y pulse una fila. Mismo criterio que en la pantalla Estudiantes.
+            </p>
+            <div class="form-group" style="margin-bottom: 0.75rem">
+              <label for="gc-filtro-est">Buscar (filtra mientras escribe)</label>
+              <input
+                type="text"
+                id="gc-filtro-est"
+                autocomplete="off"
+                placeholder="Nombre, apellido, carné, correo o programa"
+              />
+              <input type="hidden" id="gc-est" value="" />
+            </div>
+            <p id="gc-lbl-est" class="gc-est-lbl"></p>
+            <div class="table-wrap mt-1 gc-est-scroll">
+              <table class="table-selectable">
+                <thead>
+                  <tr>
+                    <th>Carné</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Correo</th>
+                    <th>Programa</th>
+                  </tr>
+                </thead>
+                <tbody id="gc-tbl-est"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-gen-paso1" style="margin-bottom: 1rem">
+            Generar volante
+          </button>
+          
+          <div id="gc-msg" class="alert alert-info" hidden role="alert"></div>
+        </form>
+      </div>
+
+
+
+      <div class="card" id="resumen-final" hidden>
+        <h2>Resumen del volante</h2>
+        <div id="res-final-body"></div>
+      </div>
+    </div>
+    <div id="toast-stack"></div>
+    <script>
+      window.__IS_PAGE__ = true;
+    </script>
+    <script src="../js/api.js?v=2"></script>
+    <script src="../js/auth.js?v=2"></script>
+    <script>
+      auth.initPage({ perm: "GENERAR_COBRO_IND", activeFile: "generar-cobro.html" });
+    </script>
+    <script src="../js/generar-cobro.js?v=2"></script>
+  </body>
+</html>

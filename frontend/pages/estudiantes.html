@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Estudiantes</title>
+    <link rel="stylesheet" href="../css/estilos.css" />
+  </head>
+  <body class="app-body">
+    <aside class="sidebar" id="sidebar-root" aria-label="Menú lateral"></aside>
+    <div class="main-area">
+      <header class="page-header">
+        <h1>Estudiantes</h1>
+        <p>Gestión de estudiantes y programa académico.</p>
+      </header>
+
+      <div class="card">
+        <h2>Estudiantes</h2>
+        <div class="btn-row" style="margin-bottom: 0.75rem">
+          <div class="form-group" style="flex: 1; max-width: 520px; margin: 0">
+            <label for="filtro-est">Buscar (filtra mientras escribe)</label>
+            <input type="text" id="filtro-est" placeholder="Nombre, apellido, carné o correo" />
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-nuevo-est">Nuevo estudiante</button>
+        </div>
+        <p id="lbl-total-est" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0"></p>
+        <div class="table-wrap mt-1">
+          <table>
+            <thead>
+              <tr>
+                <th>Carné</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Programa</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="edit-est-modal" aria-hidden="true">
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="edit-est-title">
+        <div class="modal-header">
+          <h3 id="edit-est-title">Editar estudiante</h3>
+          <button type="button" class="btn btn-ghost" id="btn-close-modal">Cerrar</button>
+        </div>
+        <form id="form-est-edit" class="stack">
+          <input type="hidden" id="edit-id_estudiante" />
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="edit-carnet">Carné</label>
+              <input type="text" id="edit-carnet" required />
+            </div>
+            <div class="form-group">
+              <label for="edit-id_programa">Programa</label>
+              <select id="edit-id_programa" required></select>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="edit-nombre">Nombre</label>
+              <input type="text" id="edit-nombre" required />
+            </div>
+            <div class="form-group">
+              <label for="edit-apellido">Apellido</label>
+              <input type="text" id="edit-apellido" required />
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="edit-telefono">Teléfono</label>
+              <input type="tel" id="edit-telefono" />
+            </div>
+            <div class="form-group">
+              <label for="edit-correo">Correo</label>
+              <input type="email" id="edit-correo" required />
+            </div>
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn btn-secondary">Guardar cambios</button>
+            <button type="button" class="btn btn-ghost" id="btn-cancel-modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="toast-stack"></div>
+    <script>
+      window.__IS_PAGE__ = true;
+    </script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+      auth.initPage({ perm: "GESTIONAR_ESTUDIANTES", activeFile: "estudiantes.html" });
+    </script>
+    <script src="../js/estudiantes.js"></script>
+  </body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Códigos de detalle</title>
+    <link rel="stylesheet" href="../css/estilos.css" />
+  </head>
+  <body class="app-body">
+    <aside class="sidebar" id="sidebar-root"></aside>
+    <div class="main-area">
+      <header class="page-header">
+        <h1>Códigos de detalle</h1>
+        <p>Cobros y pagos aplicables en la cuenta corriente.</p>
+      </header>
+
+      <div class="card">
+        <h2>Códigos</h2>
+        <div class="btn-row" style="margin-bottom: 0.75rem">
+          <div class="form-group" style="flex: 1; max-width: 520px; margin: 0">
+            <label for="filtro-cod">Buscar (filtra mientras escribe)</label>
+            <input
+              type="text"
+              id="filtro-cod"
+              placeholder="Código, grupo o descripción"
+            />
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-nuevo-cod">Nuevo código</button>
+        </div>
+        <p id="lbl-total-cod" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0"></p>
+        <div class="table-wrap mt-1">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Grupo</th>
+                <th>Descripción</th>
+                <th>Valor</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-codigos"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="cd-modal" aria-hidden="true">
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="cd-modal-title" style="max-width: 560px">
+        <div class="modal-header">
+          <h3 id="cd-modal-title">Nuevo código</h3>
+          <button type="button" class="btn btn-ghost" id="btn-close-cd-modal">Cerrar</button>
+        </div>
+        <form id="form-cd-modal" class="stack" novalidate>
+          <input type="hidden" id="cd-form-mode" value="new" />
+          <div class="form-group">
+            <label for="cd-codigo">CÓDIGO_DETALLE</label>
+            <input type="text" id="cd-codigo" required maxlength="20" autocomplete="off" />
+          </div>
+          <div class="form-group">
+            <label for="cd-grupo">Grupo</label>
+            <select id="cd-grupo" required>
+              <option value="">— Elija grupo —</option>
+              <option value="COBRO">COBRO</option>
+              <option value="PAGO">PAGO</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="cd-desc">Descripción</label>
+            <input type="text" id="cd-desc" required maxlength="200" />
+          </div>
+          <div class="form-group">
+            <label for="cd-valor">Valor (opcional)</label>
+            <input type="number" id="cd-valor" min="0" step="1" placeholder="Ej: 85000" />
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn btn-secondary">Guardar</button>
+            <button type="button" class="btn btn-ghost" id="btn-cancel-cd-modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="toast-stack"></div>
+    <script>
+      window.__IS_PAGE__ = true;
+    </script>
+    <script src="../js/api.js?v=2"></script>
+    <script src="../js/auth.js?v=2"></script>
+    <script>
+      auth.initPage({ perm: "GESTIONAR_CODIGOS", activeFile: "codigos-detalle.html" });
+    </script>
+    <script src="../js/codigos-detalle.js?v=2"></script>
+    <script>
+      if (typeof window.codigosDetallePageReady === "function") {
+        window.codigosDetallePageReady();
+      }
+    </script>
+  </body>
+</html>

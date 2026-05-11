@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ingreso · Gestión Estudiantil</title>
+    <link rel="stylesheet" href="css/estilos.css" />
+  </head>
+  <body class="login-page">
+    <main class="login-card" aria-labelledby="tit-login">
+      <p class="login-brand">Universidad · IST7111</p>
+      <h1 id="tit-login">Gestión Estudiantil</h1>
+      <p class="subtitle">Inicie sesión con su usuario institucional.</p>
+      <div id="login-alert" class="alert alert-error" hidden role="alert"></div>
+      <form id="form-login" class="stack">
+        <div class="form-group">
+          <label for="username">Usuario</label>
+          <input type="text" id="username" name="username" autocomplete="username" required />
+        </div>
+        <div class="form-group">
+          <label for="contrasena">Contraseña</label>
+          <input type="password" id="contrasena" name="contrasena" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem;">Entrar</button>
+      </form>
+      <p class="subtitle mt-1" style="margin-top:1.5rem;margin-bottom:0;">
+        Demo: cmendoza, aperez, ltorres — contraseña <code style="font-size:0.8em;color:var(--accent);">Admin123!</code>
+      </p>
+    </main>
+    <div id="toast-stack"></div>
+    <script>window.__IS_PAGE__ = false;</script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      (function () {
+        if (auth.getSession()) {
+          window.location.href = "dashboard.html";
+          return;
+        }
+        document.getElementById("form-login").addEventListener("submit", async function (ev) {
+          ev.preventDefault();
+          const alert = document.getElementById("login-alert");
+          alert.hidden = true;
+          const username = document.getElementById("username").value.trim();
+          const contrasena = document.getElementById("contrasena").value;
+          try {
+            const u = await api.login({ username: username, contrasena: contrasena });
+            auth.setSession(u);
+            auth.showToast("Bienvenido, " + u.username);
+            window.location.href = "dashboard.html";
+          } catch (e) {
+            alert.textContent = e.message || "Error al iniciar sesión";
+            alert.hidden = false;
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Periodos académicos</title>
+    <link rel="stylesheet" href="../css/estilos.css" />
+  </head>
+  <body class="app-body">
+    <aside class="sidebar" id="sidebar-root"></aside>
+    <div class="main-area">
+      <header class="page-header">
+        <h1>Periodos académicos</h1>
+        <p>Calendarios de cobro por ciclo lectivo.</p>
+      </header>
+
+      <div class="card">
+        <h2>Periodos</h2>
+        <div class="btn-row" style="margin-bottom: 0.75rem">
+          <div class="form-group" style="flex: 1; max-width: 520px; margin: 0">
+            <label for="filtro-per">Buscar (filtra mientras escribe)</label>
+            <input type="text" id="filtro-per" placeholder="Nombre del periodo (ej. 2026-20)" />
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-nuevo-per">Nuevo periodo</button>
+        </div>
+        <p id="lbl-total-per" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0"></p>
+        <div class="table-wrap mt-1">
+          <table>
+            <thead>
+              <tr>
+                <th>NOMBRE</th>
+                <th>INICIO</th>
+                <th>FIN</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-periodos"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="per-modal" aria-hidden="true">
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="per-modal-title">
+        <div class="modal-header">
+          <h3 id="per-modal-title">Editar periodo</h3>
+          <button type="button" class="btn btn-ghost" id="btn-close-per-modal">Cerrar</button>
+        </div>
+        <form id="form-per-modal" class="stack" style="max-width: 720px" novalidate>
+          <input type="hidden" id="per-id" />
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="per-nombre">NOMBRE_PERIODO (ej. 2026-20)</label>
+              <input type="text" id="per-nombre" required maxlength="20" />
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="per-inicio">FECHA_INICIO</label>
+              <input type="date" id="per-inicio" required />
+            </div>
+            <div class="form-group">
+              <label for="per-fin">FECHA_FIN</label>
+              <input type="date" id="per-fin" required />
+            </div>
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn btn-secondary">Guardar</button>
+            <button type="button" class="btn btn-ghost" id="btn-cancel-per-modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="toast-stack"></div>
+    <script>
+      window.__IS_PAGE__ = true;
+    </script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+      auth.initPage({
+        perm: ["GESTIONAR_PROGRAMAS", "GESTIONAR_REGLAS"],
+        activeFile: "periodos.html",
+      });
+    </script>
+    <script src="../js/periodos.js"></script>
+    <script>
+      if (typeof window.periodosPageReady !== "function") {
+        alert("No se cargó periodos.js (revisa la consola o la ruta ../js/periodos.js).");
+      } else {
+        window.periodosPageReady();
+      }
+    </script>
+  </body>
+</html>

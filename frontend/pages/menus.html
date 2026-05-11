@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Menús y Permisos | Gestión Estudiantil</title>
+    <link rel="stylesheet" href="../css/estilos.css" />
+  </head>
+  <body class="app-body">
+    <aside class="sidebar" id="sidebar-root"></aside>
+    <div class="main-area">
+      <header class="page-header">
+        <h1>Configuración de Menús y Permisos</h1>
+        <p>Administre la estructura de navegación y defina operaciones permitidas.</p>
+      </header>
+
+      <div class="grid-2">
+        <div class="card">
+          <h2>Menús (Secciones)</h2>
+          <form id="form-menu" class="stack mb-1">
+            <div class="form-group">
+              <label>Nombre de la función</label>
+              <input type="text" id="m-nombre" placeholder="ej. Gestión de Estudiantes" required />
+            </div>
+            <div class="form-group">
+              <label>URL / Archivo</label>
+              <input type="text" id="m-url" placeholder="ej. estudiantes.html" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Registrar Menú</button>
+          </form>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>URL</th>
+                  <th class="text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-menus"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Permisos (Operaciones)</h2>
+          <form id="form-permiso" class="stack mb-1">
+            <div class="form-group">
+              <label>Nombre Operación</label>
+              <input type="text" id="p-nombre" placeholder="ej. ELIMINAR_ESTUDIANTE" required />
+            </div>
+            <div class="form-group">
+              <label>Menú asociado</label>
+              <select id="p-menu-sel" required></select>
+            </div>
+            <button type="submit" class="btn btn-secondary">Crear Permiso</button>
+          </form>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Operación</th>
+                  <th>Menú</th>
+                  <th class="text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-permisos"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast-stack"></div>
+    <script>window.__IS_PAGE__ = true;</script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+      auth.initPage({ perm: "GESTIONAR_MENUS", activeFile: "menus.html" });
+
+      async function cargarMenus() {
+        const ms = await api.getMenus();
+        const tb = document.getElementById("tbl-menus");
+        const sel = document.getElementById("p-menu-sel");
+        tb.innerHTML = "";
+        sel.innerHTML = '<option value="">— Elija menú —</option>';
+        
+        ms.forEach(m => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><strong>${m.nombre_funcion}</strong></td>
+            <td><code>${m.url_acceso}</code></td>
+            <td class="text-center">
+              <button class="btn btn-small btn-danger" onclick="eliminarMenu(${m.id_menu})">🗑️</button>
+            </td>
+          `;
+          tb.appendChild(tr);
+
+          const opt = document.createElement("option");
+          opt.value = m.id_menu;
+          opt.textContent = m.nombre_funcion;
+          sel.appendChild(opt);
+        });
+      }
+
+      async function cargarPermisos() {
+        const ps = await api.getPermisos();
+        const ms = await api.getMenus();
+        const tb = document.getElementById("tbl-permisos");
+        tb.innerHTML = "";
+        
+        ps.forEach(p => {
+          const m = ms.find(x => x.id_menu === p.id_menu);
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><code>${p.nombre_operacion}</code></td>
+            <td>${m ? m.nombre_funcion : '—'}</td>
+            <td class="text-center">
+              <button class="btn btn-small btn-danger" onclick="eliminarPermiso(${p.id_permiso})">🗑️</button>
+            </td>
+          `;
+          tb.appendChild(tr);
+        });
+      }
+
+      window.eliminarMenu = async (id) => {
+        if (!confirm("¿Eliminar este menú? Esto puede afectar la navegación.")) return;
+        await api.deleteMenu(id);
+        auth.showToast("Menú eliminado.");
+        cargarMenus();
+      };
+
+      window.eliminarPermiso = async (id) => {
+        if (!confirm("¿Eliminar este permiso?")) return;
+        await api.deletePermiso(id);
+        auth.showToast("Permiso eliminado.");
+        cargarPermisos();
+      };
+
+      document.getElementById("form-menu").onsubmit = async (e) => {
+        e.preventDefault();
+        await api.postMenu({
+          nombre_funcion: document.getElementById("m-nombre").value,
+          url_acceso: document.getElementById("m-url").value
+        });
+        auth.showToast("Menú creado.");
+        e.target.reset();
+        cargarMenus();
+      };
+
+      document.getElementById("form-permiso").onsubmit = async (e) => {
+        e.preventDefault();
+        await api.postPermiso({
+          nombre_operacion: document.getElementById("p-nombre").value,
+          id_menu: Number(document.getElementById("p-menu-sel").value)
+        });
+        auth.showToast("Permiso creado.");
+        e.target.reset();
+        cargarPermisos();
+      };
+
+      cargarMenus().then(cargarPermisos);
+    </script>
+  </body>
+</html>
