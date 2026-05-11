@@ -844,45 +844,46 @@ END TR_VALIDAR_MOVIMIENTO_CUENTA;
 CREATE OR REPLACE TRIGGER TR_RECALCULAR_MONTO_VOLANTE
 FOR INSERT ON MOVIMIENTO
 COMPOUND TRIGGER
+-- Acumula IDs de volantes con cobros adicionales (PCAR, PLAB, PEXA, etc.)
+-- para recalcular MONTO_TOTAL en AFTER STATEMENT sin riesgo de ORA-04091.
 
-    -- Tabla local para acumular IDs de volantes a procesar
-    TYPE t_volante_ids IS TABLE OF MOVIMIENTO.ID_VOLANTE%TYPE;
-    v_volante_ids t_volante_ids := t_volante_ids();
+    TYPE t_volantes IS TABLE OF NUMBER INDEX BY PLS_INTEGER;
+    v_volantes  t_volantes;
+    v_idx       PLS_INTEGER := 0;
 
-    -- Sección: Cada fila insertada
     AFTER EACH ROW IS
+        v_duplicado BOOLEAN := FALSE;
     BEGIN
         IF :NEW.ID_VOLANTE IS NOT NULL THEN
-            -- Solo acumular volantes nuevos (evitar duplicados)
-            IF v_volante_ids.COUNT = 0 OR
-               :NEW.ID_VOLANTE NOT IN (SELECT * FROM TABLE(v_volante_ids)) THEN
-                v_volante_ids.EXTEND;
-                v_volante_ids(v_volante_ids.LAST) := :NEW.ID_VOLANTE;
+            -- Verificar si el volante ya esta en la coleccion
+            FOR i IN 1 .. v_idx LOOP
+                IF v_volantes(i) = :NEW.ID_VOLANTE THEN
+                    v_duplicado := TRUE;
+                    EXIT;
+                END IF;
+            END LOOP;
+            IF NOT v_duplicado THEN
+                v_idx := v_idx + 1;
+                v_volantes(v_idx) := :NEW.ID_VOLANTE;
             END IF;
         END IF;
     END AFTER EACH ROW;
 
-    -- Sección: Después de todas las inserciones
     AFTER STATEMENT IS
+        v_nuevo_monto  NUMBER(15, 2);
+        v_grupo        CODIGO_DETALLE.GRUPO%TYPE;
     BEGIN
-        -- Ahora que la mutación terminó, podemos hacer SELECT
-        FOR i IN 1 .. v_volante_ids.COUNT LOOP
-            DECLARE
-                v_id_volante    MOVIMIENTO.ID_VOLANTE%TYPE := v_volante_ids(i);
-                v_nuevo_monto   NUMBER(15, 2);
-            BEGIN
-                -- Calcular suma de COBROs del volante
-                SELECT NVL(SUM(m.VALOR), 0) INTO v_nuevo_monto
-                FROM   MOVIMIENTO m
-                JOIN   CODIGO_DETALLE cd ON cd.CODIGO_DETALLE = m.CODIGO_DETALLE
-                WHERE  m.ID_VOLANTE = v_id_volante
-                  AND  cd.GRUPO = 'COBRO';
+        FOR i IN 1 .. v_idx LOOP
+            -- Solo recalcular si hay al menos un COBRO en el volante
+            SELECT NVL(SUM(m.VALOR), 0) INTO v_nuevo_monto
+            FROM   MOVIMIENTO m
+            JOIN   CODIGO_DETALLE cd ON cd.CODIGO_DETALLE = m.CODIGO_DETALLE
+            WHERE  m.ID_VOLANTE = v_volantes(i)
+              AND  cd.GRUPO     = 'COBRO';
 
-                -- Actualizar MONTO_TOTAL del volante
-                UPDATE VOLANTE_MATRICULA
-                SET    MONTO_TOTAL = v_nuevo_monto
-                WHERE  ID_VOLANTE = v_id_volante;
-            END;
+            UPDATE VOLANTE_MATRICULA
+            SET    MONTO_TOTAL = v_nuevo_monto
+            WHERE  ID_VOLANTE  = v_volantes(i);
         END LOOP;
     END AFTER STATEMENT;
 
