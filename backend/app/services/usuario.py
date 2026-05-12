@@ -14,8 +14,13 @@ def get_all_usuarios() -> List[Dict[str, Any]]:
     """Obtiene todos los usuarios."""
     try:
         query = """
-            SELECT ID_USER, USERNAME, ID_PERFIL, CEDULA
-            FROM USUARIO ORDER BY ID_USER
+            SELECT u.ID_USER, u.USERNAME, u.ID_PERFIL, u.CEDULA,
+                   p.NOMBRE, p.APELLIDO, p.CORREO, p.TELEFONO,
+                   pf.NOMBRE_PERFIL
+            FROM USUARIO u
+            LEFT JOIN PERSONA p  ON p.CEDULA     = u.CEDULA
+            LEFT JOIN PERFIL  pf ON pf.ID_PERFIL = u.ID_PERFIL
+            ORDER BY u.ID_USER
         """
         results = execute_query(query)
         logger.info(f"✓ Se obtuvieron {len(results)} usuarios")
@@ -29,8 +34,13 @@ def get_usuario_by_id(id_user: int) -> Optional[Dict[str, Any]]:
     """Obtiene un usuario por ID."""
     try:
         query = """
-            SELECT ID_USER, USERNAME, ID_PERFIL, CEDULA
-            FROM USUARIO WHERE ID_USER = :id
+            SELECT u.ID_USER, u.USERNAME, u.ID_PERFIL, u.CEDULA,
+                   p.NOMBRE, p.APELLIDO, p.CORREO, p.TELEFONO,
+                   pf.NOMBRE_PERFIL
+            FROM USUARIO u
+            LEFT JOIN PERSONA p  ON p.CEDULA     = u.CEDULA
+            LEFT JOIN PERFIL  pf ON pf.ID_PERFIL = u.ID_PERFIL
+            WHERE u.ID_USER = :id
         """
         results = execute_query(query, {"id": id_user})
         return results[0] if results else None
@@ -43,8 +53,13 @@ def get_usuario_by_username(username: str) -> Optional[Dict[str, Any]]:
     """Obtiene un usuario por username."""
     try:
         query = """
-            SELECT ID_USER, USERNAME, ID_PERFIL, CEDULA
-            FROM USUARIO WHERE USERNAME = :user
+            SELECT u.ID_USER, u.USERNAME, u.ID_PERFIL, u.CEDULA,
+                   p.NOMBRE, p.APELLIDO, p.CORREO, p.TELEFONO,
+                   pf.NOMBRE_PERFIL
+            FROM USUARIO u
+            LEFT JOIN PERSONA p  ON p.CEDULA     = u.CEDULA
+            LEFT JOIN PERFIL  pf ON pf.ID_PERFIL = u.ID_PERFIL
+            WHERE u.USERNAME = :user
         """
         results = execute_query(query, {"user": username})
         return results[0] if results else None
@@ -76,12 +91,7 @@ def create_usuario(username: str, contrasena: str, id_perfil: int, cedula: int) 
         })
         
         logger.info(f"✓ Usuario creado: {username}")
-        return {
-            "ID_USER": new_id,
-            "USERNAME": username,
-            "ID_PERFIL": id_perfil,
-            "CEDULA": cedula
-        }
+        return get_usuario_by_id(new_id)
     except Exception as e:
         logger.error(f"✗ Error al crear usuario: {e}")
         raise

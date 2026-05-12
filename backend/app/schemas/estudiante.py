@@ -35,6 +35,7 @@ class EstudianteResponse(BaseModel):
     telefono: Optional[str] = Field(None, validation_alias="TELEFONO", description="Teléfono")
     correo: Optional[str] = Field(None, validation_alias="CORREO", description="Email")
     id_programa: int = Field(..., validation_alias="ID_PROGRAMA", description="ID Programa")
+    nombre_programa: Optional[str] = Field(None, validation_alias="NOMBRE_PROGRAMA", description="Nombre del programa")
 
 
 class EstudianteListResponse(BaseModel):

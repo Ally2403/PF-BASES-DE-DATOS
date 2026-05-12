@@ -13,7 +13,7 @@ class VolanteCreate(BaseModel):
     id_periodo: int = Field(..., description="ID del período académico")
     id_programa: int = Field(..., description="ID del programa")
     modalidad: str = Field(..., description="GLOBAL o CREDITOS")
-    semestre_que_cobra: int = Field(..., ge=1, le=10, description="Semestre a cobrar (1-10)")
+    semestre_que_cobra: int = Field(default=1, ge=1, le=10, description="Semestre a cobrar (1-10)")
     tipo_generacion: str = Field(default="INDIVIDUAL", description="INDIVIDUAL o MASIVA")
 
 

@@ -143,7 +143,7 @@
     }
   }
 
-  function pintarPlanVista() {
+  async function pintarPlanVista() {
     var pid = programaSeleccionadoId();
     var wrap = $("plan-vista-cont");
     if (!pid) {
@@ -152,7 +152,7 @@
       return;
     }
     var filtroSem = $("filtro-sem-plan").value;
-    var bloques = api.getPlanPorProgramaMock(pid);
+    var bloques = await api.getPlanPorPrograma(pid);
     var nom = $("sel-prog-plan").selectedOptions[0]
       ? $("sel-prog-plan").selectedOptions[0].textContent
       : "";
@@ -235,8 +235,12 @@
       if (btn.classList.contains("btn-del-prog")) eliminarPrograma(id);
     });
 
-    $("sel-prog-plan").addEventListener("change", pintarPlanVista);
-    $("filtro-sem-plan").addEventListener("change", pintarPlanVista);
+    $("sel-prog-plan").addEventListener("change", function () {
+      void pintarPlanVista();
+    });
+    $("filtro-sem-plan").addEventListener("change", function () {
+      void pintarPlanVista();
+    });
 
     $("btn-add-sem").addEventListener("click", function () {
       var pid = programaSeleccionadoId();

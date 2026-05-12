@@ -5,7 +5,7 @@ main.py — Punto de entrada de la aplicación FastAPI
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from app.config import settings
 from app.routes import auth, supervisor, administrador, asistente
 from app.routes import cuenta_corriente, reportes
@@ -103,15 +103,8 @@ async def health_check():
 
 @app.get("/", tags=["Root"], include_in_schema=False)
 async def root():
-    """
-    Redirigir a documentación o frontend.
-    """
-    return {
-        "message": "API de Cuenta Corriente del Estudiante",
-        "docs": "/docs",
-        "frontend": "/frontend/index.html",
-        "version": "1.0.0"
-    }
+    """Redirige al login."""
+    return RedirectResponse(url="/login.html")
 
 # =============================================
 # RUTAS REGISTRADAS:

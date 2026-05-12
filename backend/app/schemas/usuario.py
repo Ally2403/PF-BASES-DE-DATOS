@@ -28,6 +28,11 @@ class UsuarioResponse(BaseModel):
     username: str = Field(..., validation_alias="USERNAME", description="Usuario")
     id_perfil: int = Field(..., validation_alias="ID_PERFIL", description="ID Perfil")
     cedula: int = Field(..., validation_alias="CEDULA", description="Cédula")
+    nombre: Optional[str] = Field(None, validation_alias="NOMBRE", description="Nombre")
+    apellido: Optional[str] = Field(None, validation_alias="APELLIDO", description="Apellido")
+    correo: Optional[str] = Field(None, validation_alias="CORREO", description="Email")
+    telefono: Optional[str] = Field(None, validation_alias="TELEFONO", description="Teléfono")
+    nombre_perfil: Optional[str] = Field(None, validation_alias="NOMBRE_PERFIL", description="Nombre del perfil")
 
 
 class UsuarioDetailResponse(BaseModel):

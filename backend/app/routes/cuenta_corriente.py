@@ -12,6 +12,7 @@ from app.schemas.cuenta_corriente import (
     SaldoPeriodoResponse, SaldoPeriodoListResponse
 )
 from app.services import cuenta_corriente as cc_service
+from app.services import movimiento as movimiento_service
 from app.services.permissions import require_perfil
 from typing import Dict, Any
 import logging
@@ -63,4 +64,22 @@ async def obtener_saldo_periodo(
         }
     except Exception as e:
         logger.error(f"✗ Error al obtener saldo: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/movimientos/{id_mov}")
+async def eliminar_movimiento(
+    id_mov: int,
+    perfil_info: Dict[str, Any] = Depends(require_perfil(PERMISOS))
+):
+    """Elimina un movimiento de la cuenta corriente."""
+    try:
+        eliminado = movimiento_service.eliminar_movimiento(id_mov)
+        if not eliminado:
+            raise HTTPException(status_code=404, detail=f"Movimiento {id_mov} no encontrado")
+        return {"success": True, "message": f"Movimiento {id_mov} eliminado"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"✗ Error al eliminar movimiento: {e}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))

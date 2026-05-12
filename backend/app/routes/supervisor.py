@@ -41,7 +41,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["SUPERVISOR"])
-PERMISOS = ["SUPERVISOR", "ADMINISTRADOR"]
+PERMISOS = ["SUPERVISOR", "ADMINISTRADOR", "ASISTENTE"]
 
 
 # ==========================================

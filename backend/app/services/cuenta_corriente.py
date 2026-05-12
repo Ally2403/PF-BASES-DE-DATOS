@@ -8,6 +8,7 @@ Usa directamente las vistas de Oracle:
 
 from app.services.database import execute_query
 from typing import List, Dict, Any
+from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
@@ -21,12 +22,16 @@ def get_cuenta_corriente_detalle(id_estudiante: int) -> List[Dict[str, Any]]:
             SELECT ID_ESTUDIANTE, CARNET, NOMBRE_COMPLETO, NOMBRE_PROGRAMA,
                    NOMBRE_PERIODO, ID_MOV, FECHA, CODIGO_DETALLE,
                    DESCRIPCION_MOVIMIENTO, GRUPO, DEBITO, CREDITO,
-                   SALDO_ACUMULADO, NOTA
+                   SALDO_ACUMULADO
             FROM VW_CUENTA_CORRIENTE_DETALLE
             WHERE ID_ESTUDIANTE = :id_est
             ORDER BY NOMBRE_PERIODO, FECHA, ID_MOV
         """
         results = execute_query(query, {"id_est": id_estudiante})
+        for row in results:
+            fecha = row.get("FECHA")
+            if isinstance(fecha, datetime):
+                row["FECHA"] = fecha.date()
         logger.info(f"✓ Cuenta corriente: {len(results)} movimientos para estudiante {id_estudiante}")
         return results
     except Exception as e:
