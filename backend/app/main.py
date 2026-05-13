@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.exceptions import RequestValidationError
 from app.config import settings
 from app.routes import auth, supervisor, administrador, asistente
 from app.routes import cuenta_corriente, reportes
@@ -44,6 +45,20 @@ app.add_middleware(
 # =============================================
 # MANEJO GLOBAL DE ERRORES (Etapa 9)
 # =============================================
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Convierte errores de validación Pydantic en mensajes legibles."""
+    errors = exc.errors()
+    logger.warning(f"✗ Error de validación en {request.method} {request.url}: {errors}")
+    mensajes = []
+    for err in errors:
+        campo = " → ".join(str(l) for l in err.get("loc", []))
+        tipo = err.get("type", "")
+        msg = err.get("msg", "valor inválido")
+        mensajes.append(f"[{campo}] {msg} (tipo: {tipo})")
+    detalle = "; ".join(mensajes) if mensajes else "Datos inválidos"
+    return JSONResponse(status_code=422, content={"detail": detalle})
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Captura excepciones no manejadas y retorna JSON consistente."""

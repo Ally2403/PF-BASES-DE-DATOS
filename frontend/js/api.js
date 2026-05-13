@@ -640,7 +640,8 @@ async function fetchJson(path, opts = {}) {
     data = { error: text || res.statusText };
   }
   if (!res.ok) {
-    const err = new Error((data && data.error) || res.statusText || "Error HTTP");
+    const msg = (data && (data.detail || data.error || data.message)) || res.statusText || "Error HTTP";
+    const err = new Error(msg);
     err.status = res.status;
     err.body = data;
     throw err;
@@ -710,7 +711,8 @@ async function getEstudiante(id) {
     if (!e) throw new Error("Estudiante no encontrado");
     return e;
   }
-  return fetchJson(`/api/estudiantes/${id}`);
+  const raw = await fetchJson(`/api/estudiantes/${id}`);
+  return raw && raw.data ? raw.data : raw;
 }
 
 async function postEstudiante(body) {
@@ -776,7 +778,12 @@ async function getProgramas(params = {}) {
     return list;
   }
   const raw = await fetchJson(q ? `/api/programas?${q}` : "/api/programas");
-  return normalizarListaSimple(raw);
+  let list = normalizarListaSimple(raw);
+  if (params.id_programa != null && String(params.id_programa).trim() !== "") {
+    const filterId = Number(params.id_programa);
+    list = list.filter((p) => Number(p.id_programa) === filterId);
+  }
+  return list;
 }
 
 async function postPrograma(body) {
@@ -1009,7 +1016,7 @@ async function deletePlanEstudioAsignatura(id_programa, semestre, id_asignatura)
     _mockStore.asignaturas_por_semestre[k] = arr.filter((x) => Number(x.id_asignatura) !== aid);
     return { ok: true };
   }
-  throw new Error("Quitar asignaturas del plan no está habilitado en este backend.");
+  return fetchJson(`/api/programas/${pid}/planes/${sem}/asignaturas/${aid}`, { method: "DELETE" });
 }
 
 async function getPeriodos(params = {}) {
@@ -1199,7 +1206,14 @@ async function putReglaCobro(id_programa, id_periodo, modalidad, body) {
     }
     return _mockStore.reglas_cobro[i];
   }
-  throw new Error("Actualizar reglas no está habilitado en este backend.");
+  const mod = String(modalidad || "").toUpperCase();
+  const payload = {};
+  if (body.valorglobal != null) payload.valor_global = Number(body.valorglobal);
+  if (body.valorcredito != null) payload.valor_credito = Number(body.valorcredito);
+  return fetchJson(`/api/programas/${id_programa}/periodos/${id_periodo}/reglas/${encodeURIComponent(mod)}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
 }
 
 async function deleteReglaCobro(id_programa, id_periodo, modalidad) {
@@ -1210,7 +1224,10 @@ async function deleteReglaCobro(id_programa, id_periodo, modalidad) {
     _mockStore.reglas_cobro.splice(i, 1);
     return { ok: true };
   }
-  throw new Error("Eliminar reglas no está habilitado en este backend.");
+  const mod = String(modalidad || "").toUpperCase();
+  return fetchJson(`/api/programas/${id_programa}/periodos/${id_periodo}/reglas/${encodeURIComponent(mod)}`, {
+    method: "DELETE",
+  });
 }
 
 function codigoDetalleEnUsoEnMock(cod) {
@@ -1299,7 +1316,7 @@ async function deleteCodigoDetalle(codigo) {
     _mockStore.codigos_detalle.splice(i, 1);
     return { ok: true };
   }
-  return fetchJson(`/api/codigos-detalle/${encodeURIComponent(key)}`, { method: "DELETE" });
+  return fetchJson(`/api/codigos/${encodeURIComponent(key)}`, { method: "DELETE" });
 }
 
 async function getAsignaturas(params = {}) {
@@ -1739,6 +1756,7 @@ async function postPago(body) {
       medio_pago: body.medio_pago,
       valor: body.valor_pagado,
       referencia: body.referencia || null,
+      codigo_detalle: body.codigo_detalle || "MPAG",
     }),
   });
 }
@@ -2101,13 +2119,21 @@ async function postPerfilPermiso(idPerfil, idPermiso) {
   return fetchJson(`/api/perfiles/${idPerfil}/permisos/${idPermiso}`, { method: "POST" });
 }
 
+async function deletePerfilPermiso(idPerfil, idPermiso) {
+  if (USAR_MOCK) {
+    ensureMockStore();
+    return { ok: true };
+  }
+  return fetchJson(`/api/perfiles/${idPerfil}/permisos/${idPermiso}`, { method: "DELETE" });
+}
+
 async function getPermisos() {
   if (USAR_MOCK) {
     ensureMockStore();
     return [...(_mockStore.permisos_catalogo?.length ? _mockStore.permisos_catalogo : [])];
   }
   try {
-    const raw = await fetchJson("/api/administrador/permisos");
+    const raw = await fetchJson("/api/permisos");
     return normalizarListaSimple(raw);
   } catch (e) {
     return [];
@@ -2192,6 +2218,7 @@ window.api = {
   postPermiso,
   deletePermiso,
   postPerfilPermiso,
+  deletePerfilPermiso,
   getVolantes,
   getCobrosAdicionalesDisponibles() {
     ensureMockStore();

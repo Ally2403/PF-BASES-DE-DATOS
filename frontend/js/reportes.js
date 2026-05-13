@@ -82,10 +82,8 @@
         esc(r.modalidad) +
         "</td><td class='numeric'>" +
         COP.format(r.monto_total) +
-        "</td><td><span class='badge badge-" +
-        String(r.estado).toLowerCase() +
-        "'>" +
-        esc(r.estado) +
+        "</td><td><span class='badge badge-" + (r.estado || 'PENDIENTE').toLowerCase() + "'>" +
+        esc(r.estado || 'PENDIENTE') +
         "</span></td>";
       tb.appendChild(tr);
     });
@@ -113,7 +111,7 @@
   async function run3() {
     const prog = $("r3-prog").value;
     if (!prog) {
-      auth.showToast("Seleccione un programa obligatorio.", "error");
+      auth.showAlert("Debe seleccionar un <strong>programa académico</strong> antes de generar este reporte.", "Programa obligatorio");
       return;
     }
     const per = $("r3-per").value;

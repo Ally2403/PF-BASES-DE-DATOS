@@ -3,7 +3,7 @@ schemas/volante.py — Esquemas Pydantic para VOLANTE_MATRICULA
 """
 
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional
+from typing import Optional, List
 from datetime import date, datetime
 
 
@@ -11,10 +11,11 @@ class VolanteCreate(BaseModel):
     """Datos para crear un volante individual o masivo."""
     id_estudiante: Optional[int] = Field(None, description="ID del estudiante (para individual)")
     id_periodo: int = Field(..., description="ID del período académico")
-    id_programa: int = Field(..., description="ID del programa")
+    id_programa: Optional[int] = Field(None, description="ID del programa (derivado del estudiante si no se envía)")
     modalidad: str = Field(..., description="GLOBAL o CREDITOS")
     semestre_que_cobra: int = Field(default=1, ge=1, le=10, description="Semestre a cobrar (1-10)")
     tipo_generacion: str = Field(default="INDIVIDUAL", description="INDIVIDUAL o MASIVA")
+    asignaturas: Optional[List[int]] = Field(default=[], description="IDs de asignaturas seleccionadas (solo para modalidad CREDITOS)")
 
 
 class VolanteResponse(BaseModel):

@@ -140,7 +140,11 @@
 
   function onConceptoChange() {
     const cod = $("ca-codigo").value;
-    if (!cod) return;
+    const hint = $("ca-desc-hint");
+    if (!cod) {
+      if (hint) hint.textContent = "Seleccione un concepto para ver su descripción.";
+      return;
+    }
     const c = todosConceptos.find(function (x) { return x.codigo_detalle === cod; });
     if (c) {
       if (c.valor_defecto !== null && c.valor_defecto !== undefined) {
@@ -151,9 +155,11 @@
       if ($("ca-desc")) {
         $("ca-desc").value = c.descripcion;
       }
+      if (hint) hint.textContent = "Descripción: " + (c.descripcion || cod);
     } else {
       $("ca-valor").value = "";
       if ($("ca-desc")) $("ca-desc").value = "";
+      if (hint) hint.textContent = "Seleccione un concepto para ver su descripción.";
     }
   }
 

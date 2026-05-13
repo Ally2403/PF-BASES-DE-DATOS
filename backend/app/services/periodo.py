@@ -77,7 +77,8 @@ def update_periodo(id_periodo: int, nombre_periodo: str, fecha_inicio: str, fech
 
 
 def delete_periodo(id_periodo: int) -> bool:
-    """Elimina un período académico."""
+    """Elimina un período académico. Oracle CASCADE elimina REGLA_COBRO, VOLANTE_MATRICULA
+    y MOVIMIENTO asociados al período."""
     try:
         query = "DELETE FROM PERIODO_ACADEMICO WHERE ID_PERIODO = :id"
         affected = execute_update(query, {"id": id_periodo})

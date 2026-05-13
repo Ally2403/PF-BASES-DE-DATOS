@@ -131,7 +131,7 @@
   }
 
   async function eliminarPrograma(id) {
-    if (!window.confirm("¿Seguro que desea eliminar?")) return;
+    if (!await auth.showConfirm("¿Seguro que desea eliminar este programa?")) return;
     try {
       await api.deletePrograma(id);
       auth.showToast("Programa eliminado");

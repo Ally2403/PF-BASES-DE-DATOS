@@ -51,6 +51,20 @@
             <label for="pg-per">Período</label>
             <select id="pg-per" required></select>
           </div>
+
+          <!-- Saldo pendiente del estudiante en el período -->
+          <div id="pg-saldo-box" hidden style="background:var(--surface-elevated,#23273a);border-radius:0.75rem;padding:1rem 1.25rem;margin-bottom:0.25rem">
+            <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+              <div>
+                <div style="font-size:0.75rem;color:var(--text-muted)">Saldo pendiente</div>
+                <div id="pg-saldo-neto" style="font-size:1.4rem;font-weight:700;color:var(--danger,#e74c3c)">—</div>
+              </div>
+              <div>
+                <div style="font-size:0.75rem;color:var(--text-muted)">Estado</div>
+                <div id="pg-saldo-estado"></div>
+              </div>
+            </div>
+          </div>
           <div class="form-group">
             <label for="pg-cod">Concepto de pago (Código Detalle)</label>
             <select id="pg-cod" required></select>
@@ -59,8 +73,11 @@
             <label for="pg-med">Medio de pago</label>
             <select id="pg-med" required>
               <option value="">— Elija medio —</option>
-              <option value="CAJA">CAJA</option>
-              <option value="SIMULADO_ONLINE">SIMULADO_ONLINE</option>
+              <option value="EFECTIVO">EFECTIVO — Pago en efectivo</option>
+              <option value="TRANSFERENCIA">TRANSFERENCIA — Transferencia bancaria</option>
+              <option value="PSE">PSE — Pago en línea PSE</option>
+              <option value="TARJETA">TARJETA — Débito / Crédito</option>
+              <option value="CAJA">CAJA — Caja interna</option>
             </select>
           </div>
           <div class="form-group">

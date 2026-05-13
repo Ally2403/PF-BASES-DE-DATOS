@@ -22,10 +22,18 @@ def get_listado_estudiantes() -> List[Dict[str, Any]]:
     Vista: VW_LISTADO_ESTUDIANTES"""
     try:
         query = """
-            SELECT ID_ESTUDIANTE, CARNET, NOMBRE_ESTUDIANTE, APELLIDO_ESTUDIANTE,
-                   NOMBRE_PROGRAMA, NOMBRE_PERIODO, MODALIDAD, MONTO_TOTAL, ESTADO
-            FROM VW_LISTADO_ESTUDIANTES
-            ORDER BY NOMBRE_PROGRAMA, NOMBRE_ESTUDIANTE
+            SELECT le.ID_ESTUDIANTE, le.CARNET, le.NOMBRE_ESTUDIANTE, le.APELLIDO_ESTUDIANTE,
+                   le.NOMBRE_PROGRAMA, le.NOMBRE_PERIODO, le.MODALIDAD, le.MONTO_TOTAL,
+                   CASE
+                       WHEN NVL(sp.SALDO_NETO, le.MONTO_TOTAL) <= 0 THEN 'PAGADO'
+                       WHEN NVL(sp.TOTAL_PAGOS, 0) > 0             THEN 'PARCIAL'
+                       ELSE 'PENDIENTE'
+                   END AS ESTADO
+            FROM VW_LISTADO_ESTUDIANTES le
+            LEFT JOIN VW_SALDO_PERIODO sp
+                   ON sp.ID_ESTUDIANTE  = le.ID_ESTUDIANTE
+                  AND sp.NOMBRE_PERIODO = le.NOMBRE_PERIODO
+            ORDER BY le.NOMBRE_PROGRAMA, le.NOMBRE_ESTUDIANTE
         """
         results = execute_query(query)
         logger.info(f"✓ Reporte listado estudiantes: {len(results)} registros")

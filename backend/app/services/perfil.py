@@ -109,3 +109,45 @@ def remove_permission(id_perfil: int, id_permiso: int) -> bool:
     except Exception as e:
         logger.error(f"✗ Error al remover permiso: {e}")
         raise
+
+
+def get_all_permisos() -> List[Dict[str, Any]]:
+    """Obtiene el catálogo completo de permisos."""
+    try:
+        query = """
+            SELECT ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU
+            FROM PERMISO ORDER BY ID_MENU, ID_PERMISO
+        """
+        results = execute_query(query)
+        logger.info(f"✓ Catálogo de permisos: {len(results)} registros")
+        return results
+    except Exception as e:
+        logger.error(f"✗ Error al obtener catálogo de permisos: {e}")
+        raise
+
+
+def create_permiso(nombre_operacion: str, descripcion: Optional[str], id_menu: Optional[int]) -> Dict[str, Any]:
+    """Crea un nuevo permiso en el catálogo."""
+    try:
+        seq_result = execute_query("SELECT SEQ_PERMISO.NEXTVAL AS ID_PERMISO FROM DUAL")
+        new_id = seq_result[0]['ID_PERMISO']
+        execute_update(
+            "INSERT INTO PERMISO (ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU) VALUES (:id, :nom, :desc, :id_menu)",
+            {"id": new_id, "nom": nombre_operacion, "desc": descripcion, "id_menu": id_menu}
+        )
+        logger.info(f"✓ Permiso creado: {nombre_operacion}")
+        return {"ID_PERMISO": new_id, "NOMBRE_OPERACION": nombre_operacion, "DESCRIPCION": descripcion, "ID_MENU": id_menu}
+    except Exception as e:
+        logger.error(f"✗ Error al crear permiso: {e}")
+        raise
+
+
+def delete_permiso(id_permiso: int) -> bool:
+    """Elimina un permiso del catálogo (cascade elimina PERFIL_PERMISO)."""
+    try:
+        affected = execute_update("DELETE FROM PERMISO WHERE ID_PERMISO = :id", {"id": id_permiso})
+        logger.info(f"✓ Permiso {id_permiso} eliminado")
+        return affected > 0
+    except Exception as e:
+        logger.error(f"✗ Error al eliminar permiso: {e}")
+        raise

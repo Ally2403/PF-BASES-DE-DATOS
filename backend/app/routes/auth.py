@@ -5,9 +5,12 @@ Expone:
 - POST /api/auth/login → Autentica usuario y retorna JWT
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Header
 from app.schemas.auth import LoginRequest, TokenResponse, LoginResponse, ErrorResponse
-from app.services.auth import login_user
+from app.services.auth import login_user, verify_token
+from app.services.permissions import extract_token_from_header
+from app.services.database import execute_query
+from typing import Optional
 import logging
 
 logger = logging.getLogger(__name__)
@@ -120,3 +123,34 @@ async def login(credentials: LoginRequest) -> LoginResponse:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error interno del servidor"
         )
+
+
+@router.get("/me", summary="Obtener permisos actuales del usuario autenticado")
+async def get_me(authorization: Optional[str] = Header(None)):
+    """
+    Retorna los permisos frescos desde la BD para el usuario del token.
+    Útil para refrescar permisos sin hacer re-login.
+    """
+    token = extract_token_from_header(authorization)
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No autorizado")
+
+    payload = verify_token(token)
+    if not payload:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido o expirado")
+
+    try:
+        results = execute_query(
+            """SELECT DISTINCT pm.NOMBRE_OPERACION
+               FROM USUARIO u
+               JOIN PERFIL_PERMISO pp ON pp.ID_PERFIL = u.ID_PERFIL
+               JOIN PERMISO pm ON pp.ID_PERMISO = pm.ID_PERMISO
+               WHERE u.ID_USER = :id_user
+               ORDER BY pm.NOMBRE_OPERACION""",
+            {"id_user": payload["id_user"]}
+        )
+        permisos = [r["NOMBRE_OPERACION"] for r in results]
+        return {"success": True, "permisos": permisos}
+    except Exception as e:
+        logger.error(f"✗ Error en /me: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")

@@ -25,14 +25,14 @@ const NAV = [
   {
     label: "Asignaturas (catálogo)",
     page: "asignaturas-catalogo.html",
-    perm: ["GESTIONAR_ASIGNATURAS", "GESTIONAR_PROGRAMAS"],
+    perm: "GESTIONAR_ASIGNATURAS",
     icon: "📚",
     desc: "Catálogo unificado de materias y créditos.",
   },
   {
     label: "Periodos",
     page: "periodos.html",
-    perm: ["GESTIONAR_PROGRAMAS", "GESTIONAR_REGLAS"],
+    perm: "GESTIONAR_PERIODOS",
     icon: "📅",
     desc: "Gestión de calendarios académicos.",
   },
@@ -60,9 +60,9 @@ const NAV = [
   {
     label: "Cobros adicionales",
     page: "cobros-adicionales.html",
-    perm: "GENERAR_COBRO_IND",
+    perm: "COBROS_ADICIONALES",
     icon: "➕",
-    desc: "Cargos ad-hoc a cuenta corriente.",
+    desc: "Agregue cargos individuales a la cuenta corriente de un estudiante.",
   },
   {
     label: "Cobro masivo",
@@ -88,7 +88,7 @@ const NAV = [
   {
     label: "Consultar pagos",
     page: "consultar-pagos.html",
-    perm: "VER_REPORTES",
+    perm: "CONSULTAR_PAGOS",
     icon: "🔍",
     desc: "Búsqueda y detalle de transacciones realizadas.",
   },
@@ -112,13 +112,6 @@ const NAV = [
     perm: "GESTIONAR_PERFILES",
     icon: "🛡️",
     desc: "Administración de roles y sus permisos.",
-  },
-  {
-    label: "Menús del sistema",
-    page: "menus.html",
-    perm: "GESTIONAR_MENUS",
-    icon: "🛠️",
-    desc: "Configuración de la estructura de navegación.",
   },
 ];
 
@@ -237,13 +230,82 @@ function ensureToastStack() {
   return el;
 }
 
-function showToast(message, kind = "success") {
-  const stack = ensureToastStack();
-  const div = document.createElement("div");
-  div.className = `toast ${kind === "error" ? "error" : "success"}`;
-  div.textContent = message;
-  stack.appendChild(div);
-  setTimeout(() => div.remove(), 5200);
+function ensureAlertCenter() {
+  let el = document.getElementById("alert-center-overlay");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "alert-center-overlay";
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
+function showToast(message, kind) {
+  kind = kind || "success";
+  if (kind === "error") {
+    // Errors appear centered on screen for 3 seconds
+    const overlay = ensureAlertCenter();
+    const div = document.createElement("div");
+    div.className = "alert-center-msg error";
+    div.textContent = message;
+    overlay.appendChild(div);
+    setTimeout(function() { div.classList.add("fade-out"); }, 2700);
+    setTimeout(function() { div.remove(); }, 3100);
+  } else {
+    // Success stays bottom-right
+    const stack = ensureToastStack();
+    const div = document.createElement("div");
+    div.className = "toast success";
+    div.textContent = message;
+    stack.appendChild(div);
+    setTimeout(function() { div.remove(); }, 3200);
+  }
+}
+
+function showAlert(message, title) {
+  title = title || "Atención";
+  var backdrop = document.createElement("div");
+  backdrop.className = "modal-backdrop open";
+  backdrop.style.background = "rgba(0,0,0,0.45)";
+  backdrop.innerHTML =
+    '<div class="modal-panel" style="width:min(420px,92%);text-align:center">' +
+      '<div class="modal-header" style="justify-content:center;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:1rem">' +
+        '<h3 style="margin:0">⚠\uFE0F\u00A0' + title + '</h3>' +
+      '</div>' +
+      '<p style="margin:0;color:var(--text-muted);font-size:0.95rem">' + message + '</p>' +
+    '</div>';
+  document.body.appendChild(backdrop);
+  function dismiss() {
+    backdrop.style.transition = "opacity 0.3s";
+    backdrop.style.opacity = "0";
+    setTimeout(function() { backdrop.remove(); }, 320);
+  }
+  setTimeout(dismiss, 2200);
+  backdrop.addEventListener("click", dismiss);
+}
+
+function showConfirm(message, title) {
+  title = title || "Confirmar eliminación";
+  return new Promise(function (resolve) {
+    var backdrop = document.createElement("div");
+    backdrop.className = "modal-backdrop open";
+    backdrop.innerHTML =
+      '<div class="modal-panel" style="width:min(400px,96%)">' +
+        '<div class="modal-header"><h3>⚠\uFE0F\u00A0' + title + '</h3></div>' +
+        '<p style="margin:0 0 1.5rem;color:var(--text-muted)">' + message + '</p>' +
+        '<div class="btn-row" style="justify-content:flex-end;gap:0.6rem">' +
+          '<button class="btn btn-secondary" data-action="cancel">Cancelar</button>' +
+          '<button class="btn btn-danger" data-action="ok">Eliminar</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(backdrop);
+    function close(result) { backdrop.remove(); resolve(result); }
+    backdrop.addEventListener("click", function (e) {
+      var a = e.target.closest("[data-action]");
+      if (a) { close(a.dataset.action === "ok"); return; }
+      if (e.target === backdrop) close(false);
+    });
+  });
 }
 
 /**
@@ -254,6 +316,24 @@ function initPage(opts) {
   if (opts.perm) requirePerm(opts.perm);
   else requireAuth();
   renderSidebar(opts.activeFile || "");
+  // Refresh permisos from DB in the background on every page load
+  _refreshPermisosBackground(opts.activeFile || "");
+}
+
+function _refreshPermisosBackground(activeFile) {
+  var s = getSession();
+  if (!s || !s.access_token) return;
+  fetch("/api/auth/me", {
+    headers: { "Authorization": "Bearer " + s.access_token }
+  }).then(function(res) {
+    if (!res.ok) return null;
+    return res.json();
+  }).then(function(data) {
+    if (!data || !Array.isArray(data.permisos)) return;
+    var updated = Object.assign({}, s, { permisos: data.permisos });
+    setSession(updated);
+    renderSidebar(activeFile);
+  }).catch(function() {});
 }
 
 window.auth = {
@@ -267,6 +347,8 @@ window.auth = {
   can,
   renderSidebar,
   showToast,
+  showConfirm,
+  showAlert,
   initPage,
   navHref,
   NAV,

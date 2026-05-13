@@ -28,19 +28,31 @@ def get_asignaturas_by_plan(semestre: int, id_programa: int) -> List[Dict[str, A
 
 
 def add_asignatura_to_plan(semestre: int, id_programa: int, id_asignatura: int) -> Dict[str, Any]:
-    """Agrega una asignatura a un semestre."""
+    """Agrega una asignatura a un semestre. Crea el registro en PLAN_ESTUDIO si no existe."""
+    from app.services.database import execute_transaction
     try:
-        query = """
-            INSERT INTO PLAN_ESTUDIO_ASIGNATURA (SEMESTRE, ID_PROGRAMA, ID_ASIGNATURA)
-            VALUES (:sem, :id_prog, :id_asig)
-        """
-        execute_update(query, {"sem": semestre, "id_prog": id_programa, "id_asig": id_asignatura})
-        
-        return {
-            "SEMESTRE": semestre,
-            "ID_PROGRAMA": id_programa,
-            "ID_ASIGNATURA": id_asignatura
-        }
+        statements = []
+
+        # Asegurar que el semestre existe en PLAN_ESTUDIO
+        existing = execute_query(
+            "SELECT 1 FROM PLAN_ESTUDIO WHERE SEMESTRE = :sem AND ID_PROGRAMA = :id_prog",
+            {"sem": semestre, "id_prog": id_programa}
+        )
+        if not existing:
+            statements.append((
+                "INSERT INTO PLAN_ESTUDIO (SEMESTRE, ID_PROGRAMA) VALUES (:sem, :id_prog)",
+                {"sem": semestre, "id_prog": id_programa}
+            ))
+
+        # Insertar la asignatura en el plan
+        statements.append((
+            """INSERT INTO PLAN_ESTUDIO_ASIGNATURA (SEMESTRE, ID_PROGRAMA, ID_ASIGNATURA)
+               VALUES (:sem, :id_prog, :id_asig)""",
+            {"sem": semestre, "id_prog": id_programa, "id_asig": id_asignatura}
+        ))
+
+        execute_transaction(statements)
+        return {"SEMESTRE": semestre, "ID_PROGRAMA": id_programa, "ID_ASIGNATURA": id_asignatura}
     except Exception as e:
         logger.error(f"✗ Error al agregar asignatura: {e}")
         raise

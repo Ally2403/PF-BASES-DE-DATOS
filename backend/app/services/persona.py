@@ -60,6 +60,19 @@ def create_persona(cedula: int, nombre: str, apellido: str, correo: str, telefon
         raise
 
 
+def delete_persona(cedula: int) -> bool:
+    """Elimina una persona. Por FK ON DELETE CASCADE, también elimina el usuario asociado."""
+    try:
+        query = "DELETE FROM PERSONA WHERE CEDULA = :ced"
+        affected = execute_update(query, {"ced": cedula})
+        if affected > 0:
+            logger.info(f"✓ Persona {cedula} eliminada (cascade elimina usuario asociado)")
+        return affected > 0
+    except Exception as e:
+        logger.error(f"✗ Error al eliminar persona: {e}")
+        raise
+
+
 def update_persona(cedula: int, nombre: Optional[str] = None, apellido: Optional[str] = None,
                    correo: Optional[str] = None, telefono: Optional[str] = None) -> bool:
     """Actualiza una persona."""

@@ -56,6 +56,9 @@
       auth.initPage({ perm: "GESTIONAR_PERFILES", activeFile: "perfiles.html" });
 
       let currentPerfilId = null;
+      let originalPermisos = [];   // IDs del perfil seleccionado antes de editar
+      let todosPermisos = [];      // Catálogo completo de permisos
+      let todosMenus = [];         // Catálogo de menús (para mostrar nombre del menú)
 
       async function cargar() {
         const perfiles = await api.getPerfiles();
@@ -64,7 +67,7 @@
         perfiles.forEach(p => {
           const tr = document.createElement("tr");
           tr.style.cursor = "pointer";
-          tr.onclick = () => seleccionarPerfil(p.id_perfil, p.nombre_perfil);
+          tr.onclick = () => seleccionarPerfil(p.id_perfil, p.nombre_perfil, p.permisos || []);
           tr.innerHTML = `
             <td>${p.id_perfil}</td>
             <td><strong>${p.nombre_perfil}</strong></td>
@@ -76,25 +79,61 @@
         });
       }
 
-      async function seleccionarPerfil(id, nombre) {
+      async function seleccionarPerfil(id, nombre, permisosActuales) {
         currentPerfilId = id;
-        document.getElementById("p-sel-info").innerHTML = `Gestionando permisos para: <strong>${nombre}</strong>`;
+        originalPermisos = [...permisosActuales];
+
+        document.getElementById("p-sel-info").innerHTML =
+          `Gestionando permisos para: <strong>${nombre}</strong>`;
         document.getElementById("permisos-cont").style.display = "block";
-        
-        const todos = await api.getPermisos();
+
+        // Cargar catálogos si no están
+        if (!todosPermisos.length) {
+          todosPermisos = await api.getPermisos();
+        }
+        if (!todosMenus.length) {
+          todosMenus = await api.getMenus();
+        }
+
+        // Nombres amigables para los permisos (complementa la descripción técnica)
+        const PERM_NOMBRES = {
+          'VER_USUARIOS':          'Ver usuarios',
+          'CREAR_USUARIO':         'Crear usuario',
+          'EDITAR_USUARIO':        'Editar usuario',
+          'ELIMINAR_USUARIO':      'Eliminar usuario',
+          'GESTIONAR_USUARIOS':    'Gestionar usuarios',
+          'GESTIONAR_PERFILES':    'Gestionar perfiles / roles',
+          'GESTIONAR_MENUS':       'Gestionar menús',
+          'GESTIONAR_PROGRAMAS':   'Programas y planes de estudio',
+          'GESTIONAR_ASIGNATURAS': 'Asignaturas (catálogo)',
+          'GESTIONAR_PERIODOS':    'Periodos académicos',
+          'GESTIONAR_ESTUDIANTES': 'Estudiantes',
+          'GESTIONAR_REGLAS':      'Reglas de cobro',
+          'GESTIONAR_CODIGOS':     'Códigos de detalle',
+          'GENERAR_COBRO_IND':     'Generar cobro individual',
+          'COBROS_ADICIONALES':    'Cobros adicionales',
+          'GENERAR_COBRO_MAS':     'Cobro masivo',
+          'REGISTRAR_PAGO':        'Registrar pago',
+          'VER_CUENTA':            'Cuenta corriente',
+          'CONSULTAR_PAGOS':       'Consultar pagos',
+          'VER_REPORTES':          'Ver reportes',
+        };
+
         const cont = document.getElementById("lista-permisos");
         cont.innerHTML = "";
-        
-        // El mock de api.js maneja los permisos por defecto de los 3 perfiles semilla
-        // Para este prototipo, mostramos todos los permisos y dejamos marcados algunos
-        todos.forEach(p => {
+
+        todosPermisos.forEach(p => {
+          const checked = originalPermisos.includes(p.id_permiso) ? "checked" : "";
+          const label = PERM_NOMBRES[p.nombre_operacion] || p.nombre_operacion;
           const div = document.createElement("div");
           div.className = "check-row";
           div.innerHTML = `
-            <input type="checkbox" id="perm-${p.id_permiso}" value="${p.id_permiso}">
+            <input type="checkbox" id="perm-${p.id_permiso}" value="${p.id_permiso}" ${checked}>
             <div class="check-body">
-              <label for="perm-${p.id_permiso}">${p.nombre_operacion}</label>
-              <div style="font-size:0.75rem; color:var(--text-muted)">${p.descripcion || ''}</div>
+              <label for="perm-${p.id_permiso}"><strong>${label}</strong></label>
+              <div style="font-size:0.75rem; color:var(--text-muted)">
+                ${p.descripcion || ''} &nbsp;·&nbsp; <code style="font-size:0.72rem">${p.nombre_operacion}</code>
+              </div>
             </div>
           `;
           cont.appendChild(div);
@@ -102,9 +141,13 @@
       }
 
       window.eliminarPerfil = async (id, nom) => {
-        if (!confirm(`¿Seguro que desea eliminar el perfil ${nom}?`)) return;
+        if (!await auth.showConfirm(`¿Seguro que desea eliminar el perfil ${nom}?`)) return;
         await api.deletePerfil(id);
         auth.showToast("Perfil eliminado.");
+        if (currentPerfilId === id) {
+          currentPerfilId = null;
+          document.getElementById("permisos-cont").style.display = "none";
+        }
         cargar();
       };
 
@@ -117,8 +160,31 @@
         cargar();
       });
 
-      document.getElementById("btn-save-permisos").onclick = () => {
-        auth.showToast("Permisos actualizados correctamente para el perfil.");
+      document.getElementById("btn-save-permisos").onclick = async () => {
+        if (!currentPerfilId) return;
+        const checkboxes = document.querySelectorAll("#lista-permisos input[type=checkbox]");
+        const nuevoPermisos = [];
+        checkboxes.forEach(cb => {
+          if (cb.checked) nuevoPermisos.push(Number(cb.value));
+        });
+
+        const agregar = nuevoPermisos.filter(id => !originalPermisos.includes(id));
+        const quitar  = originalPermisos.filter(id => !nuevoPermisos.includes(id));
+
+        try {
+          // Asignar nuevos permisos
+          for (const id of agregar) {
+            await api.postPerfilPermiso(currentPerfilId, id);
+          }
+          // Remover permisos desmarcados
+          for (const id of quitar) {
+            await api.deletePerfilPermiso(currentPerfilId, id);
+          }
+          originalPermisos = [...nuevoPermisos];
+          auth.showToast(`Permisos actualizados (${agregar.length} asignados, ${quitar.length} removidos).`);
+        } catch (err) {
+          auth.showToast("Error al guardar permisos: " + err.message);
+        }
       };
 
       cargar();

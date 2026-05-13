@@ -273,7 +273,7 @@
   }
 
   async function eliminar(prog, per, mod) {
-    if (!window.confirm("¿Seguro que desea eliminar?")) return;
+    if (!await auth.showConfirm("¿Seguro que desea eliminar esta regla de cobro?")) return;
     try {
       await api.deleteReglaCobro(prog, per, mod);
       toast("Regla eliminada", "success");

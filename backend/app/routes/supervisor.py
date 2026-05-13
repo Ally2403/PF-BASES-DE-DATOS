@@ -16,9 +16,9 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from datetime import date
 
 # Schemas
-from app.schemas.programa import ProgramaCreate, ProgramaResponse, ProgramaListResponse, ProgramaDetailResponse
-from app.schemas.asignatura import AsignaturaCreate, AsignaturaResponse, AsignaturaListResponse, AsignaturaDetailResponse
-from app.schemas.periodo import PeriodoCreate, PeriodoResponse, PeriodoListResponse, PeriodoDetailResponse
+from app.schemas.programa import ProgramaCreate, ProgramaUpdate, ProgramaResponse, ProgramaListResponse, ProgramaDetailResponse
+from app.schemas.asignatura import AsignaturaCreate, AsignaturaUpdate, AsignaturaResponse, AsignaturaListResponse, AsignaturaDetailResponse
+from app.schemas.periodo import PeriodoCreate, PeriodoUpdate, PeriodoResponse, PeriodoListResponse, PeriodoDetailResponse
 from app.schemas.estudiante import EstudianteCreate, EstudianteUpdate, EstudianteResponse, EstudianteListResponse, EstudianteDetailResponse
 from app.schemas.plan_estudio import PlanEstudioCreate, PlanEstudioResponse, PlanEstudioListResponse
 from app.schemas.plan_estudio_asignatura import PlanEstudioAsignaturaCreate, PlanEstudioAsignaturaResponse, PlanEstudioAsignaturaListResponse
@@ -26,16 +26,17 @@ from app.schemas.regla_cobro import ReglaCobroCreate, ReglaCobroUpdate, ReglaCob
 from app.schemas.codigo_detalle import CodigoDetalleCreate, CodigoDetalleUpdate, CodigoDetalleResponse, CodigoDetalleListResponse, CodigoDetalleDetailResponse
 
 # Services
-from app.services.programa import get_all_programas, get_programa_by_id, create_programa
-from app.services.asignatura import get_all_asignaturas, get_asignatura_by_id, create_asignatura
-from app.services.periodo import get_all_periodos, get_periodo_by_id, create_periodo
-from app.services.estudiante import get_all_estudiantes, get_estudiante_by_id, create_estudiante, update_estudiante
+from app.services.programa import get_all_programas, get_programa_by_id, create_programa, update_programa, delete_programa
+from app.services.asignatura import get_all_asignaturas, get_asignatura_by_id, create_asignatura, update_asignatura, delete_asignatura
+from app.services.periodo import get_all_periodos, get_periodo_by_id, create_periodo, update_periodo, delete_periodo
+from app.services.estudiante import get_all_estudiantes, get_estudiante_by_id, create_estudiante, update_estudiante, delete_estudiante
 from app.services.plan_estudio import get_planes_by_programa, create_plan
-from app.services.plan_estudio_asignatura import get_asignaturas_by_plan, add_asignatura_to_plan
-from app.services.regla_cobro import get_reglas_by_programa_periodo, create_regla, update_regla
-from app.services.codigo_detalle import get_all_codigos, get_codigo_by_id, create_codigo, update_codigo
+from app.services.plan_estudio_asignatura import get_asignaturas_by_plan, add_asignatura_to_plan, remove_asignatura_from_plan
+from app.services.regla_cobro import get_reglas_by_programa_periodo, create_regla, update_regla, delete_regla
+from app.services.codigo_detalle import get_all_codigos, get_codigo_by_id, create_codigo, update_codigo, delete_codigo
 
 from app.services.permissions import require_perfil
+from app.services.database import is_fk_violation
 import logging
 
 logger = logging.getLogger(__name__)
@@ -348,6 +349,27 @@ async def crear_regla_endpoint(id_programa: int, id_periodo: int, data: ReglaCob
         raise HTTPException(status_code=500, detail="Error al crear regla")
 
 
+@router.put("/programas/{id_programa}/periodos/{id_periodo}/reglas/{modalidad}", response_model=ReglaCobroListResponse)
+async def actualizar_regla_endpoint(id_programa: int, id_periodo: int, modalidad: str, data: ReglaCobroUpdate, current_user: dict = Depends(require_perfil(PERMISOS))):
+    """Actualizar valores de una regla de cobro."""
+    try:
+        mod = modalidad.upper()
+        updated = update_regla(mod, id_programa, id_periodo, data.valor_credito, data.valor_global)
+        if not updated:
+            raise HTTPException(status_code=404, detail="Regla no encontrada")
+        reglas = get_reglas_by_programa_periodo(id_programa, id_periodo)
+        regla = next((r for r in reglas if r['MODALIDAD'] == mod), None)
+        if not regla:
+            raise HTTPException(status_code=404, detail="Regla no encontrada tras actualizar")
+        logger.info(f"✓ Usuario {current_user.get('username')} actualizó regla {mod}")
+        return ReglaCobroListResponse(success=True, message="Regla actualizada", data=[ReglaCobroResponse.model_validate(regla)])
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"✗ Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al actualizar regla: {str(e)}")
+
+
 # ==========================================
 # CODIGO DETALLE
 # ==========================================
@@ -391,3 +413,223 @@ async def crear_codigo_endpoint(data: CodigoDetalleCreate, current_user: dict = 
         import traceback
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Error al crear código: {str(e)}")
+
+
+@router.put("/codigos/{codigo_detalle}", response_model=CodigoDetalleDetailResponse)
+async def actualizar_codigo_endpoint(codigo_detalle: str, data: CodigoDetalleUpdate, current_user: dict = Depends(require_perfil(PERMISOS))):
+    """Actualizar un código de detalle."""
+    try:
+        codigo = get_codigo_by_id(codigo_detalle)
+        if not codigo:
+            raise HTTPException(status_code=404, detail=f"Código {codigo_detalle} no encontrado")
+        nueva_desc = data.descripcion if data.descripcion is not None else codigo['DESCRIPCION']
+        nuevo_val = data.valor_defecto if data.valor_defecto is not None else codigo.get('VALOR_DEFECTO')
+        update_codigo(codigo_detalle, nueva_desc, nuevo_val)
+        actualizado = get_codigo_by_id(codigo_detalle)
+        return CodigoDetalleDetailResponse(success=True, message="Código actualizado", data=CodigoDetalleResponse.model_validate(actualizado))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"✗ Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al actualizar código: {str(e)}")
+
+
+@router.delete("/codigos/{codigo_detalle}")
+async def eliminar_codigo_endpoint(codigo_detalle: str, current_user: dict = Depends(require_perfil(PERMISOS))):
+    """Eliminar un código de detalle."""
+    try:
+        if not get_codigo_by_id(codigo_detalle):
+            raise HTTPException(status_code=404, detail=f"Código {codigo_detalle} no encontrado")
+        delete_codigo(codigo_detalle)
+        return {"success": True, "message": f"Código {codigo_detalle} eliminado"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"✗ Error: {e}")
+        if is_fk_violation(e):
+            raise HTTPException(
+                status_code=409,
+                detail=f"No se puede eliminar el código '{codigo_detalle}': tiene movimientos financieros registrados (cobros o pagos). Los códigos con historial no pueden eliminarse."
+            )
+        raise HTTPException(status_code=500, detail=f"Error al eliminar código: {str(e)}")
+
+
+# ==========================================
+# PROGRAMA — PUT y DELETE
+# ==========================================
+
+@router.put("/programas/{id_programa}", response_model=ProgramaDetailResponse)
+async def actualizar_programa_endpoint(id_programa: int, data: ProgramaUpdate, current_user: dict = Depends(require_perfil(PERMISOS))):
+    """Actualizar programa académico."""
+    try:
+        programa = get_programa_by_id(id_programa)
+        if not programa:
+            raise HTTPException(status_code=404, detail=f"Programa {id_programa} no encontrado")
+        nuevo_nombre = data.nombre_programa if data.nombre_programa else programa['NOMBRE_PROGRAMA']
+        update_programa(id_programa, nuevo_nombre)
+        actualizado = get_programa_by_id(id_programa)
+        return ProgramaDetailResponse(success=True, message="Programa actualizado", data=ProgramaResponse.model_validate(actualizado))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"✗ Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al actualizar programa: {str(e)}")
+
+
+@router.delete("/programas/{id_programa}")
+async def eliminar_programa_endpoint(id_programa: int, current_user: dict = Depends(require_perfil(PERMISOS))):
+    """Eliminar programa académico."""
+    try:
+        if not get_programa_by_id(id_programa):
+            raise HTTPException(status_code=404, detail=f"Programa {id_programa} no encontrado")
+        delete_programa(id_programa)
+        return {"success": True, "message": f"Programa {id_programa} eliminado"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"✗ Error: {e}")
+        if is_fk_violation(e):
+            raise HTTPException(status_code=409, detail="No se puede eliminar el programa: tiene datos dependientes que impiden su eliminación.")
+        raise HTTPException(status_code=500, detail=f"Error al eliminar programa: {str(e)}")
+
+
+# ==========================================
+# ASIGNATURA — PUT y DELETE
+# ==========================================
+
+@router.put("/asignaturas/{id_asignatura}", response_model=AsignaturaDetailResponse)
+async def actualizar_asignatura_endpoint(id_asignatura: int, data: AsignaturaUpdate, current_user: dict = Depends(require_perfil(PERMISOS))):
+    """Actualizar asignatura."""
+    try:
+        asignatura = get_asignatura_by_id(id_asignatura)
+        if not asignatura:
+            raise HTTPException(status_code=404, detail=f"Asignatura {id_asignatura} no encontrada")
+        nuevo_nombre = data.nombre if data.nombre is not None else asignatura['NOMBRE']
+        nuevos_creditos = data.cant_creditos if data.cant_creditos is not None else asignatura['CANT_CREDITOS']
+        update_asignatura(id_asignatura, nuevo_nombre, nuevos_creditos)
+        actualizada = get_asignatura_by_id(id_asignatura)
+        return AsignaturaDetailResponse(success=True, message="Asignatura actualizada", data=AsignaturaResponse.model_validate(actualizada))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"✗ Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al actualizar asignatura: {str(e)}")
+
+
+@router.delete("/asignaturas/{id_asignatura}")
+async def eliminar_asignatura_endpoint(id_asignatura: int, current_user: dict = Depends(require_perfil(PERMISOS))):
+    """Eliminar asignatura."""
+    try:
+        if not get_asignatura_by_id(id_asignatura):
+            raise HTTPException(status_code=404, detail=f"Asignatura {id_asignatura} no encontrada")
+        delete_asignatura(id_asignatura)
+        return {"success": True, "message": f"Asignatura {id_asignatura} eliminada"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"✗ Error: {e}")
+        if is_fk_violation(e):
+            raise HTTPException(status_code=409, detail="No se puede eliminar la asignatura: tiene datos dependientes que impiden su eliminación.")
+        raise HTTPException(status_code=500, detail=f"Error al eliminar asignatura: {str(e)}")
+
+
+# ==========================================
+# PERIODO — PUT y DELETE
+# ==========================================
+
+@router.put("/periodos/{id_periodo}", response_model=PeriodoDetailResponse)
+async def actualizar_periodo_endpoint(id_periodo: int, data: PeriodoUpdate, current_user: dict = Depends(require_perfil(PERMISOS))):
+    """Actualizar período académico."""
+    try:
+        periodo = get_periodo_by_id(id_periodo)
+        if not periodo:
+            raise HTTPException(status_code=404, detail=f"Período {id_periodo} no encontrado")
+        nuevo_nombre = data.nombre_periodo if data.nombre_periodo is not None else periodo['NOMBRE_PERIODO']
+        nueva_inicio = str(data.fecha_inicio) if data.fecha_inicio is not None else str(periodo['FECHA_INICIO'])
+        nueva_fin = str(data.fecha_fin) if data.fecha_fin is not None else str(periodo['FECHA_FIN'])
+        update_periodo(id_periodo, nuevo_nombre, nueva_inicio, nueva_fin)
+        actualizado = get_periodo_by_id(id_periodo)
+        return PeriodoDetailResponse(success=True, message="Período actualizado", data=PeriodoResponse.model_validate(actualizado))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"✗ Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al actualizar período: {str(e)}")
+
+
+@router.delete("/periodos/{id_periodo}")
+async def eliminar_periodo_endpoint(id_periodo: int, current_user: dict = Depends(require_perfil(PERMISOS))):
+    """Eliminar período académico."""
+    try:
+        if not get_periodo_by_id(id_periodo):
+            raise HTTPException(status_code=404, detail=f"Período {id_periodo} no encontrado")
+        delete_periodo(id_periodo)
+        return {"success": True, "message": f"Período {id_periodo} eliminado"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"✗ Error: {e}")
+        if is_fk_violation(e):
+            raise HTTPException(status_code=409, detail="No se puede eliminar el período: tiene datos dependientes que impiden su eliminación.")
+        raise HTTPException(status_code=500, detail=f"Error al eliminar período: {str(e)}")
+
+
+# ==========================================
+# ESTUDIANTE — DELETE
+# ==========================================
+
+@router.delete("/estudiantes/{id_estudiante}")
+async def eliminar_estudiante_endpoint(id_estudiante: int, current_user: dict = Depends(require_perfil(PERMISOS))):
+    """Eliminar estudiante."""
+    try:
+        if not get_estudiante_by_id(id_estudiante):
+            raise HTTPException(status_code=404, detail=f"Estudiante {id_estudiante} no encontrado")
+        delete_estudiante(id_estudiante)
+        return {"success": True, "message": f"Estudiante {id_estudiante} eliminado"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"✗ Error: {e}")
+        if is_fk_violation(e):
+            raise HTTPException(status_code=409, detail="No se puede eliminar el estudiante: tiene datos dependientes que impiden su eliminación.")
+        raise HTTPException(status_code=500, detail=f"Error al eliminar estudiante: {str(e)}")
+
+
+# ==========================================
+# PLAN ESTUDIO ASIGNATURA — DELETE
+# ==========================================
+
+@router.delete("/programas/{id_programa}/planes/{semestre}/asignaturas/{id_asignatura}")
+async def quitar_asignatura_plan(id_programa: int, semestre: int, id_asignatura: int, current_user: dict = Depends(require_perfil(PERMISOS))):
+    """Quitar una asignatura de un semestre del plan de estudio."""
+    try:
+        eliminado = remove_asignatura_from_plan(semestre, id_programa, id_asignatura)
+        if not eliminado:
+            raise HTTPException(status_code=404, detail="Asignatura no encontrada en el plan")
+        return {"success": True, "message": f"Asignatura {id_asignatura} quitada del semestre {semestre}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"✗ Error: {e}")
+        if is_fk_violation(e):
+            raise HTTPException(status_code=409, detail="No se puede quitar la asignatura del plan: tiene datos dependientes que impiden su eliminación.")
+        raise HTTPException(status_code=500, detail=f"Error al quitar asignatura: {str(e)}")
+
+
+# ==========================================
+# REGLA COBRO — DELETE
+# ==========================================
+
+@router.delete("/programas/{id_programa}/periodos/{id_periodo}/reglas/{modalidad}")
+async def eliminar_regla_endpoint(id_programa: int, id_periodo: int, modalidad: str, current_user: dict = Depends(require_perfil(PERMISOS))):
+    """Eliminar regla de cobro."""
+    try:
+        eliminado = delete_regla(modalidad.upper(), id_programa, id_periodo)
+        if not eliminado:
+            raise HTTPException(status_code=404, detail="Regla no encontrada")
+        return {"success": True, "message": f"Regla {modalidad} eliminada"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"✗ Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al eliminar regla: {str(e)}")

@@ -1,0 +1,1355 @@
+>>> Insertando datos base...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Procedimiento PL/SQL terminado correctamente.
+Procedimiento PL/SQL terminado correctamente.
+Procedimiento PL/SQL terminado correctamente.
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+Error que empieza en la línea: 149 del comando :
+INSERT INTO PLAN_ESTUDIO VALUES (1, 1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PE_PROGRAMA) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 150 del comando :
+INSERT INTO PLAN_ESTUDIO VALUES (2, 1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PE_PROGRAMA) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+Error que empieza en la línea: 157 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (1, 1, 1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 158 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (1, 1, 2)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 159 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (1, 1, 3)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 160 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (1, 1, 5)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 161 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (2, 1, 4)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 162 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (2, 1, 8)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+Error que empieza en la línea: 174 del comando :
+INSERT INTO REGLA_COBRO VALUES ('GLOBAL',   NULL,      8500000,  1, 1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_RC_PERIODO) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 175 del comando :
+INSERT INTO REGLA_COBRO VALUES ('CREDITOS', 650000,    NULL,     1, 1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_RC_PERIODO) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 176 del comando :
+INSERT INTO REGLA_COBRO VALUES ('GLOBAL',   NULL,      6500000,  2, 1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_RC_PERIODO) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 177 del comando :
+INSERT INTO REGLA_COBRO VALUES ('CREDITOS', 500000,    NULL,     2, 1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_RC_PERIODO) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 178 del comando :
+INSERT INTO REGLA_COBRO VALUES ('GLOBAL',   NULL,      18000000, 3, 1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_RC_PERIODO) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 179 del comando :
+INSERT INTO REGLA_COBRO VALUES ('CREDITOS', 1400000,   NULL,     3, 1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_RC_PERIODO) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 180 del comando :
+INSERT INTO REGLA_COBRO VALUES ('GLOBAL',   NULL,      8700000,  1, 2)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_RC_PROGRAMA) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 181 del comando :
+INSERT INTO REGLA_COBRO VALUES ('CREDITOS', 670000,    NULL,     1, 2)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_RC_PROGRAMA) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+Error que empieza en la línea: 201 del comando :
+INSERT INTO ESTUDIANTE (ID_ESTUDIANTE, CARNET, NOMBRE, APELLIDO, TELEFONO, CORREO, ID_PROGRAMA)
+    VALUES (SEQ_ESTUDIANTE.NEXTVAL, '2026-SIS-001', 'Maria',   'Garcia',  '3012345678', 'mgarcia@est.uni.edu.co',  1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_EST_PROGRAMA) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 203 del comando :
+INSERT INTO ESTUDIANTE (ID_ESTUDIANTE, CARNET, NOMBRE, APELLIDO, TELEFONO, CORREO, ID_PROGRAMA)
+    VALUES (SEQ_ESTUDIANTE.NEXTVAL, '2026-SIS-002', 'Pedro',   'Lopez',   '3023456789', 'plopez@est.uni.edu.co',   1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_EST_PROGRAMA) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+>>> Datos base insertados.
+
+0 filas eliminado
+
+
+0 filas eliminado
+
+
+0 filas eliminado
+
+
+0 filas eliminado
+
+
+0 filas eliminado
+
+
+0 filas eliminado
+
+
+0 filas eliminado
+
+
+0 filas eliminado
+
+
+0 filas eliminado
+
+
+0 filas eliminado
+
+
+0 filas eliminado
+
+Confirmación terminada.
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+
+Error que empieza en la línea: 293 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (1, 1, 12)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 294 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (2, 1, 11)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 295 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (2, 1, 14)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 296 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (2, 1, 15)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+
+Error que empieza en la línea: 315 del comando :
+INSERT INTO PLAN_ESTUDIO VALUES (3, 1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PE_PROGRAMA) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+Error que empieza en la línea: 318 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (3, 1, 13)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 319 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (3, 1, 16)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 320 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (3, 1, 17)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 321 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (3, 1, 11)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 322 del comando :
+INSERT INTO PLAN_ESTUDIO_ASIGNATURA VALUES (3, 1,  8)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_PEA_PLAN) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+
+Error que empieza en la línea: 344 del comando :
+INSERT INTO ESTUDIANTE (ID_ESTUDIANTE, CARNET, NOMBRE, APELLIDO, TELEFONO, CORREO, ID_PROGRAMA)
+    VALUES (SEQ_ESTUDIANTE.NEXTVAL, '2026-SIS-003', 'Sofia',   'Vargas',   '3067890123', 'svargas@est.uni.edu.co',  1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_EST_PROGRAMA) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 346 del comando :
+INSERT INTO ESTUDIANTE (ID_ESTUDIANTE, CARNET, NOMBRE, APELLIDO, TELEFONO, CORREO, ID_PROGRAMA)
+    VALUES (SEQ_ESTUDIANTE.NEXTVAL, '2026-SIS-004', 'Camilo',  'Reyes',    '3078901234', 'creyes@est.uni.edu.co',   1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_EST_PROGRAMA) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 348 del comando :
+INSERT INTO ESTUDIANTE (ID_ESTUDIANTE, CARNET, NOMBRE, APELLIDO, TELEFONO, CORREO, ID_PROGRAMA)
+    VALUES (SEQ_ESTUDIANTE.NEXTVAL, '2026-SIS-005', 'Daniela', 'Moreno',   '3089012345', 'dmoreno@est.uni.edu.co',  1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_EST_PROGRAMA) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+
+Error que empieza en la línea: 383 del comando -
+INSERT INTO VOLANTE_MATRICULA
+    (ID_VOLANTE, SEMESTRE_QUE_COBRA, TIPO_GENERACION, ID_ESTUDIANTE, ID_PERIODO, MODALIDAD, ID_PROGRAMA)
+VALUES (SEQ_VOLANTE.NEXTVAL, 1, 'INDIVIDUAL', 1, 1, 'GLOBAL', 1)
+Error en la línea de comandos : 385 Columna : 9
+Informe de error -
+Error SQL: ORA-02291: restricción de integridad (APP_USER.FK_CC_ESTUDIANTE) violada - clave principal no encontrada
+ORA-06512: en "APP_USER.TR_CREAR_CUENTA_CORRIENTE", línea 9
+ORA-04088: error durante la ejecución del disparador 'APP_USER.TR_CREAR_CUENTA_CORRIENTE'
+
+https://docs.oracle.com/error-help/db/ora-02291/02291. 00000 - "integrity constraint (%s.%s) violated - parent key not found"
+*Cause:    A foreign key value has no matching primary key value.
+*Action:   Delete the foreign key or add a matching primary key.
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+https://docs.oracle.com/error-help/db/ora-06512/
+https://docs.oracle.com/error-help/db/ora-04088/
+
+Error que empieza en la línea: 386 del comando -
+INSERT INTO VOLANTE_MATRICULA
+    (ID_VOLANTE, SEMESTRE_QUE_COBRA, TIPO_GENERACION, ID_ESTUDIANTE, ID_PERIODO, MODALIDAD, ID_PROGRAMA)
+VALUES (SEQ_VOLANTE.NEXTVAL, 2, 'INDIVIDUAL', 2, 1, 'CREDITOS', 1)
+Error en la línea de comandos : 388 Columna : 9
+Informe de error -
+Error SQL: ORA-02291: restricción de integridad (APP_USER.FK_CC_ESTUDIANTE) violada - clave principal no encontrada
+ORA-06512: en "APP_USER.TR_CREAR_CUENTA_CORRIENTE", línea 9
+ORA-04088: error durante la ejecución del disparador 'APP_USER.TR_CREAR_CUENTA_CORRIENTE'
+
+https://docs.oracle.com/error-help/db/ora-02291/02291. 00000 - "integrity constraint (%s.%s) violated - parent key not found"
+*Cause:    A foreign key value has no matching primary key value.
+*Action:   Delete the foreign key or add a matching primary key.
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+https://docs.oracle.com/error-help/db/ora-06512/
+https://docs.oracle.com/error-help/db/ora-04088/
+
+Error que empieza en la línea: 389 del comando -
+INSERT INTO VOLANTE_MATRICULA
+    (ID_VOLANTE, SEMESTRE_QUE_COBRA, TIPO_GENERACION, ID_ESTUDIANTE, ID_PERIODO, MODALIDAD, ID_PROGRAMA)
+VALUES (SEQ_VOLANTE.NEXTVAL, 1, 'MASIVA', 3, 1, 'GLOBAL', 2)
+Error en la línea de comandos : 391 Columna : 9
+Informe de error -
+Error SQL: ORA-02291: restricción de integridad (APP_USER.FK_CC_ESTUDIANTE) violada - clave principal no encontrada
+ORA-06512: en "APP_USER.TR_CREAR_CUENTA_CORRIENTE", línea 9
+ORA-04088: error durante la ejecución del disparador 'APP_USER.TR_CREAR_CUENTA_CORRIENTE'
+
+https://docs.oracle.com/error-help/db/ora-02291/02291. 00000 - "integrity constraint (%s.%s) violated - parent key not found"
+*Cause:    A foreign key value has no matching primary key value.
+*Action:   Delete the foreign key or add a matching primary key.
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+https://docs.oracle.com/error-help/db/ora-06512/
+https://docs.oracle.com/error-help/db/ora-04088/
+
+Error que empieza en la línea: 392 del comando :
+INSERT INTO VOLANTE_MATRICULA
+    (ID_VOLANTE, SEMESTRE_QUE_COBRA, TIPO_GENERACION, ID_ESTUDIANTE, ID_PERIODO, MODALIDAD, ID_PROGRAMA)
+VALUES (SEQ_VOLANTE.NEXTVAL, 1, 'MASIVA', 4, 1, 'GLOBAL', 3)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VOL_PERIODO) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 395 del comando :
+INSERT INTO VOLANTE_MATRICULA
+    (ID_VOLANTE, SEMESTRE_QUE_COBRA, TIPO_GENERACION, ID_ESTUDIANTE, ID_PERIODO, MODALIDAD, ID_PROGRAMA)
+VALUES (SEQ_VOLANTE.NEXTVAL, 2, 'INDIVIDUAL', 5, 1, 'CREDITOS', 3)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VOL_PERIODO) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 398 del comando :
+INSERT INTO VOLANTE_MATRICULA
+    (ID_VOLANTE, SEMESTRE_QUE_COBRA, TIPO_GENERACION, ID_ESTUDIANTE, ID_PERIODO, MODALIDAD, ID_PROGRAMA)
+VALUES (SEQ_VOLANTE.NEXTVAL, 1, 'MASIVA', 6, 1, 'GLOBAL', 1)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VOL_PERIODO) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 401 del comando -
+INSERT INTO VOLANTE_MATRICULA
+    (ID_VOLANTE, SEMESTRE_QUE_COBRA, TIPO_GENERACION, ID_ESTUDIANTE, ID_PERIODO, MODALIDAD, ID_PROGRAMA)
+VALUES (SEQ_VOLANTE.NEXTVAL, 2, 'INDIVIDUAL', 7, 1, 'CREDITOS', 1)
+Error en la línea de comandos : 403 Columna : 9
+Informe de error -
+Error SQL: ORA-02291: restricción de integridad (APP_USER.FK_CC_ESTUDIANTE) violada - clave principal no encontrada
+ORA-06512: en "APP_USER.TR_CREAR_CUENTA_CORRIENTE", línea 9
+ORA-04088: error durante la ejecución del disparador 'APP_USER.TR_CREAR_CUENTA_CORRIENTE'
+
+https://docs.oracle.com/error-help/db/ora-02291/02291. 00000 - "integrity constraint (%s.%s) violated - parent key not found"
+*Cause:    A foreign key value has no matching primary key value.
+*Action:   Delete the foreign key or add a matching primary key.
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+https://docs.oracle.com/error-help/db/ora-06512/
+https://docs.oracle.com/error-help/db/ora-04088/
+
+Error que empieza en la línea: 404 del comando -
+INSERT INTO VOLANTE_MATRICULA
+    (ID_VOLANTE, SEMESTRE_QUE_COBRA, TIPO_GENERACION, ID_ESTUDIANTE, ID_PERIODO, MODALIDAD, ID_PROGRAMA)
+VALUES (SEQ_VOLANTE.NEXTVAL, 3, 'INDIVIDUAL', 8, 1, 'GLOBAL', 1)
+Error en la línea de comandos : 406 Columna : 9
+Informe de error -
+Error SQL: ORA-02291: restricción de integridad (APP_USER.FK_CC_ESTUDIANTE) violada - clave principal no encontrada
+ORA-06512: en "APP_USER.TR_CREAR_CUENTA_CORRIENTE", línea 9
+ORA-04088: error durante la ejecución del disparador 'APP_USER.TR_CREAR_CUENTA_CORRIENTE'
+
+https://docs.oracle.com/error-help/db/ora-02291/02291. 00000 - "integrity constraint (%s.%s) violated - parent key not found"
+*Cause:    A foreign key value has no matching primary key value.
+*Action:   Delete the foreign key or add a matching primary key.
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+https://docs.oracle.com/error-help/db/ora-06512/
+https://docs.oracle.com/error-help/db/ora-04088/
+
+Error que empieza en la línea: 407 del comando -
+INSERT INTO VOLANTE_MATRICULA
+    (ID_VOLANTE, SEMESTRE_QUE_COBRA, TIPO_GENERACION, ID_ESTUDIANTE, ID_PERIODO, MODALIDAD, ID_PROGRAMA)
+VALUES (SEQ_VOLANTE.NEXTVAL, 1, 'MASIVA', 9, 1, 'GLOBAL', 2)
+Error en la línea de comandos : 409 Columna : 9
+Informe de error -
+Error SQL: ORA-02291: restricción de integridad (APP_USER.FK_CC_ESTUDIANTE) violada - clave principal no encontrada
+ORA-06512: en "APP_USER.TR_CREAR_CUENTA_CORRIENTE", línea 9
+ORA-04088: error durante la ejecución del disparador 'APP_USER.TR_CREAR_CUENTA_CORRIENTE'
+
+https://docs.oracle.com/error-help/db/ora-02291/02291. 00000 - "integrity constraint (%s.%s) violated - parent key not found"
+*Cause:    A foreign key value has no matching primary key value.
+*Action:   Delete the foreign key or add a matching primary key.
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+https://docs.oracle.com/error-help/db/ora-06512/
+https://docs.oracle.com/error-help/db/ora-04088/
+
+Error que empieza en la línea: 410 del comando :
+INSERT INTO VOLANTE_MATRICULA
+    (ID_VOLANTE, SEMESTRE_QUE_COBRA, TIPO_GENERACION, ID_ESTUDIANTE, ID_PERIODO, MODALIDAD, ID_PROGRAMA)
+VALUES (SEQ_VOLANTE.NEXTVAL, 2, 'INDIVIDUAL', 10, 1, 'CREDITOS', 2)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VOL_PERIODO) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+Confirmación terminada.
+
+Trigger TR_RECALCULAR_MONTO_CREDITOS alterado.
+
+
+Error que empieza en la línea: 424 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (4,  2)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 425 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (8,  2)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 426 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (11, 2)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 427 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (14, 2)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 428 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (15, 2)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 429 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (5,  5)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 430 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (8,  5)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 431 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (11, 5)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 432 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (23, 5)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 433 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (24, 5)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 434 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (4,  7)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 435 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (8,  7)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 436 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (11, 7)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 437 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (14, 7)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 438 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (15, 7)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 439 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (1,  10)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 440 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (8,  10)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 441 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (20, 10)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 442 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (21, 10)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+
+Error que empieza en la línea: 443 del comando :
+INSERT INTO VOLANTE_MATRICULA_ASIGNATURA (ID_ASIGNATURA, ID_VOLANTE) VALUES (22, 10)
+Informe de error -
+ORA-02291: restricción de integridad (APP_USER.FK_VMA_VOLANTE) violada - clave principal no encontrada
+
+https://docs.oracle.com/error-help/db/ora-02291/
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-02291/
+Confirmación terminada.
+
+Trigger TR_RECALCULAR_MONTO_CREDITOS alterado.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+Confirmación terminada.
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+Confirmación terminada.
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+
+0 filas insertadas.
+
+Confirmación terminada.
+============================================
+1. RESUMEN GENERAL DE TABLAS
+============================================
+
+TABLA                             FILAS
+---------------------------- ----------
+ASIGNATURA                           25
+CUENTA_CORRIENTE                      0
+ESTUDIANTE                            5
+MOVIMIENTO                            0
+PLAN_ESTUDIO                          6
+PLAN_ESTUDIO_ASIGNATURA              30
+TRANSACCION_PAGO                      0
+VOLANTE_MATRICULA                     0
+VOLANTE_MATRICULA_ASIGNATURA          0
+
+9 filas seleccionadas. 
+
+============================================
+2. PLAN DE ESTUDIO - 5 ASIGNATURAS POR SEMESTRE
+============================================
+
+  SEMESTRE NOMBRE_PROGRAMA                                                                                                                                                                                          ASIGNATURAS
+---------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -----------
+         1 Administración de Empresas                                                                                                                                                                                         5
+         2 Administración de Empresas                                                                                                                                                                                         5
+         3 Administración de Empresas                                                                                                                                                                                         5
+         1 Ingeniería de Sistemas                                                                                                                                                                                             5
+         2 Ingeniería de Sistemas                                                                                                                                                                                             5
+         3 Ingeniería de Sistemas                                                                                                                                                                                             5
+
+6 filas seleccionadas. 
+
+============================================
+3. VOLANTES POR ESTUDIANTE
+============================================
+no se ha seleccionado ninguna fila
+============================================
+4. ESTADOS DE VOLANTES
+============================================
+
+Error que empieza en la línea: 640 del comando -
+SELECT
+    v.ESTADO,
+    e.NOMBRE || ' ' || e.APELLIDO  AS ESTUDIANTE
+FROM VOLANTE_MATRICULA v
+JOIN ESTUDIANTE e ON e.ID_ESTUDIANTE = v.ID_ESTUDIANTE
+LEFT JOIN CUENTA_CORRIENTE cc ON cc.ID_ESTUDIANTE = v.ID_ESTUDIANTE
+ORDER BY cc.ESTADO, e.NOMBRE
+Error en la línea de comandos : 641 Columna : 5
+Informe de error -
+Error SQL: ORA-00904: "V"."ESTADO": identificador no válido
+
+https://docs.oracle.com/error-help/db/ora-00904/00904. 00000 -  "%s: invalid identifier"
+*Cause:    The identifier or column name entered was invalid.
+*Action:   Ensure the following
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-00904/
+============================================
+5. ASIGNATURAS POR VOLANTE CREDITOS
+============================================
+no se ha seleccionado ninguna fila
+============================================
+6. TODOS LOS MOVIMIENTOS
+============================================
+no se ha seleccionado ninguna fila
+============================================
+7. TRANSACCIONES DE PAGO
+============================================
+no se ha seleccionado ninguna fila
+============================================
+8. VW_SALDO_PERIODO - BALANCE POR ESTUDIANTE
+============================================
+no se ha seleccionado ninguna fila
+============================================
+9. VW_PENDIENTES_PAGO
+============================================
+no se ha seleccionado ninguna fila
+============================================
+10. VW_INGRESO_ESPERADO
+============================================
+
+Error que empieza en la línea: 721 del comando -
+SELECT
+    NOMBRE_PERIODO,
+    NOMBRE_PROGRAMA,
+    MODALIDAD,
+    CANTIDAD_VOLANTES,
+    TOTAL_ESPERADO
+FROM VW_INGRESO_ESPERADO
+ORDER BY NOMBRE_PROGRAMA, MODALIDAD
+Error en la línea de comandos : 725 Columna : 5
+Informe de error -
+Error SQL: ORA-00904: "CANTIDAD_VOLANTES": identificador no válido
+
+https://docs.oracle.com/error-help/db/ora-00904/00904. 00000 -  "%s: invalid identifier"
+*Cause:    The identifier or column name entered was invalid.
+*Action:   Ensure the following
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-00904/
+============================================
+11. VW_INGRESO_REAL
+============================================
+
+Error que empieza en la línea: 733 del comando -
+SELECT
+    NOMBRE_PERIODO,
+    NOMBRE_PROGRAMA,
+    CANTIDAD_ESTUDIANTES,
+    CANTIDAD_TRANSACCIONES,
+    TOTAL_RECAUDADO
+FROM VW_INGRESO_REAL
+ORDER BY NOMBRE_PROGRAMA
+Error en la línea de comandos : 737 Columna : 5
+Informe de error -
+Error SQL: ORA-00904: "CANTIDAD_TRANSACCIONES": identificador no válido
+
+https://docs.oracle.com/error-help/db/ora-00904/00904. 00000 -  "%s: invalid identifier"
+*Cause:    The identifier or column name entered was invalid.
+*Action:   Ensure the following
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-00904/
+============================================
+12. MALLA ACADEMICA - MATERIAS POR SEMESTRE Y CARRERA
+============================================
+
+PROGRAMA                                                                                                                                                                                                   SEMESTRE ASIGNATURA                                                                                                                                                                                                 CREDITOS
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ---------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ----------
+Administración de Empresas                                                                                                                                                                                        1 Anatomía Humana                                                                                                                                                                                                   4
+Administración de Empresas                                                                                                                                                                                        1 Biología Celular                                                                                                                                                                                                  4
+Administración de Empresas                                                                                                                                                                                        1 Bioquimica                                                                                                                                                                                                        4
+Administración de Empresas                                                                                                                                                                                        1 Fisiologia                                                                                                                                                                                                        4
+Administración de Empresas                                                                                                                                                                                        1 Quimica General                                                                                                                                                                                                   4
+Administración de Empresas                                                                                                                                                                                        2 Estadistica                                                                                                                                                                                                       3
+Administración de Empresas                                                                                                                                                                                        2 Física I                                                                                                                                                                                                          3
+Administración de Empresas                                                                                                                                                                                        2 Fisiologia                                                                                                                                                                                                        4
+Administración de Empresas                                                                                                                                                                                        2 Inglés I                                                                                                                                                                                                          2
+Administración de Empresas                                                                                                                                                                                        2 Quimica General                                                                                                                                                                                                   4
+Administración de Empresas                                                                                                                                                                                        3 Bioquimica                                                                                                                                                                                                        4
+
+PROGRAMA                                                                                                                                                                                                   SEMESTRE ASIGNATURA                                                                                                                                                                                                 CREDITOS
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ---------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ----------
+Administración de Empresas                                                                                                                                                                                        3 Estadistica                                                                                                                                                                                                       3
+Administración de Empresas                                                                                                                                                                                        3 Fisiologia                                                                                                                                                                                                        4
+Administración de Empresas                                                                                                                                                                                        3 Inglés I                                                                                                                                                                                                          2
+Administración de Empresas                                                                                                                                                                                        3 Quimica General                                                                                                                                                                                                   4
+Ingeniería de Sistemas                                                                                                                                                                                            1 Administracion I                                                                                                                                                                                                  3
+Ingeniería de Sistemas                                                                                                                                                                                            1 Contabilidad General                                                                                                                                                                                              3
+Ingeniería de Sistemas                                                                                                                                                                                            1 Derecho Comercial                                                                                                                                                                                                 3
+Ingeniería de Sistemas                                                                                                                                                                                            1 Inglés I                                                                                                                                                                                                          2
+Ingeniería de Sistemas                                                                                                                                                                                            1 Microeconomía                                                                                                                                                                                                     3
+Ingeniería de Sistemas                                                                                                                                                                                            2 Cálculo Diferencial                                                                                                                                                                                               3
+Ingeniería de Sistemas                                                                                                                                                                                            2 Finanzas I                                                                                                                                                                                                        3
+
+PROGRAMA                                                                                                                                                                                                   SEMESTRE ASIGNATURA                                                                                                                                                                                                 CREDITOS
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ---------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ----------
+Ingeniería de Sistemas                                                                                                                                                                                            2 Gestion Humana                                                                                                                                                                                                    3
+Ingeniería de Sistemas                                                                                                                                                                                            2 Inglés I                                                                                                                                                                                                          2
+Ingeniería de Sistemas                                                                                                                                                                                            2 Marketing                                                                                                                                                                                                         3
+Ingeniería de Sistemas                                                                                                                                                                                            3 Estadistica                                                                                                                                                                                                       3
+Ingeniería de Sistemas                                                                                                                                                                                            3 Finanzas I                                                                                                                                                                                                        3
+Ingeniería de Sistemas                                                                                                                                                                                            3 Gestion Humana                                                                                                                                                                                                    3
+Ingeniería de Sistemas                                                                                                                                                                                            3 Inglés I                                                                                                                                                                                                          2
+Ingeniería de Sistemas                                                                                                                                                                                            3 Marketing                                                                                                                                                                                                         3
+
+30 filas seleccionadas. 
+

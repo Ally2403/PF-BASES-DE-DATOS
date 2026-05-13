@@ -184,6 +184,37 @@ def execute_procedure(procedure_name: str, params: Optional[list] = None) -> Lis
             cursor.close()
 
 
+def is_fk_violation(e: Exception) -> bool:
+    """Detecta si una excepción es una violación de integridad referencial de Oracle (ORA-02292)."""
+    msg = str(e)
+    return "ORA-02292" in msg or ("integrity constraint" in msg.lower() and "violated" in msg.lower())
+
+
+def execute_transaction(statements: list) -> None:
+    """
+    Ejecuta múltiples sentencias SQL en una sola transacción atómica.
+
+    Args:
+        statements: Lista de tuplas (query, params_dict). Si params_dict es None se usa {}.
+
+    Raises:
+        oracledb.DatabaseError: Si alguna sentencia falla (hace rollback de todas).
+    """
+    with OracleConnection() as conn:
+        cursor = conn.cursor()
+        try:
+            for query, params in statements:
+                cursor.execute(query, params or {})
+            conn.commit()
+            logger.info(f"✓ Transacción completada: {len(statements)} sentencias")
+        except oracledb.DatabaseError as e:
+            conn.rollback()
+            logger.error(f"✗ Error en transacción, rollback ejecutado: {e}")
+            raise
+        finally:
+            cursor.close()
+
+
 def test_connection() -> bool:
     """
     Prueba la conexión a Oracle con un SELECT 1 FROM DUAL.

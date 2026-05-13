@@ -164,7 +164,7 @@
 
   async function eliminar(codRaw) {
     var key = String(codRaw || "").trim().toUpperCase();
-    if (!window.confirm("¿Seguro que desea eliminar?")) return;
+    if (!await auth.showConfirm("¿Seguro que desea eliminar el código \u201c" + key + "\u201d?")) return;
     try {
       await api.deleteCodigoDetalle(key);
       toast("Código eliminado", "success");

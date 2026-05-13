@@ -85,15 +85,28 @@
       const saldo = await api.getSaldo({ estudiante: idEst, periodo: idPer });
       $("cc-total-cobros").textContent = COP.format(saldo.total_cobros);
       $("cc-total-pagos").textContent = COP.format(saldo.total_pagos);
-      $("cc-saldo-neto").textContent = COP.format(Math.abs(saldo.saldo_neto));
+      $("cc-saldo-neto").textContent = COP.format(saldo.saldo_neto);
       $("cc-banner").hidden = false;
-      if (saldo.saldo_neto === 0) {
-        $("cc-estado-banner").innerHTML =
-          '<span class="status-al-dia">Estudiante al día para este período (saldo 0).</span>';
+
+      // Calcular ESTADO desde los valores numéricos (no viene de la BD)
+      const estadoBadges = {
+        PAGADO:    { cls: "status-al-dia",  txt: "PAGADO — Estudiante al día" },
+        PARCIAL:   { cls: "status-debe",    txt: "PARCIAL — Pago incompleto" },
+        PENDIENTE: { cls: "status-debe",    txt: "PENDIENTE — Sin pagos registrados" },
+      };
+      let estado;
+      if (saldo.saldo_neto <= 0) {
+        estado = "PAGADO";
+      } else if (saldo.total_pagos > 0) {
+        estado = "PARCIAL";
+      } else {
+        estado = "PENDIENTE";
+      }
+      const badge = estadoBadges[estado] || { cls: "status-debe", txt: estado };
+      $("cc-estado-banner").innerHTML = `<span class="${badge.cls}">${badge.txt}</span>`;
+      if (estado === "PAGADO") {
         $("cc-saldo-tile").classList.remove("saldo-highlight");
       } else {
-        $("cc-estado-banner").innerHTML =
-          '<span class="status-debe">Saldo pendiente: se muestran obligaciones.</span>';
         $("cc-saldo-tile").classList.add("saldo-highlight");
       }
 
@@ -144,7 +157,7 @@
   }
 
   window.eliminarMovimiento = async function (id) {
-    if (!confirm("¿Seguro que desea eliminar este movimiento?")) return;
+    if (!await auth.showConfirm("¿Seguro que desea eliminar este movimiento?")) return;
     try {
       await api.deleteMovimiento(id);
       refrescar();
@@ -152,7 +165,7 @@
         auth.showToast("Movimiento eliminado");
       }
     } catch (e) {
-      alert(e.message);
+      if (typeof auth.showToast === "function") auth.showToast(e.message, "error");
     }
   };
 

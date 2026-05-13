@@ -11,7 +11,7 @@ from app.schemas.movimiento import (
 from app.services.permissions import require_perfil
 from app.services import volante as volante_service
 from app.services import movimiento as movimiento_service
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import logging
 import traceback
 
@@ -23,10 +23,14 @@ router = APIRouter(prefix="/api/asistente", tags=["ASISTENTE"])
 # ===== VOLANTES ENDPOINTS =====
 
 @router.get("/volantes", response_model=VolanteListResponse)
-async def listar_volantes(perfil_info: Dict[str, Any] = Depends(require_perfil(["ASISTENTE", "ADMINISTRADOR"]))):
-    """Lista todos los volantes de matrícula."""
+async def listar_volantes(
+    id_estudiante: Optional[int] = None,
+    id_periodo: Optional[int] = None,
+    perfil_info: Dict[str, Any] = Depends(require_perfil(["ASISTENTE", "ADMINISTRADOR"]))
+):
+    """Lista volantes de matrícula. Acepta filtros opcionales por id_estudiante e id_periodo."""
     try:
-        volantes = volante_service.get_all_volantes()
+        volantes = volante_service.get_all_volantes(id_estudiante=id_estudiante, id_periodo=id_periodo)
         return {
             "success": True,
             "message": f"Se obtuvieron {len(volantes)} volantes",
@@ -72,13 +76,23 @@ async def crear_volante_individual(
         
         if volante.modalidad not in ["GLOBAL", "CREDITOS"]:
             raise ValueError("modalidad debe ser GLOBAL o CREDITOS")
+
+        # Resolver id_programa: puede venir en el body o se obtiene del estudiante
+        id_programa = volante.id_programa
+        if not id_programa:
+            from app.services.estudiante import get_estudiante_by_id
+            est = get_estudiante_by_id(volante.id_estudiante)
+            if not est:
+                raise ValueError(f"Estudiante {volante.id_estudiante} no encontrado")
+            id_programa = est['ID_PROGRAMA']
         
         nuevo_volante = volante_service.create_volante_individual(
             id_estudiante=volante.id_estudiante,
             id_periodo=volante.id_periodo,
-            id_programa=volante.id_programa,
+            id_programa=id_programa,
             modalidad=volante.modalidad,
-            semestre_que_cobra=volante.semestre_que_cobra
+            semestre_que_cobra=volante.semestre_que_cobra,
+            asignaturas=volante.asignaturas or []
         )
         
         return {
@@ -104,17 +118,27 @@ async def crear_volantes_masiva(
         if volante.modalidad not in ["GLOBAL", "CREDITOS"]:
             raise ValueError("modalidad debe ser GLOBAL o CREDITOS")
         
-        ids_creados = volante_service.create_volante_masiva(
+        if not volante.id_programa:
+            raise ValueError("id_programa es requerido para cobro masivo")
+        
+        resultado = volante_service.create_volante_masiva(
             id_periodo=volante.id_periodo,
             id_programa=volante.id_programa,
             modalidad=volante.modalidad,
             semestre_que_cobra=volante.semestre_que_cobra
         )
         
+        ids_creados = resultado["creados"]
+        errores = resultado["errores"]
         return {
             "success": True,
-            "message": f"Se crearon {len(ids_creados)} volantes masivamente",
-            "data": {"volantes_creados": ids_creados, "cantidad": len(ids_creados)}
+            "message": f"Se crearon {len(ids_creados)} volantes. {len(errores)} omitidos.",
+            "data": {
+                "volantes_creados": ids_creados,
+                "cantidad": len(ids_creados),
+                "omitidos": len(errores),
+                "errores": errores
+            }
         }
     except ValueError as e:
         logger.warning(f"⚠ Validación fallida: {e}")
@@ -156,20 +180,26 @@ async def crear_cobro_adicional(
         if cobro.codigo_detalle not in codigos_validos:
             raise ValueError(f"código_detalle debe ser uno de: {', '.join(codigos_validos)}")
         
+        if cobro.id_volante is None and (cobro.id_estudiante is None or cobro.id_periodo is None):
+            raise ValueError("Debe proporcionar id_volante o (id_estudiante + id_periodo)")
+
         # Crear el movimiento de cobro
         movimiento = movimiento_service.crear_cobro_adicional(
             id_volante=cobro.id_volante,
             codigo_detalle=cobro.codigo_detalle,
-            valor=cobro.valor
+            valor=cobro.valor,
+            id_estudiante=cobro.id_estudiante,
+            id_periodo=cobro.id_periodo
         )
         
-        # Retornar el volante actualizado
-        volante = volante_service.get_volante_by_id(cobro.id_volante)
-        
+        # Retornar el volante si existe, o None si el cobro fue cargado directo a la CC
+        id_vol_resuelto = cobro.id_volante or (movimiento.get('ID_VOLANTE') if movimiento else None)
+        volante = volante_service.get_volante_by_id(id_vol_resuelto) if id_vol_resuelto else None
+
         return {
             "success": True,
-            "message": f"Cobro adicional {cobro.codigo_detalle} (${cobro.valor}) agregado al volante",
-            "data": VolanteResponse.model_validate(volante)
+            "message": f"Cobro adicional {cobro.codigo_detalle} (${cobro.valor}) cargado a la cuenta corriente",
+            "data": VolanteResponse.model_validate(volante) if volante else None
         }
     except ValueError as e:
         logger.warning(f"⚠ Validación fallida: {e}")
@@ -196,7 +226,8 @@ async def registrar_pago(
             id_volante=pago.id_volante,
             medio_pago=pago.medio_pago,
             valor=pago.valor,
-            referencia=pago.referencia
+            referencia=pago.referencia,
+            codigo_detalle=pago.codigo_detalle
         )
         
         return {

@@ -94,7 +94,7 @@ def update_estudiante(id_estudiante: int, nombre: str, apellido: str, telefono: 
 
 
 def delete_estudiante(id_estudiante: int) -> bool:
-    """Elimina un estudiante."""
+    """Elimina un estudiante. Oracle CASCADE elimina cuenta, volantes y movimientos."""
     try:
         query = "DELETE FROM ESTUDIANTE WHERE ID_ESTUDIANTE = :id"
         affected = execute_update(query, {"id": id_estudiante})

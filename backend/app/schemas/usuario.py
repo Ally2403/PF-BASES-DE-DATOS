@@ -12,12 +12,20 @@ class UsuarioCreate(BaseModel):
     contrasena: str = Field(..., min_length=6, description="Contraseña")
     id_perfil: int = Field(..., description="ID del perfil")
     cedula: int = Field(..., description="Cédula de la persona")
+    nombre: Optional[str] = Field(None, description="Nombre (requerido si persona nueva)")
+    apellido: Optional[str] = Field(None, description="Apellido (requerido si persona nueva)")
+    correo: Optional[str] = Field(None, description="Correo electrónico")
+    telefono: Optional[str] = Field(None, description="Teléfono")
 
 
 class UsuarioUpdate(BaseModel):
     """Datos para actualizar un usuario."""
     username: Optional[str] = Field(None, min_length=3, max_length=50)
     id_perfil: Optional[int] = Field(None)
+    nombre: Optional[str] = Field(None)
+    apellido: Optional[str] = Field(None)
+    correo: Optional[str] = Field(None)
+    telefono: Optional[str] = Field(None)
 
 
 class UsuarioResponse(BaseModel):

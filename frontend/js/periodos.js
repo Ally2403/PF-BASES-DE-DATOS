@@ -186,7 +186,7 @@
   }
 
   async function eliminar(id) {
-    if (!window.confirm("¿Seguro que desea eliminar?")) return;
+    if (!await auth.showConfirm("¿Seguro que desea eliminar este periodo?")) return;
     try {
       await api.deletePeriodo(id);
       toast("Periodo eliminado", "success");

@@ -64,10 +64,11 @@
         <h2>Agregar cobro adicional</h2>
         <form id="form-ca" class="stack" style="max-width: 500px">
           <div class="form-group">
-            <label for="ca-codigo">Concepto</label>
+            <label for="ca-codigo">Concepto de cobro adicional</label>
             <select id="ca-codigo" required>
-              <option value="">— Elija concepto —</option>
+              <option value="">— Elija el tipo de cargo a aplicar —</option>
             </select>
+            <small style="color:var(--text-muted); font-size:0.78rem; margin-top:0.3rem; display:block" id="ca-desc-hint">Seleccione un concepto para ver su descripción.</small>
           </div>
           <div class="form-group" style="display: none;">
             <label for="ca-desc">Descripción</label>

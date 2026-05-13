@@ -144,7 +144,7 @@
   }
 
   async function eliminarAsignatura(id) {
-    if (!window.confirm("¿Seguro que desea eliminar?")) return;
+    if (!await auth.showConfirm("¿Seguro que desea eliminar esta asignatura del catálogo?")) return;
     try {
       await api.deleteAsignaturaCatalog(id);
       auth.showToast("Asignatura eliminada");

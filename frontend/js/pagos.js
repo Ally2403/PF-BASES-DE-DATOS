@@ -65,7 +65,7 @@
           $("pg-est").value = id;
           if (lbl) lbl.textContent = "Seleccionado: " + e.nombre + " " + e.apellido + " (" + e.carnet + ")";
           renderTablaEstudiantes();
-          cargarConceptos();
+          mostrarSaldo();
         };
         tb.appendChild(tr);
       });
@@ -133,6 +133,30 @@
     }
   }
 
+  async function mostrarSaldo() {
+    const est = $("pg-est").value;
+    const per = $("pg-per").value;
+    const box = $("pg-saldo-box");
+    if (!est || !per || !box) return;
+    try {
+      const saldo = await api.getSaldo({ estudiante: Number(est), periodo: Number(per) });
+      if (!saldo) { box.hidden = true; return; }
+      const estadoBadges = {
+        PAGADO:    { cls: "status-al-dia", txt: "PAGADO" },
+        PARCIAL:   { cls: "status-debe",   txt: "PARCIAL" },
+        PENDIENTE: { cls: "status-debe",   txt: "PENDIENTE" },
+      };
+      const estado = (saldo.saldo_neto <= 0) ? "PAGADO" : (saldo.total_pagos > 0 ? "PARCIAL" : "PENDIENTE");
+      const badge = estadoBadges[estado] || { cls: "status-debe", txt: estado };
+      $("pg-saldo-neto").textContent = COP.format(saldo.saldo_neto);
+      $("pg-saldo-neto").style.color = saldo.saldo_neto <= 0 ? "var(--success,#27ae60)" : "var(--danger,#e74c3c)";
+      $("pg-saldo-estado").innerHTML = `<span class="${badge.cls}">${badge.txt}</span>`;
+      box.hidden = false;
+    } catch (_) {
+      if (box) box.hidden = true;
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", async function () {
     await cargarEstudiantes();
     await cargarPeriodos();
@@ -141,6 +165,7 @@
     $("pg-per").value = "";
 
     $("pg-filtro-est").addEventListener("input", renderTablaEstudiantes);
+    $("pg-per").addEventListener("change", mostrarSaldo);
 
     $("form-pago").addEventListener("submit", async function (ev) {
       ev.preventDefault();
@@ -187,7 +212,9 @@
         $("pg-est").value = "";
         $("pg-per").value = "";
         $("pg-med").value = "";
-        await cargarCodigosPago();
+        const box = $("pg-saldo-box");
+        if (box) box.hidden = true;
+        renderTablaEstudiantes();
       } catch (e) {
         $("pg-err").textContent = e.message;
         $("pg-err").hidden = false;

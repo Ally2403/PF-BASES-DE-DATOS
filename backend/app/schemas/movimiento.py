@@ -16,8 +16,10 @@ class MovimientoCreate(BaseModel):
 
 
 class CobroAdicionalCreate(BaseModel):
-    """Datos para crear un cobro adicional sobre un volante existente."""
-    id_volante: int = Field(..., description="ID del volante existente")
+    """Datos para crear un cobro adicional. Requiere id_volante O (id_estudiante + id_periodo)."""
+    id_volante: Optional[int] = Field(None, description="ID del volante (si se conoce)")
+    id_estudiante: Optional[int] = Field(None, description="ID del estudiante (alternativa a id_volante)")
+    id_periodo: Optional[int] = Field(None, description="ID del periodo (alternativa a id_volante)")
     codigo_detalle: str = Field(..., max_length=10, description="PCAR, PLAB, PEXA, etc")
     valor: float = Field(..., gt=0, description="Valor del cobro adicional")
 
@@ -28,6 +30,7 @@ class PagoCreate(BaseModel):
     medio_pago: str = Field(..., max_length=30, description="Efectivo, Transferencia, Tarjeta, etc")
     valor: float = Field(..., gt=0, description="Valor pagado")
     referencia: Optional[str] = Field(None, max_length=100, description="Referencia del pago (ej: número de comprobante)")
+    codigo_detalle: str = Field(default='MPAG', max_length=10, description="Código de detalle del pago (MPAG, ANT, DESC, CRED)")
 
 
 class MovimientoResponse(BaseModel):

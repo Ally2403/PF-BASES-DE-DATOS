@@ -55,52 +55,78 @@ def get_cuenta_by_estudiante(id_estudiante: int) -> Optional[int]:
         raise
 
 
-def crear_cobro_adicional(id_volante: int, codigo_detalle: str, valor: float) -> Dict[str, Any]:
-    """Crea un movimiento de cobro adicional (PCAR, PLAB, PEXA, etc).
-    El trigger TR_RECALCULAR_MONTO_VOLANTE actualizará el MONTO_TOTAL del volante."""
-    try:
-        # Obtener datos del volante para la cuenta
-        volante = execute_query(
-            "SELECT ID_ESTUDIANTE, ID_PERIODO FROM VOLANTE_MATRICULA WHERE ID_VOLANTE = :id",
-            {"id": id_volante}
+def _ensure_cuenta_corriente(id_estudiante: int) -> int:
+    """Obtiene o crea la CUENTA_CORRIENTE del estudiante."""
+    id_cuenta = get_cuenta_by_estudiante(id_estudiante)
+    if not id_cuenta:
+        seq = execute_query("SELECT SEQ_CUENTA.NEXTVAL AS ID_CUENTA FROM DUAL")
+        id_cuenta = seq[0]['ID_CUENTA']
+        execute_update(
+            "INSERT INTO CUENTA_CORRIENTE (ID_CUENTA, ID_ESTUDIANTE) VALUES (:id, :est)",
+            {"id": id_cuenta, "est": id_estudiante}
         )
-        
-        if not volante:
-            raise ValueError(f"Volante {id_volante} no encontrado")
-        
-        id_estudiante = volante[0]['ID_ESTUDIANTE']
-        id_periodo = volante[0]['ID_PERIODO']
-        
-        # Obtener la cuenta (debe existir por trigger)
-        id_cuenta = get_cuenta_by_estudiante(id_estudiante)
-        if not id_cuenta:
-            raise ValueError(f"Cuenta corriente no existe para estudiante {id_estudiante} en período {id_periodo}")
-        
-        # Obtener el siguiente ID de movimiento
+        logger.info(f"✓ CC auto-creada para estudiante {id_estudiante}: id={id_cuenta}")
+    return id_cuenta
+
+
+def crear_cobro_adicional(id_volante: Optional[int], codigo_detalle: str, valor: float,
+                          id_estudiante: Optional[int] = None, id_periodo: Optional[int] = None) -> Dict[str, Any]:
+    """Crea un movimiento de cobro adicional (PCAR, PLAB, PEXA, etc).
+    Si hay volante, se obtiene estudiante/periodo desde él.
+    Si no hay volante, se requiere id_estudiante + id_periodo directamente.
+    La CC se crea automáticamente si no existe."""
+    try:
+        # Resolver volante → estudiante/periodo
+        if id_volante is not None:
+            volante = execute_query(
+                "SELECT ID_ESTUDIANTE, ID_PERIODO FROM VOLANTE_MATRICULA WHERE ID_VOLANTE = :id",
+                {"id": id_volante}
+            )
+            if not volante:
+                raise ValueError(f"Volante {id_volante} no encontrado")
+            id_estudiante = volante[0]['ID_ESTUDIANTE']
+            id_periodo = volante[0]['ID_PERIODO']
+        else:
+            # Sin volante: se requiere estudiante + periodo
+            if not id_estudiante or not id_periodo:
+                raise ValueError("Debe proporcionar id_volante o (id_estudiante + id_periodo)")
+            # Buscar si existe volante para asociar (opcional, no obligatorio)
+            vol_lookup = execute_query(
+                "SELECT ID_VOLANTE FROM VOLANTE_MATRICULA WHERE ID_ESTUDIANTE = :est AND ID_PERIODO = :per",
+                {"est": id_estudiante, "per": id_periodo}
+            )
+            if vol_lookup:
+                id_volante = vol_lookup[0]['ID_VOLANTE']
+            # Si no hay volante, id_volante queda None → MOVIMIENTO.ID_VOLANTE es nullable
+
+        # Auto-crear CC si no existe
+        id_cuenta = _ensure_cuenta_corriente(id_estudiante)
+
+        # Insertar movimiento
         seq_result = execute_query("SELECT SEQ_MOVIMIENTO.NEXTVAL AS ID_MOV FROM DUAL")
         new_id = seq_result[0]['ID_MOV']
-        
-        query = """
-            INSERT INTO MOVIMIENTO (ID_MOV, FECHA, VALOR, CODIGO_DETALLE, ID_VOLANTE, ID_PERIODO, ID_CUENTA)
-            VALUES (:id, SYSDATE, :valor, :cod_det, :id_vol, :id_per, :id_cuenta)
-        """
-        execute_update(query, {
-            "id": new_id,
-            "valor": valor,
-            "cod_det": codigo_detalle,
-            "id_vol": id_volante,
-            "id_per": id_periodo,
-            "id_cuenta": id_cuenta
-        })
-        
-        logger.info(f"✓ Cobro adicional creado: {codigo_detalle} x {valor} para volante {id_volante}")
+
+        execute_update(
+            """INSERT INTO MOVIMIENTO (ID_MOV, FECHA, VALOR, CODIGO_DETALLE, ID_VOLANTE, ID_PERIODO, ID_CUENTA)
+               VALUES (:id, SYSDATE, :valor, :cod_det, :id_vol, :id_per, :id_cuenta)""",
+            {
+                "id": new_id,
+                "valor": valor,
+                "cod_det": codigo_detalle,
+                "id_vol": id_volante,
+                "id_per": id_periodo,
+                "id_cuenta": id_cuenta
+            }
+        )
+
+        logger.info(f"✓ Cobro adicional creado: {codigo_detalle} x {valor}, volante={id_volante}, est={id_estudiante}")
         return get_movimiento_by_id(new_id)
     except Exception as e:
         logger.error(f"✗ Error al crear cobro: {e}")
         raise
 
 
-def registrar_pago(id_volante: int, medio_pago: str, valor: float, referencia: Optional[str] = None) -> Dict[str, Any]:
+def registrar_pago(id_volante: int, medio_pago: str, valor: float, referencia: Optional[str] = None, codigo_detalle: str = 'MPAG') -> Dict[str, Any]:
     """Registra un pago: inserta en MOVIMIENTO y luego en TRANSACCION_PAGO.
     El trigger TR_ACTUALIZAR_ESTADO_VOLANTE actualizará el estado."""
     try:
@@ -125,14 +151,15 @@ def registrar_pago(id_volante: int, medio_pago: str, valor: float, referencia: O
         seq_mov = execute_query("SELECT SEQ_MOVIMIENTO.NEXTVAL AS ID_MOV FROM DUAL")
         id_mov = seq_mov[0]['ID_MOV']
         
-        # Insertar en MOVIMIENTO con código MPAG (Movimiento Pago)
+        # Insertar en MOVIMIENTO con el código de pago recibido
         query_mov = """
             INSERT INTO MOVIMIENTO (ID_MOV, FECHA, VALOR, CODIGO_DETALLE, ID_VOLANTE, ID_PERIODO, ID_CUENTA)
-            VALUES (:id, SYSDATE, :valor, 'MPAG', :id_vol, :id_per, :id_cuenta)
+            VALUES (:id, SYSDATE, :valor, :cod_det, :id_vol, :id_per, :id_cuenta)
         """
         execute_update(query_mov, {
             "id": id_mov,
             "valor": valor,
+            "cod_det": codigo_detalle,
             "id_vol": id_volante,
             "id_per": id_periodo,
             "id_cuenta": id_cuenta

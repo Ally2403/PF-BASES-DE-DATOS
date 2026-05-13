@@ -14,7 +14,7 @@
         <p>Gestión de cuentas técnicas. El envío de contraseña por correo lo implementará el servidor.</p>
       </header>
 
-      <div class="card">
+      <div class="card" id="card-registro-usuario">
         <h2>Registro de nuevo usuario</h2>
         <p class="mb-1" style="font-size: 0.85rem; color: var(--text-muted)">
           Ingrese los datos del usuario y la información personal vinculada (Persona).
@@ -76,7 +76,7 @@
                 <th>Persona</th>
                 <th>Contacto</th>
                 <th>Perfil</th>
-                <th class="text-center">Acciones</th>
+                <th class="text-center" id="th-acciones">Acciones</th>
               </tr>
             </thead>
             <tbody id="u-tbl"></tbody>
@@ -140,8 +140,15 @@
     <script src="../js/auth.js"></script>
     <script>
       auth.initPage({ perm: "VER_USUARIOS", activeFile: "usuarios.html" });
+      // Ocultar sección de escritura si no tiene permiso de gestión
+      if (!auth.can("GESTIONAR_USUARIOS")) {
+        document.getElementById("card-registro-usuario").style.display = "none";
+        var thAcc = document.getElementById("th-acciones");
+        if (thAcc) thAcc.style.display = "none";
+      }
     </script>
     <script>
+      window.__puedeGestionarUsuarios = auth.can("GESTIONAR_USUARIOS");
       let usuariosCache = [];
 
       async function cargarPerf() {
@@ -190,7 +197,7 @@
       };
 
       window.eliminarUsuario = async function(id, name) {
-        if (!window.confirm("¿Seguro que desea eliminar al usuario " + name + " (ID: " + id + ")? Esta acción no se puede deshacer.")) return;
+        if (!await auth.showConfirm("¿Seguro que desea eliminar al usuario " + name + " (ID: " + id + ")? Esta acción no se puede deshacer.")) return;
         try {
           await api.deleteUsuario(id);
           auth.showToast("Usuario eliminado correctamente.");
@@ -217,13 +224,15 @@
             "<td>" + esc(u.nombre + " " + u.apellido) + "</td>" +
             "<td><div style='font-size:0.8rem'>" + esc(u.correo) + "<br><span class='text-muted'>" + esc(u.telefono) + "</span></div></td>" +
             "<td><span class='badge'>" + esc(u.nombre_perfil) + "</span></td>" +
-            "<td class='text-center'>" +
-              "<div class='btn-row' style='justify-content: center; gap: 0.25rem'>" +
-                "<button class='btn btn-small btn-ghost' title='Notificar' onclick='notificar(\"" + esc(u.correo) + "\", \"" + esc(u.username) + "\")'>🔔</button>" +
-                "<button class='btn btn-small btn-secondary' onclick='abrirEditar(" + u.id_user + ")'>✏️</button>" +
-                "<button class='btn btn-small btn-danger' onclick='eliminarUsuario(" + u.id_user + ", \"" + esc(u.username) + "\")'>🗑️</button>" +
-              "</div>" +
-            "</td>";
+            (window.__puedeGestionarUsuarios
+              ? "<td class='text-center'>" +
+                  "<div class='btn-row' style='justify-content: center; gap: 0.25rem'>" +
+                    "<button class='btn btn-small btn-ghost' title='Notificar' onclick='notificar(\"" + esc(u.correo) + "\", \"" + esc(u.username) + "\")'>🔔</button>" +
+                    "<button class='btn btn-small btn-secondary' onclick='abrirEditar(" + u.id_user + ")'>✏️</button>" +
+                    "<button class='btn btn-small btn-danger' onclick='eliminarUsuario(" + u.id_user + ", \"" + esc(u.username) + "\")'>🗑️</button>" +
+                  "</div>" +
+                "</td>"
+              : "");
           tb.appendChild(tr);
         });
       }
@@ -253,7 +262,7 @@
           await api.postUsuario({
             username: document.getElementById("u-us").value.trim(),
             contrasena: document.getElementById("u-pw").value,
-            cedula: document.getElementById("u-cc").value,
+            cedula: Number(document.getElementById("u-cc").value),
             id_perfil: Number(document.getElementById("u-perf").value),
             nombre: document.getElementById("u-nom").value.trim(),
             apellido: document.getElementById("u-ape").value.trim(),

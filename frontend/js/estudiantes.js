@@ -175,7 +175,7 @@
       auth.showToast("ID_ESTUDIANTE inválido.", "error");
       return;
     }
-    if (!window.confirm("¿Seguro que desea eliminar? (" + (row ? row.nombre + " " + row.apellido : id) + ")")) {
+    if (!await auth.showConfirm("¿Seguro que desea eliminar al estudiante " + (row ? row.nombre + " " + row.apellido : id) + "? Esta acción no se puede deshacer.")) {
       return;
     }
     try {

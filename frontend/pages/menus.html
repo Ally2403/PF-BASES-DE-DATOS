@@ -124,14 +124,14 @@
       }
 
       window.eliminarMenu = async (id) => {
-        if (!confirm("¿Eliminar este menú? Esto puede afectar la navegación.")) return;
+        if (!await auth.showConfirm("¿Eliminar este menú? Esto puede afectar la navegación.")) return;
         await api.deleteMenu(id);
         auth.showToast("Menú eliminado.");
         cargarMenus();
       };
 
       window.eliminarPermiso = async (id) => {
-        if (!confirm("¿Eliminar este permiso?")) return;
+        if (!await auth.showConfirm("¿Eliminar este permiso?")) return;
         await api.deletePermiso(id);
         auth.showToast("Permiso eliminado.");
         cargarPermisos();

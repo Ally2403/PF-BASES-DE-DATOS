@@ -4,6 +4,7 @@ services/usuario.py — Lógica de negocio para USUARIO
 
 from app.services.database import execute_query, execute_update
 from app.services.auth import hash_password_sha256
+from app.services.persona import get_persona_by_cedula, create_persona, update_persona
 from typing import List, Dict, Any, Optional
 import logging
 
@@ -68,60 +69,88 @@ def get_usuario_by_username(username: str) -> Optional[Dict[str, Any]]:
         raise
 
 
-def create_usuario(username: str, contrasena: str, id_perfil: int, cedula: int) -> Dict[str, Any]:
-    """Crea un nuevo usuario."""
+def create_usuario(username: str, contrasena: str, id_perfil: int, cedula: int,
+                   nombre: Optional[str] = None, apellido: Optional[str] = None,
+                   correo: Optional[str] = None, telefono: Optional[str] = None) -> Dict[str, Any]:
+    """Crea un nuevo usuario, creando o actualizando la persona asociada si es necesario."""
     try:
-        # Obtener el siguiente ID
+        # 1. Verificar si ya existe la PERSONA con esa cédula
+        persona = get_persona_by_cedula(cedula)
+        if not persona:
+            # Persona nueva: nombre, apellido y correo son obligatorios
+            if not nombre or not apellido or not correo:
+                raise ValueError(
+                    "Para registrar un usuario con una cédula nueva debe proporcionar "
+                    "nombre, apellido y correo electrónico."
+                )
+            create_persona(cedula, nombre, apellido, correo, telefono)
+        else:
+            # Persona ya existe: actualizar sólo los campos que se envíen
+            if any(v is not None for v in [nombre, apellido, correo, telefono]):
+                update_persona(cedula, nombre, apellido, correo, telefono)
+
+        # 2. Obtener el siguiente ID de secuencia
         seq_result = execute_query("SELECT SEQ_USUARIO.NEXTVAL AS ID_USER FROM DUAL")
         new_id = seq_result[0]['ID_USER']
-        
-        # Hash de la contraseña
+
+        # 3. Hash de la contraseña
         password_hash = hash_password_sha256(contrasena)
-        
-        query = """
+
+        # 4. Insertar USUARIO
+        insert_query = """
             INSERT INTO USUARIO (ID_USER, USERNAME, CONTRASENA, ID_PERFIL, CEDULA)
             VALUES (:id, :username, :contrasena, :id_perfil, :cedula)
         """
-        execute_update(query, {
+        execute_update(insert_query, {
             "id": new_id,
             "username": username,
             "contrasena": password_hash,
             "id_perfil": id_perfil,
             "cedula": cedula
         })
-        
+
         logger.info(f"✓ Usuario creado: {username}")
         return get_usuario_by_id(new_id)
+    except ValueError:
+        raise
     except Exception as e:
         logger.error(f"✗ Error al crear usuario: {e}")
         raise
 
 
-def update_usuario(id_user: int, username: Optional[str] = None, id_perfil: Optional[int] = None) -> bool:
-    """Actualiza un usuario."""
+def update_usuario(id_user: int, username: Optional[str] = None, id_perfil: Optional[int] = None,
+                   nombre: Optional[str] = None, apellido: Optional[str] = None,
+                   correo: Optional[str] = None, telefono: Optional[str] = None) -> bool:
+    """Actualiza un usuario y su persona asociada."""
     try:
-        # Obtener datos actuales
         usuario = get_usuario_by_id(id_user)
         if not usuario:
             return False
-        
-        # Usar valores nuevos o mantener los actuales
+
         nuevo_username = username if username else usuario['USERNAME']
         nuevo_id_perfil = id_perfil if id_perfil else usuario['ID_PERFIL']
-        
-        query = """
-            UPDATE USUARIO
-            SET USERNAME = :username, ID_PERFIL = :id_perfil
-            WHERE ID_USER = :id
-        """
-        affected = execute_update(query, {
-            "id": id_user,
-            "username": nuevo_username,
-            "id_perfil": nuevo_id_perfil
-        })
-        
+
+        # 1. Actualizar USUARIO
+        execute_update(
+            "UPDATE USUARIO SET USERNAME = :username, ID_PERFIL = :id_perfil WHERE ID_USER = :id",
+            {"id": id_user, "username": nuevo_username, "id_perfil": nuevo_id_perfil}
+        )
+
+        # 2. Actualizar PERSONA si se proporcionó al menos un campo
+        if any(v is not None for v in [nombre, apellido, correo, telefono]):
+            execute_update(
+                """UPDATE PERSONA
+                   SET NOMBRE   = COALESCE(:nombre,   NOMBRE),
+                       APELLIDO = COALESCE(:apellido, APELLIDO),
+                       CORREO   = COALESCE(:correo,   CORREO),
+                       TELEFONO = COALESCE(:telefono, TELEFONO)
+                   WHERE CEDULA = (SELECT CEDULA FROM USUARIO WHERE ID_USER = :id)""",
+                {"id": id_user, "nombre": nombre, "apellido": apellido,
+                 "correo": correo, "telefono": telefono}
+            )
+
         logger.info(f"✓ Usuario actualizado: {id_user}")
-        return affected > 0
+        return True
     except Exception as e:
         logger.error(f"✗ Error al actualizar usuario: {e}")
         raise

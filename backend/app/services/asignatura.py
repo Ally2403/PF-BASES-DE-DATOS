@@ -66,7 +66,8 @@ def update_asignatura(id_asignatura: int, nombre: str, cant_creditos: int) -> bo
 
 
 def delete_asignatura(id_asignatura: int) -> bool:
-    """Elimina una asignatura."""
+    """Elimina una asignatura. Oracle CASCADE elimina PLAN_ESTUDIO_ASIGNATURA
+    y VOLANTE_MATRICULA_ASIGNATURA asociadas."""
     try:
         query = "DELETE FROM ASIGNATURA WHERE ID_ASIGNATURA = :id"
         affected = execute_update(query, {"id": id_asignatura})
