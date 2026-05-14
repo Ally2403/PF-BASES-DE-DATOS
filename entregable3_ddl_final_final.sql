@@ -733,17 +733,52 @@ END TR_RECALCULAR_MONTO_VOLANTE;
 
 -- ----------------------------------------------------------
 -- TRIGGER 7.7: TR_BORRAR_VOLANTE_POR_MOVIMIENTO
--- Si se elimina el movimiento de cargo principal (Matricula),
+-- Si se elimina el movimiento de cargo principal (Matricula o Credito),
 -- se elimina el volante para permitir volver a generarlo.
+-- Usa COMPOUND TRIGGER para evitar ORA-04091: el delete a
+-- VOLANTE_MATRICULA se ejecuta en AFTER STATEMENT, cuando
+-- MOVIMIENTO ya no esta en estado mutating.
 -- ----------------------------------------------------------
 CREATE OR REPLACE TRIGGER TR_BORRAR_VOLANTE_POR_MOVIMIENTO
-BEFORE DELETE ON MOVIMIENTO
-FOR EACH ROW
-BEGIN
-    IF :OLD.ID_VOLANTE IS NOT NULL AND (:OLD.CODIGO_DETALLE = 'PMAT' OR :OLD.CODIGO_DETALLE = 'PCRE') THEN
-        DELETE FROM VOLANTE_MATRICULA
-        WHERE  ID_VOLANTE = :OLD.ID_VOLANTE;
-    END IF;
+FOR DELETE ON MOVIMIENTO
+COMPOUND TRIGGER
+
+    TYPE t_volantes IS TABLE OF NUMBER INDEX BY PLS_INTEGER;
+    v_volantes  t_volantes;
+    v_idx       PLS_INTEGER := 0;
+
+    BEFORE EACH ROW IS
+        v_dup BOOLEAN := FALSE;
+    BEGIN
+        IF :OLD.ID_VOLANTE IS NOT NULL AND
+           (:OLD.CODIGO_DETALLE = 'PMAT' OR :OLD.CODIGO_DETALLE = 'PCRE') THEN
+            FOR i IN 1 .. v_idx LOOP
+                IF v_volantes(i) = :OLD.ID_VOLANTE THEN
+                    v_dup := TRUE;
+                    EXIT;
+                END IF;
+            END LOOP;
+            IF NOT v_dup THEN
+                v_idx := v_idx + 1;
+                v_volantes(v_idx) := :OLD.ID_VOLANTE;
+            END IF;
+        END IF;
+    END BEFORE EACH ROW;
+
+    AFTER STATEMENT IS
+    BEGIN
+        FOR i IN 1 .. v_idx LOOP
+            -- Desvincula cobros adicionales del volante antes de borrarlo
+            -- (evita FK violation al intentar borrar VOLANTE_MATRICULA)
+            UPDATE MOVIMIENTO
+            SET    ID_VOLANTE = NULL
+            WHERE  ID_VOLANTE = v_volantes(i);
+
+            DELETE FROM VOLANTE_MATRICULA
+            WHERE  ID_VOLANTE = v_volantes(i);
+        END LOOP;
+    END AFTER STATEMENT;
+
 END TR_BORRAR_VOLANTE_POR_MOVIMIENTO;
 /
 
