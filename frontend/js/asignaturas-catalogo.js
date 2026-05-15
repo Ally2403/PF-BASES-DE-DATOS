@@ -152,7 +152,11 @@
   }
 
   async function eliminarAsignatura(id) {
-    if (!await auth.showConfirm("¿Seguro que desea eliminar esta asignatura del catálogo?")) return;
+    if (!await auth.showConfirm("¿Desea eliminar esta asignatura del catálogo? Esta acción no se puede deshacer.")) return;
+    if (!await auth.showConfirmCedula(
+      "Está a punto de eliminar esta asignatura del catálogo institucional.",
+      "Si la asignatura está vinculada a algún plan de estudios activo, la eliminación será bloqueada. De lo contrario, se eliminará permanentemente y no podrá usarse en futuros planes de cobro por créditos."
+    )) return;
     try {
       await api.deleteAsignaturaCatalog(id);
       auth.showToast("Asignatura eliminada");
@@ -188,6 +192,11 @@
       auth.showToast("Seleccione programa, semestre y asignatura.", "error");
       return;
     }
+    if (!await auth.showConfirm("¿Desea quitar esta asignatura del plan de estudios?")) return;
+    if (!await auth.showConfirmCedula(
+      "Está a punto de quitar una asignatura del plan de estudios.",
+      "Al retirarla del plan, no se contabilizará en el cálculo de créditos para futuros cobros de matrícula por créditos. Los volantes ya generados no se modifican."
+    )) return;
     try {
       await api.deletePlanEstudioAsignatura(pid, sem, aid);
       auth.showToast("Asignatura quitada del plan");

@@ -16,7 +16,7 @@
 
       <div class="card">
         <h2>Programas</h2>
-        <div class="btn-row" style="margin-bottom: 0.75rem">
+        <div class="btn-row" style="margin-bottom: 0.75rem; align-items: flex-end">
           <div class="form-group" style="flex: 1; max-width: 520px; margin: 0">
             <label for="filtro-prog">Buscar (filtra mientras escribe)</label>
             <input type="text" id="filtro-prog" placeholder="Nombre del programa" />
@@ -82,12 +82,14 @@
         <form id="form-prog-modal" class="stack">
           <input type="hidden" id="prog-id" />
           <div class="form-group">
-            <label for="prog-codigo">Código / Sigla <small style="color:var(--text-muted)">(máx. 10 caracteres, ej. SIS)</small></label>
+            <label for="prog-codigo">Código / Sigla</label>
             <input type="text" id="prog-codigo" required maxlength="10" style="text-transform:uppercase" />
+            <small class="field-help">Exactamente 3 caracteres alfanuméricos en mayúsculas (ej. SIS, ADM, MED). Se convierte a mayúsculas automáticamente.</small>
           </div>
           <div class="form-group">
             <label for="prog-nombre">Nombre del programa</label>
             <input type="text" id="prog-nombre" required maxlength="200" />
+            <small class="field-help">Solo letras y espacios, mínimo 3 caracteres (ej. Ingeniería de Sistemas).</small>
           </div>
           <div class="btn-row">
             <button type="submit" class="btn btn-secondary">Guardar</button>

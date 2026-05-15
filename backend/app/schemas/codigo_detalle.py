@@ -28,6 +28,7 @@ class CodigoDetalleResponse(BaseModel):
     grupo: str = Field(..., validation_alias="GRUPO", description="COBRO o PAGO")
     descripcion: str = Field(..., validation_alias="DESCRIPCION", description="Descripción")
     valor_defecto: Optional[float] = Field(None, validation_alias="VALOR_DEFECTO", description="Valor")
+    tiene_movimientos: Optional[bool] = Field(None, validation_alias="TIENE_MOVIMIENTOS", description="Tiene movimientos registrados")
 
 
 class CodigoDetalleListResponse(BaseModel):

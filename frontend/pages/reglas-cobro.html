@@ -11,18 +11,18 @@
     <div class="main-area">
       <header class="page-header">
         <h1>Reglas de cobro</h1>
-        <p>Valor global y valor por crédito por programa y periodo (modalidad GLOBAL o CREDITOS).</p>
+        <p>Valor global y valor por crédito por programa y período (modalidad GLOBAL o CREDITOS).</p>
       </header>
 
       <div class="card">
         <h2>Reglas</h2>
-        <div class="btn-row" style="margin-bottom: 0.75rem">
+        <div class="btn-row" style="margin-bottom: 0.75rem; align-items: flex-end">
           <div class="form-group" style="flex: 1; max-width: 520px; margin: 0">
             <label for="filtro-regla">Buscar (filtra mientras escribe)</label>
             <input
               type="text"
               id="filtro-regla"
-              placeholder="Modalidad, programa o periodo"
+              placeholder="Modalidad, programa o período"
             />
           </div>
           <button type="button" class="btn btn-primary" id="btn-nueva-regla">Nueva regla</button>
@@ -34,7 +34,7 @@
               <tr>
                 <th>Modalidad</th>
                 <th>Programa</th>
-                <th>Periodo</th>
+                <th>Período</th>
                 <th class="numeric">Valor global</th>
                 <th class="numeric">Valor crédito</th>
                 <th>Acciones</th>
@@ -61,24 +61,29 @@
               <option value="GLOBAL">GLOBAL</option>
               <option value="CREDITOS">CREDITOS</option>
             </select>
+            <small class="field-help">GLOBAL = cobro fijo por período; CREDITOS = cobro multiplicado por los créditos inscritos.</small>
           </div>
           <div class="grid-2">
             <div class="form-group">
               <label for="rc-programa">Programa</label>
               <select id="rc-programa" required></select>
+              <small class="field-help">Requerido. Programa al que aplica esta tarifa.</small>
             </div>
             <div class="form-group">
-              <label for="rc-periodo">Periodo</label>
+              <label for="rc-periodo">Período</label>
               <select id="rc-periodo" required></select>
+              <small class="field-help">Requerido. Período académico de vigencia.</small>
             </div>
           </div>
           <div class="form-group" id="wrap-rc-global">
             <label for="rc-val-global">Valor global (COP)</label>
             <input type="number" id="rc-val-global" min="0" step="1" />
+            <small class="field-help">Requerido para modalidad GLOBAL. Monto fijo en pesos, mayor a 0.</small>
           </div>
           <div class="form-group" id="wrap-rc-cred" style="display: none">
             <label for="rc-val-cred">Valor por crédito (COP)</label>
             <input type="number" id="rc-val-cred" min="0" step="1" />
+            <small class="field-help">Requerido para modalidad CREDITOS. Monto por cada crédito inscrito, mayor a 0.</small>
           </div>
           <div class="btn-row">
             <button type="submit" class="btn btn-secondary">Guardar</button>

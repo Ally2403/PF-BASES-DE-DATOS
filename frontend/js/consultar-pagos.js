@@ -6,6 +6,12 @@
     minimumFractionDigits: 0,
   });
 
+  function formatFecha(raw) {
+    if (!raw) return "—";
+    // Normaliza separador T o espacio entre fecha y hora
+    return String(raw).replace("T", " ").replace(/\.\d+$/, "");
+  }
+
   let todasLasTransacciones = [];
 
   async function cargarTodo() {
@@ -45,7 +51,7 @@
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${t.id_transaccion}</td>
-        <td>${t.fecha_pago}</td>
+        <td>${formatFecha(t.fecha_pago)}</td>
         <td><strong>${t.carnet}</strong><br><small>${t.nombre_estudiante}</small></td>
         <td>${t.referencia || "—"}</td>
         <td><span class="badge ${t.medio_pago === 'SIMULADO_ONLINE' ? 'badge-info' : 'badge-success'}">${t.medio_pago}</span></td>
@@ -75,7 +81,7 @@
             </div>
             <div>
                 <label style="color: var(--text-muted); font-size: 0.8rem;">Fecha y Hora</label>
-                <div>${t.fecha_pago}</div>
+                <div>${formatFecha(t.fecha_pago)}</div>
             </div>
             <div>
                 <label style="color: var(--text-muted); font-size: 0.8rem;">Medio de Pago</label>

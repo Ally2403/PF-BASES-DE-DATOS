@@ -82,6 +82,7 @@
           var n = Number(r.creados);
           var det = Array.isArray(r.detalle) ? r.detalle : [];
           if (!Number.isFinite(n)) n = det.length;
+          var errores = Array.isArray(r.errores) ? r.errores : [];
 
           var htmlSum =
             "<p style='margin:0 0 .35rem;font-size:.95rem'>" +
@@ -90,19 +91,63 @@
             n +
             "</strong> volante(s) nuevo(s) en esta ejecución." +
             "</p>";
-          if (typeof r.omitidos === "number") {
+          if (typeof r.omitidos === "number" && r.omitidos > 0 && n > 0) {
             htmlSum +=
               "<p style='margin:0;font-size:.85rem;color:var(--text-muted)'>" +
-              "Estudiantes omitidos (ya tenían volante en el período): <strong>" +
+              "Estudiantes ya con volante en el período (omitidos): <strong>" +
               r.omitidos +
               "</strong>.</p>";
-          } else if (n === 0) {
+          } else if (n === 0 && errores.length === 0) {
             htmlSum +=
               "<p style='margin:.35rem 0 0;font-size:.85rem;color:var(--text-muted)'>" +
               "No se generaron volantes nuevos para este programa/período (posiblemente todos los estudiantes ya tenían volante)." +
               "</p>";
           }
-          sumEl.innerHTML = htmlSum;
+
+          // Mostrar advertencia si hubo errores en la generación de estudiantes
+          if (errores.length > 0) {
+            // Extraer mensajes únicos para no repetir el mismo texto N veces
+            var mensajesUnicos = [];
+            errores.forEach(function(e) {
+              var m = e.error || "Error desconocido";
+              if (mensajesUnicos.indexOf(m) === -1) mensajesUnicos.push(m);
+            });
+            var esRegla = mensajesUnicos.some(function(m) {
+              return /regla de cobro|no existe una regla/i.test(m);
+            });
+            var esSinMaterias = mensajesUnicos.some(function(m) {
+              return /asignatura|materia/i.test(m);
+            });
+
+            var warnClass = n === 0 ? "alert alert-error" : "alert alert-warning";
+            var warnTitle = n === 0
+              ? "<strong>No se pudo generar ningún volante</strong>"
+              : "<strong>Advertencia: " + errores.length + " estudiante(s) no pudieron ser procesados</strong>";
+
+            var warnBody = "";
+            if (esRegla) {
+              warnBody =
+                "<p style='margin:.4rem 0 0'>No existe una regla de cobro configurada para el programa y período " +
+                "seleccionados, o su valor es $0. Vaya a <em>Reglas de cobro</em> y cree la regla " +
+                "correspondiente antes de ejecutar el cobro masivo.</p>";
+            } else if (esSinMaterias) {
+              warnBody =
+                "<p style='margin:.4rem 0 0'>Algunos estudiantes no tienen asignaturas disponibles para el período seleccionado.</p>";
+            } else {
+              warnBody = "<ul style='margin:.4rem 0 0;padding-left:1.2rem'>";
+              mensajesUnicos.slice(0, 5).forEach(function(m) {
+                warnBody += "<li>" + esc(m) + "</li>";
+              });
+              if (mensajesUnicos.length > 5) warnBody += "<li>…y " + (mensajesUnicos.length - 5) + " mensaje(s) más.</li>";
+              warnBody += "</ul>";
+            }
+
+            sumEl.innerHTML =
+              "<div style='margin-bottom:.5rem'>" + htmlSum + "</div>" +
+              "<div class='" + warnClass + "' style='margin:0'>" + warnTitle + warnBody + "</div>";
+          } else {
+            sumEl.innerHTML = htmlSum;
+          }
 
           tbody.innerHTML = "";
           var preview = det.slice(0, 80);
@@ -125,6 +170,19 @@
           } else {
             wrap.hidden = true;
           }
+          box.hidden = false;
+        }
+
+        function renderMasivoError(msg) {
+          var box = document.getElementById("m-result");
+          var sumEl = document.getElementById("m-result-summary");
+          var wrap = document.getElementById("m-result-table-wrap");
+          wrap.hidden = true;
+          sumEl.innerHTML =
+            "<div class='alert alert-error' style='margin:0'>" +
+            "<strong>No se pudo ejecutar el cobro masivo</strong>" +
+            "<p style='margin:.4rem 0 0'>" + esc(msg) + "</p>" +
+            "</div>";
           box.hidden = false;
         }
 
@@ -200,7 +258,9 @@
             document.getElementById("m-sem").value = "";
             document.getElementById("m-mod").value = "";
           } catch (e) {
-            auth.showToast(e.message, "error");
+            var errMsg = e.message || "Error al ejecutar el cobro masivo.";
+            auth.showToast(errMsg, "error");
+            renderMasivoError(errMsg);
           }
         });
       })();

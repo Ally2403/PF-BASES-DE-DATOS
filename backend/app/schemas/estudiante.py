@@ -21,6 +21,7 @@ class EstudianteUpdate(BaseModel):
     apellido: Optional[str] = Field(None, min_length=1, max_length=100)
     telefono: Optional[str] = Field(None, max_length=20)
     correo: Optional[str] = Field(None, max_length=150)
+    id_programa: Optional[int] = Field(None, description="Nuevo programa académico (regenera el carnet)")
 
 
 class EstudianteResponse(BaseModel):

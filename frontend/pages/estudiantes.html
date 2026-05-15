@@ -16,7 +16,7 @@
 
       <div class="card">
         <h2>Estudiantes</h2>
-        <div class="btn-row" style="margin-bottom: 0.75rem">
+        <div class="btn-row" style="margin-bottom: 0.75rem; align-items: flex-end">
           <div class="form-group" style="flex: 1; max-width: 520px; margin: 0">
             <label for="filtro-est">Buscar (filtra mientras escribe)</label>
             <input type="text" id="filtro-est" placeholder="Nombre, apellido, carné o correo" />
@@ -51,35 +51,40 @@
         </div>
         <form id="form-est-edit" class="stack">
           <input type="hidden" id="edit-id_estudiante" />
-          <div id="carnet-row" class="grid-2">
-            <div class="form-group">
-              <label for="edit-carnet">Carné <small id="carnet-hint" style="color:var(--text-muted)">(generado automáticamente)</small></label>
+          <div class="grid-2">
+            <div class="form-group" id="carnet-row">
+              <label for="edit-carnet">Carné <small style="color:var(--text-muted)">(generado automáticamente)</small></label>
               <input type="text" id="edit-carnet" readonly
                      style="background:var(--input-bg,#f3f4f6);cursor:default;color:var(--text-muted)" />
             </div>
             <div class="form-group">
-              <label for="edit-id_programa">Programa</label>
+              <label for="edit-id_programa">Programa académico</label>
               <select id="edit-id_programa" required></select>
+              <small class="field-help">Requerido. Al cambiar el programa en edición se generará un nuevo carné.</small>
             </div>
           </div>
           <div class="grid-2">
             <div class="form-group">
               <label for="edit-nombre">Nombre</label>
-              <input type="text" id="edit-nombre" required />
+              <input type="text" id="edit-nombre" required data-capitalize="words" />
+              <small class="field-help">Solo letras y espacios, mínimo 2 caracteres.</small>
             </div>
             <div class="form-group">
               <label for="edit-apellido">Apellido</label>
-              <input type="text" id="edit-apellido" required />
+              <input type="text" id="edit-apellido" required data-capitalize="words" />
+              <small class="field-help">Solo letras y espacios, mínimo 2 caracteres.</small>
             </div>
           </div>
           <div class="grid-2">
             <div class="form-group">
               <label for="edit-telefono">Teléfono</label>
               <input type="tel" id="edit-telefono" />
+              <small class="field-help">Opcional. 10 dígitos empezando por 3 (ej. 3001234567).</small>
             </div>
             <div class="form-group">
               <label for="edit-correo">Correo</label>
               <input type="email" id="edit-correo" required />
+              <small class="field-help">Requerido. Formato válido, ej. nombre@universidad.edu.co.</small>
             </div>
           </div>
           <div class="btn-row">

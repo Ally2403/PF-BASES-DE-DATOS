@@ -3,25 +3,25 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Periodos académicos</title>
+    <title>Períodos académicos</title>
     <link rel="stylesheet" href="../css/estilos.css" />
   </head>
   <body class="app-body">
     <aside class="sidebar" id="sidebar-root"></aside>
     <div class="main-area">
       <header class="page-header">
-        <h1>Periodos académicos</h1>
+        <h1>Períodos académicos</h1>
         <p>Calendarios de cobro por ciclo lectivo.</p>
       </header>
 
       <div class="card">
-        <h2>Periodos</h2>
-        <div class="btn-row" style="margin-bottom: 0.75rem">
+        <h2>Períodos</h2>
+        <div class="btn-row" style="margin-bottom: 0.75rem; align-items: flex-end">
           <div class="form-group" style="flex: 1; max-width: 520px; margin: 0">
             <label for="filtro-per">Buscar (filtra mientras escribe)</label>
-            <input type="text" id="filtro-per" placeholder="Nombre del periodo (ej. 2026-20)" />
+            <input type="text" id="filtro-per" placeholder="Nombre del período (ej. 2026-20)" />
           </div>
-          <button type="button" class="btn btn-primary" id="btn-nuevo-per">Nuevo periodo</button>
+          <button type="button" class="btn btn-primary" id="btn-nuevo-per">Nuevo período</button>
         </div>
         <p id="lbl-total-per" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0"></p>
         <div class="table-wrap mt-1">
@@ -43,25 +43,45 @@
     <div class="modal-backdrop" id="per-modal" aria-hidden="true">
       <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="per-modal-title">
         <div class="modal-header">
-          <h3 id="per-modal-title">Editar periodo</h3>
+          <h3 id="per-modal-title">Editar período</h3>
           <button type="button" class="btn btn-ghost" id="btn-close-per-modal">Cerrar</button>
         </div>
         <form id="form-per-modal" class="stack" style="max-width: 720px" novalidate>
           <input type="hidden" id="per-id" />
           <div class="grid-2">
             <div class="form-group">
-              <label for="per-nombre">NOMBRE_PERIODO (ej. 2026-20)</label>
-              <input type="text" id="per-nombre" required maxlength="20" />
+              <label for="per-anio">Año académico</label>
+              <input type="number" id="per-anio" required min="2000" max="2099" placeholder="ej. 2026" />
+              <small class="field-help">Requerido. Año del período (2000–2099).</small>
+            </div>
+            <div class="form-group">
+              <label for="per-semestre">Semestre</label>
+              <select id="per-semestre" required>
+                <option value="">— Seleccione —</option>
+                <option value="10">10 · Primer semestre (enero – junio)</option>
+                <option value="30">30 · Segundo semestre (julio – diciembre)</option>
+              </select>
+              <small class="field-help">
+                <strong>10</strong> = primera mitad del año (1 ene – 30 jun) &nbsp;·&nbsp;
+                <strong>30</strong> = segunda mitad del año (1 jul – 31 dic).
+              </small>
             </div>
           </div>
+          <div class="form-group" id="per-preview-row" hidden>
+            <label>Nombre del período que se guardará</label>
+            <p id="per-nombre-preview" style="font-weight:600; font-size:1.1rem; margin:0.2rem 0 0; letter-spacing:0.03em"></p>
+          </div>
+          <div id="per-rango-info" style="display:none; padding:0.6rem 0.9rem; border-radius:6px; background:#dbeafe; border:1px solid #3b82f6; color:#1e3a5f; font-size:0.85rem; font-weight:500; margin-bottom:0.25rem"></div>
           <div class="grid-2">
             <div class="form-group">
-              <label for="per-inicio">FECHA_INICIO</label>
+              <label for="per-inicio">Fecha de inicio</label>
               <input type="date" id="per-inicio" required />
+              <small class="field-help">Requerido. Debe estar dentro del rango del semestre elegido.</small>
             </div>
             <div class="form-group">
-              <label for="per-fin">FECHA_FIN</label>
+              <label for="per-fin">Fecha de fin</label>
               <input type="date" id="per-fin" required />
+              <small class="field-help">Requerido. Debe ser posterior al inicio y dentro del mismo semestre.</small>
             </div>
           </div>
           <div class="btn-row">

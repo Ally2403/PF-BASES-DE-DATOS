@@ -30,7 +30,7 @@ const NAV = [
     desc: "Catálogo unificado de materias y créditos.",
   },
   {
-    label: "Periodos",
+    label: "Períodos",
     page: "periodos.html",
     perm: "GESTIONAR_PERIODOS",
     icon: "📅",
@@ -193,7 +193,7 @@ function renderSidebar(activeFile) {
   sidebar.innerHTML = `
     <div class="sidebar-header">
       <div class="sidebar-logo">Gestión Estudiantil</div>
-      <div class="sidebar-meta">IST7111 · Universidad</div>
+
     </div>
     <nav aria-label="Principal">
       <ul class="nav-menu">
@@ -225,8 +225,9 @@ function ensureToastStack() {
   if (!el) {
     el = document.createElement("div");
     el.id = "toast-stack";
-    document.body.appendChild(el);
   }
+  // Always move to end of body so it paints above modals regardless of backdrop-filter stacking context
+  document.body.appendChild(el);
   return el;
 }
 
@@ -235,8 +236,9 @@ function ensureAlertCenter() {
   if (!el) {
     el = document.createElement("div");
     el.id = "alert-center-overlay";
-    document.body.appendChild(el);
   }
+  // Always move to end of body so it paints above modals regardless of backdrop-filter stacking context
+  document.body.appendChild(el);
   return el;
 }
 
@@ -311,6 +313,93 @@ function showConfirm(message, title, confirmText, confirmClass) {
 }
 
 /**
+ * Diálogo de confirmación con verificación de cédula.
+ * Muestra la acción, el impacto financiero y exige que el usuario
+ * escriba su propia cédula antes de habilitar el botón de eliminar.
+ *
+ * @param {string} message   Descripción de lo que se va a eliminar.
+ * @param {string} impacto   Advertencia sobre el efecto financiero/operativo.
+ * @param {string} [title]   Título del diálogo (por defecto "Confirmar eliminación").
+ * @returns {Promise<boolean>}
+ */
+function showConfirmCedula(message, impacto, title) {
+  title = title || "Confirmar eliminación";
+  var s = getSession();
+  var cedulaEsperada = s && s.cedula ? String(s.cedula).trim() : "";
+
+  return new Promise(function (resolve) {
+    var backdrop = document.createElement("div");
+    backdrop.className = "modal-backdrop open";
+
+    var impactoHtml = impacto
+      ? '<div style="background:var(--warn-bg,#fff3cd);border-left:3px solid #f0ad4e;' +
+        'padding:0.6rem 0.75rem;border-radius:4px;font-size:0.85rem;color:#7a5a00;' +
+        'margin:0.75rem 0 1rem">' +
+        '<strong>⚠\uFE0F Impacto:</strong> ' + impacto + '</div>'
+      : '<div style="margin-bottom:1rem"></div>';
+
+    var sinCedula = !cedulaEsperada;
+    var cedulaLabel = sinCedula
+      ? '<p style="font-size:0.8rem;color:var(--danger,#e74c3c);margin:0 0 0.5rem">' +
+        'Su sesión no tiene cédula registrada. Contacte al administrador para completar su perfil.</p>'
+      : '<label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:0.4rem">' +
+        'Escriba su cédula para confirmar la eliminación:' +
+        '</label>' +
+        '<input type="text" id="_ced-inp" inputmode="numeric" autocomplete="off" maxlength="10" ' +
+        'style="width:100%;box-sizing:border-box" placeholder="Ej. 1001234567" />' +
+        '<div id="_ced-err" style="display:none;font-size:0.8rem;color:var(--danger,#e74c3c);margin-top:0.3rem">' +
+        'Cédula incorrecta. Verifique e intente nuevamente.' +
+        '</div>';
+
+    backdrop.innerHTML =
+      '<div class="modal-panel" style="width:min(480px,96%)">' +
+        '<div class="modal-header"><h3>\uD83D\uDDD1\uFE0F\u00A0' + title + '</h3></div>' +
+        '<p style="margin:0 0 0.25rem;color:var(--text-muted)">' + message + '</p>' +
+        impactoHtml +
+        '<div style="margin-bottom:1.25rem">' + cedulaLabel + '</div>' +
+        '<div class="btn-row" style="justify-content:flex-end;gap:0.6rem">' +
+          '<button class="btn btn-secondary" id="_ced-cancel">Cancelar</button>' +
+          '<button class="btn btn-danger" id="_ced-ok"' + (sinCedula ? ' disabled' : ' disabled') + '>Eliminar definitivamente</button>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(backdrop);
+
+    var inp = backdrop.querySelector("#_ced-inp");
+    var btn = backdrop.querySelector("#_ced-ok");
+    var errDiv = backdrop.querySelector("#_ced-err");
+
+    function close(result) { backdrop.remove(); resolve(result); }
+
+    backdrop.querySelector("#_ced-cancel").addEventListener("click", function () { close(false); });
+    backdrop.addEventListener("click", function (e) { if (e.target === backdrop) close(false); });
+
+    if (!sinCedula && inp) {
+      inp.addEventListener("input", function () {
+        btn.disabled = inp.value.trim() === "";
+        if (errDiv) errDiv.style.display = "none";
+      });
+      inp.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !btn.disabled) btn.click();
+      });
+      setTimeout(function () { inp.focus(); }, 40);
+    }
+
+    btn.addEventListener("click", function () {
+      if (sinCedula) { close(false); return; }
+      if (inp.value.trim() === cedulaEsperada) {
+        close(true);
+      } else {
+        if (errDiv) errDiv.style.display = "block";
+        inp.value = "";
+        btn.disabled = true;
+        inp.focus();
+      }
+    });
+  });
+}
+
+/**
  * @param {{ perm?: string | string[], activeFile?: string }} opts
  */
 function initPage(opts) {
@@ -338,6 +427,41 @@ function _refreshPermisosBackground(activeFile) {
   }).catch(function() {});
 }
 
+/* ── Bloqueo de caracteres inválidos en campos numéricos y teléfono ─── */
+(function () {
+  var BLOCKED_NUMBER = ["e", "E", "+", "-", ".", ","];
+  var NAV_KEYS = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Tab", "Home", "End"];
+
+  document.addEventListener("keydown", function (ev) {
+    var t = ev.target;
+    if (t.tagName !== "INPUT") return;
+    if (t.type === "number" && BLOCKED_NUMBER.indexOf(ev.key) !== -1) {
+      ev.preventDefault();
+    }
+    if ((t.type === "tel" || t.getAttribute("inputmode") === "numeric") && NAV_KEYS.indexOf(ev.key) === -1 && !/^[0-9]$/.test(ev.key) && !ev.ctrlKey && !ev.metaKey) {
+      ev.preventDefault();
+    }
+  }, true);
+
+  document.addEventListener("input", function (ev) {
+    var t = ev.target;
+    if (t.tagName !== "INPUT") return;
+    if (t.type === "tel" || t.getAttribute("inputmode") === "numeric") {
+      var cleaned = t.value.replace(/[^0-9]/g, "");
+      if (cleaned !== t.value) t.value = cleaned;
+    }
+    if (t.getAttribute("data-capitalize") === "words") {
+      var start = t.selectionStart;
+      var end = t.selectionEnd;
+      var capped = t.value.replace(/\b\S/g, function (c) { return c.toUpperCase(); });
+      if (capped !== t.value) {
+        t.value = capped;
+        t.setSelectionRange(start, end);
+      }
+    }
+  }, true);
+}());
+
 window.auth = {
   SESSION_KEY,
   getSession,
@@ -350,6 +474,7 @@ window.auth = {
   renderSidebar,
   showToast,
   showConfirm,
+  showConfirmCedula,
   showAlert,
   initPage,
   navHref,

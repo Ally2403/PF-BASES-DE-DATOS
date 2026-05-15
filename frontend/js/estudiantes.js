@@ -114,9 +114,11 @@
   function abrirModalNuevo() {
     limpiarFormularioEdit();
     qs("edit-est-title").textContent = "Nuevo estudiante";
-    // Ocultar la fila del carné (se genera automáticamente en el backend)
-    var row = qs("carnet-row");
-    if (row) row.style.display = "none";
+    // Ocultar solo el carnet (se genera en el backend), dejar visible el programa
+    var carnetField = qs("carnet-row");
+    if (carnetField) carnetField.style.display = "none";
+    var progSel = qs("edit-id_programa");
+    if (progSel) { progSel.disabled = false; progSel.required = true; }
     setModalOpen(true);
   }
 
@@ -125,9 +127,11 @@
       const e = await api.getEstudiante(Number(id));
       llenarEditForm(e);
       qs("edit-est-title").textContent = "Editar estudiante";
-      // Mostrar el carné como readonly (solo lectura, no editable)
-      var row = qs("carnet-row");
-      if (row) row.style.display = "";
+      // Mostrar el carnet (readonly); permitir cambio de programa (regenera carnet)
+      var carnetField = qs("carnet-row");
+      if (carnetField) carnetField.style.display = "";
+      var progSel = qs("edit-id_programa");
+      if (progSel) { progSel.disabled = false; progSel.required = true; }
       setModalOpen(true);
     } catch (e) {
       auth.showToast(e.message, "error");
@@ -210,7 +214,14 @@
       auth.showToast("ID_ESTUDIANTE inválido.", "error");
       return;
     }
-    if (!await auth.showConfirm("¿Seguro que desea eliminar al estudiante " + (row ? row.nombre + " " + row.apellido : id) + "? Esta acción no se puede deshacer.")) {
+    var nomEst = row ? row.nombre + " " + row.apellido : "ID " + id;
+    if (!await auth.showConfirm("¿Desea eliminar al estudiante " + nomEst + "? Esta acción no se puede deshacer.")) {
+      return;
+    }
+    if (!await auth.showConfirmCedula(
+      "Está a punto de eliminar al estudiante <strong>" + nomEst + "</strong> del sistema.",
+      "Se eliminarán todos sus datos personales, su cuenta corriente y el historial de movimientos financieros asociados. Esta acción es irreversible."
+    )) {
       return;
     }
     try {

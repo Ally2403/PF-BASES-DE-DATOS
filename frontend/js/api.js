@@ -100,10 +100,40 @@ async function fetchJson(path, opts = {}) {
     data = { error: text || res.statusText };
   }
   if (!res.ok) {
-    const msg = (data && (data.detail || data.error || data.message)) || res.statusText || "Error HTTP";
+    let msg = res.statusText || "Error HTTP";
+    if (data) {
+      if (typeof data.detail === "string") {
+        msg = data.detail;
+      } else if (Array.isArray(data.detail) && data.detail.length) {
+        msg = data.detail.map(function(e) { return e.msg || JSON.stringify(e); }).join("; ");
+      } else if (data.error) {
+        msg = data.error;
+      } else if (data.message) {
+        msg = data.message;
+      }
+    }
+    // Conflicto de concurrencia: otro usuario realizó la misma operación al mismo tiempo
+    if (res.status === 409) {
+      msg = msg || "Otro usuario realizó esta operación al mismo tiempo. Recargue la página y verifique el estado actual.";
+    }
+    // Detectar error de constraint único de Oracle que llegue desde rutas no controladas
+    if (/ORA-00001|unique constraint/i.test(msg)) {
+      msg = "Operación duplicada: otro usuario realizó el mismo registro al mismo tiempo. Recargue la página y verifique el estado actual.";
+    }
     const err = new Error(msg);
     err.status = res.status;
     err.body = data;
+    // Si es un conflicto de concurrencia real (no una regla de negocio), recargar la página
+    // automáticamente tras 4 s para que el usuario vea datos actualizados.
+    // Los 409 de regla de negocio (dependencias, usuario duplicado, etc.) no contienen
+    // estas palabras clave y por tanto NO disparan la recarga.
+    if (
+      res.status === 409 &&
+      (/Otro usuario|Operaci[oó]n duplicada|acceso simult[aá]neo/i.test(msg))
+    ) {
+      err.isConflict = true;
+      setTimeout(function () { window.location.reload(); }, 3000);
+    }
     throw err;
   }
   return data;
@@ -314,7 +344,7 @@ async function postReglaCobro(body) {
   const per = Number(body.id_periodo);
   const mod = String(body.modalidad || "").toUpperCase();
   if (!pid || !per || (mod !== "GLOBAL" && mod !== "CREDITOS")) {
-    throw new Error("Programa, periodo y modalidad (GLOBAL | CREDITOS) son obligatorios.");
+    throw new Error("Programa, período y modalidad (GLOBAL | CREDITOS) son obligatorios.");
   }
     const payload = {
     modalidad: mod,
@@ -497,25 +527,38 @@ async function getSaldo(params = {}) {
 }
 
 async function postPago(body) {
-    const volantes = await getVolantes({
+  const volantes = await getVolantes({
     id_estudiante: body.id_estudiante,
     id_periodo: body.id_periodo,
   });
   const vol = Array.isArray(volantes) && volantes.length ? volantes[0] : null;
-  if (!vol || !vol.id_volante) {
-    throw new Error("No existe volante para ese estudiante y período.");
-  }
 
-  return fetchJson("/api/asistente/pagos", {
-    method: "POST",
-    body: JSON.stringify({
-      id_volante: vol.id_volante,
-      medio_pago: body.medio_pago,
-      valor: body.valor_pagado,
-      referencia: body.referencia || null,
-      codigo_detalle: body.codigo_detalle || "MPAG",
-    }),
-  });
+  if (vol && vol.id_volante) {
+    // Ruta normal: pago contra volante de matrícula
+    return fetchJson("/api/asistente/pagos", {
+      method: "POST",
+      body: JSON.stringify({
+        id_volante: vol.id_volante,
+        medio_pago: body.medio_pago,
+        valor: body.valor_pagado,
+        referencia: body.referencia || null,
+        codigo_detalle: body.codigo_detalle || "MPAG",
+      }),
+    });
+  } else {
+    // Sin volante: estudiante con cobros adicionales sin matrícula
+    return fetchJson("/api/asistente/pagos", {
+      method: "POST",
+      body: JSON.stringify({
+        id_estudiante: body.id_estudiante,
+        id_periodo: body.id_periodo,
+        medio_pago: body.medio_pago,
+        valor: body.valor_pagado,
+        referencia: body.referencia || null,
+        codigo_detalle: body.codigo_detalle || "MPAG",
+      }),
+    });
+  }
 }
 
 async function getPagos(filtros = {}) {

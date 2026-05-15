@@ -132,8 +132,11 @@
   }
 
   async function seleccionarEstudiantePorId(id) {
-    $("gc-est").value = String(id);
+    $('gc-est').value = String(id);
     renderTablaEstudiantes();
+    // Ocultar resumen anterior al cambiar de estudiante
+    $('resumen-final').hidden = true;
+    volActual = null;
     
     // Request 1: Early validation of existing volante just after clicking student
     const idPer = Number($("gc-per").value);
@@ -249,6 +252,7 @@
     const idPer = Number($("gc-per").value);
     const semRaw = $("gc-sem").value;
     const mod = ($("gc-mod").value || "").trim();
+    // El botón permanece deshabilitado durante TODA la validación
     $("btn-gen-paso1").disabled = true;
     $("box-global").hidden = true;
     $("box-cred").hidden = true;
@@ -260,20 +264,29 @@
     const semestre = Number(semRaw);
     if (!Number.isFinite(semestre)) return;
 
+    // Mostrar indicador de verificación mientras se consulta
+    $("gc-msg").textContent = "Verificando...";
+    $("gc-msg").hidden = false;
+    $("gc-msg").className = "alert";
+    $("gc-msg").style.opacity = "0.7";
+
     const exists = await volanteYaExiste(idEst, idPer);
+    $("gc-msg").style.opacity = "";
     if (exists) {
       $("gc-msg").textContent = "Este estudiante ya tiene volante en el período seleccionado.";
       $("gc-msg").hidden = false;
       $("gc-msg").className = "alert alert-error";
-      return;
+      return; // botón sigue disabled
     }
-
-    $("btn-gen-paso1").disabled = false;
+    $("gc-msg").hidden = true;
 
     let est = null;
     try {
       est = await api.getEstudiante(idEst);
     } catch (e) {
+      $("gc-msg").textContent = "No se pudo cargar la información del estudiante.";
+      $("gc-msg").hidden = false;
+      $("gc-msg").className = "alert alert-error";
       return;
     }
     const rules = await api.getReglasCobro({ programa: est.id_programa, periodo: idPer });
@@ -284,12 +297,23 @@
       return r.modalidad === "CREDITOS";
     });
 
-    $("box-global").hidden = mod !== "GLOBAL";
-    $("box-cred").hidden = mod !== "CREDITOS";
+    $('box-global').hidden = mod !== 'GLOBAL';
+    $('box-cred').hidden = mod !== 'CREDITOS';
 
-    if (mod === "GLOBAL") {
-      const v = regGlobal ? regGlobal.valorglobal : 0;
-      $("gc-monto-global").textContent = COP.format(v);
+    if (mod === 'GLOBAL') {
+      const v = regGlobal ? Number(regGlobal.valorglobal) : 0;
+      $('gc-monto-global').textContent = COP.format(v);
+      if (!regGlobal || v <= 0) {
+        $('gc-msg').innerHTML =
+          '<strong>Sin regla de cobro GLOBAL.</strong> No hay una regla de cobro GLOBAL ' +
+          'configurada para el programa de este estudiante en el per\u00edodo seleccionado, ' +
+          'o su valor es $\u00a00. Vaya a <em>Reglas de cobro</em> y cree la regla antes de generar el volante.';
+        $('gc-msg').hidden = false;
+        $('gc-msg').className = 'alert alert-error';
+        return; // botón sigue disabled
+      }
+      // Todo validado: habilitar botón
+      $('btn-gen-paso1').disabled = false;
     }
 
     if (mod === "CREDITOS") {
@@ -297,13 +321,35 @@
         programa: est.id_programa,
         semestre: semestre,
       });
-      const vc = regCred ? regCred.valorcredito : 0;
-      $("gc-valor-credit").textContent = COP.format(vc);
+      const vc = regCred ? Number(regCred.valorcredito) : 0;
+      $('gc-valor-credit').textContent = COP.format(vc);
+      if (!regCred || vc <= 0) {
+        $('gc-msg').innerHTML =
+          '<strong>Sin regla de cobro por CR\u00c9DITOS.</strong> No hay una regla de cobro por CR\u00c9DITOS ' +
+          'configurada para el programa de este estudiante en el per\u00edodo seleccionado, ' +
+          'o su valor por cr\u00e9dito es $\u00a00. Vaya a <em>Reglas de cobro</em> y cree la regla antes de generar el volante.';
+        $('gc-msg').hidden = false;
+        $('gc-msg').className = 'alert alert-error';
+        return; // botón sigue disabled
+      }
+      // Todo validado: habilitar botón (el usuario aún debe seleccionar asignaturas)
+      $('btn-gen-paso1').disabled = false;
       const cont = $("gc-asig-list");
       cont.innerHTML = "";
       $("gc-creds-sel").textContent = "0";
       $("gc-monto-cred").textContent = COP.format(0);
-      (Array.isArray(asig) ? asig : []).forEach(function (a) {
+      const asigList = Array.isArray(asig) ? asig : [];
+      if (!asigList.length) {
+        $('gc-msg').innerHTML =
+          '<strong>Sin asignaturas disponibles.</strong> No hay asignaturas registradas en el cat\u00e1logo ' +
+          'para el semestre ' + semestre + ' del programa de este estudiante. ' +
+          'Vaya a <em>Asignaturas (cat\u00e1logo)</em> y agr\u00e9guelas antes de generar el volante.';
+        $('gc-msg').hidden = false;
+        $('gc-msg').className = 'alert alert-error';
+        $('btn-gen-paso1').disabled = true;
+        return;
+      }
+      asigList.forEach(function (a) {
         const row = document.createElement("div");
         row.className = "check-row";
         row.innerHTML =
@@ -398,28 +444,82 @@
         tipo_generacion: "INDIVIDUAL",
         asignaturas: asignaturas,
       });
-      auth.showToast("Volante principal creado.");
-      $("res-final-body").innerHTML = resumenHtml(volActual);
-      $("resumen-final").hidden = false;
+
+      // Enriquecer con nombres usando los datos ya cargados en memoria
+      const estSel = listaEstudiantesBase().find(function (e) {
+        return Number(e.id_estudiante) === idEst;
+      });
+      // Leer el nombre del periodo directamente del texto de la opcion seleccionada
+      const perSelectEl = $("gc-per");
+      const perOpcion = perSelectEl ? perSelectEl.options[perSelectEl.selectedIndex] : null;
+      const nombrePeriodo = (perOpcion && perOpcion.value) ? perOpcion.textContent.trim() : String(idPer);
+      if (estSel) {
+        volActual.nombre_estudiante = (estSel.nombre || "") + " " + (estSel.apellido || "");
+        volActual.carnet = estSel.carnet || "";
+        volActual.nombre_programa = estSel.nombre_programa || "";
+      }
+      volActual.nombre_periodo = nombrePeriodo;
+      if (!volActual.estado) volActual.estado = "PENDIENTE";
+      // Deshabilitar el botón inmediatamente: el volante ya existe
+      $('btn-gen-paso1').disabled = true;
+      $('gc-msg').textContent = 'Volante generado correctamente. Este estudiante ya tiene un volante en este per\u00edodo.';
+      $('gc-msg').hidden = false;
+      $('gc-msg').className = 'alert alert-success';
+      auth.showToast("Volante principal creado.", "success");
+      $('res-final-body').innerHTML = resumenHtml(volActual);
+      $('resumen-final').hidden = false;
     } catch (err) {
-      auth.showToast(err.message || "Error", "error");
+      let msg = err.message || 'Error al generar el volante.';
+      if (
+        err.status === 409 ||
+        msg.includes('ORA-00001') ||
+        msg.includes('UQ_VOL_EST_PER') ||
+        msg.includes('Otro usuario') ||
+        msg.includes('Operaci\u00f3n duplicada') ||
+        msg.includes('restricci\u00f3n \u00fanica')
+      ) {
+        msg =
+          'Conflicto de acceso simultáneo: otro usuario generó el volante para este estudiante ' +
+          'y período en el mismo instante. Recargue la página y verifique el estado del estudiante.';
+        $('btn-gen-paso1').disabled = true;
+        $('gc-msg').textContent = msg;
+        $('gc-msg').hidden = false;
+        $('gc-msg').className = 'alert alert-error';
+      } else if (
+        msg.includes('ORA-02291') ||
+        msg.includes('FK_VOL_REGLA') ||
+        msg.includes('clave principal no encontrada') ||
+        msg.includes('parent key not found')
+      ) {
+        msg =
+          'No se puede generar el volante: no existe una regla de cobro ' + modalidad +
+          ' v\u00e1lida para el programa y per\u00edodo seleccionados. ' +
+          'Vaya a \u201cReglas de cobro\u201d y configure la regla antes de intentarlo nuevamente.';
+      } else if (msg.match(/ORA-\d+/) || msg.includes('violada') || msg.includes('restricci\u00f3n')) {
+        msg =
+          'Error en la base de datos al generar el volante. Verifique que exista una regla de cobro ' +
+          modalidad + ' configurada para este programa y per\u00edodo.';
+      }
+      auth.showToast(msg, 'error');
     }
   }
 
   function resumenHtml(vol) {
+    const nombreEst = vol.nombre_estudiante ? vol.nombre_estudiante.trim() : "(sin nombre)";
+    const carnet = vol.carnet ? " · " + escapeHtml(vol.carnet) : "";
+    const programa = vol.nombre_programa ? " · " + escapeHtml(vol.nombre_programa) : "";
+    const periodo = vol.nombre_periodo || String(vol.id_periodo || "");
+    const estado = vol.estado || "PENDIENTE";
+    const badgeClass = "badge badge-" + estado.toLowerCase();
     return (
-      "<p class='mb-0'><strong>Volante #" +
-      vol.id_volante +
-      "</strong> · " +
-      escapeHtml(vol.nombre_estudiante) +
-      "<br />Período " +
-      escapeHtml(vol.nombre_periodo) +
-      " · <span class='badge badge-" +
-      String(vol.estado).toLowerCase() +
-      "'>" +
-      escapeHtml(vol.estado) +
-      "</span><br /><strong>Monto total (COBROS):</strong> " +
-      COP.format(vol.monto_total) +
+      "<p class='mb-0'>" +
+      "<strong>Volante #" + escapeHtml(vol.id_volante) + "</strong>" +
+      "<br /><strong>Estudiante:</strong> " + escapeHtml(nombreEst) + escapeHtml(carnet) + escapeHtml(programa) +
+      "<br /><strong>Período:</strong> " + escapeHtml(periodo) +
+      " &nbsp;<span class='" + badgeClass + "'>" + escapeHtml(estado) + "</span>" +
+      "<br /><strong>Modalidad:</strong> " + escapeHtml(vol.modalidad || "") +
+      " &nbsp;·&nbsp; <strong>Semestre cobrado:</strong> " + escapeHtml(vol.semestre_que_cobra || "") +
+      "<br /><strong>Monto total (COBROS):</strong> " + COP.format(vol.monto_total || 0) +
       "</p>"
     );
   }

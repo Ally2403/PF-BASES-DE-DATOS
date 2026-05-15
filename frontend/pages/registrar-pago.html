@@ -87,6 +87,9 @@
           <div class="form-group">
             <label for="pg-val">Valor del pago</label>
             <input type="number" id="pg-val" min="1" step="1" required />
+            <div id="pg-val-warn" style="display:none; margin-top:0.35rem; padding:0.45rem 0.7rem; background:var(--warn-bg,#fff3cd); border-left:3px solid var(--warn,#f0ad4e); border-radius:4px; font-size:0.82rem; color:#7a5a00">
+              ⚠️ <strong>Posible sobrepago:</strong> el valor ingresado supera el saldo pendiente del estudiante. Se registrará un saldo a favor.
+            </div>
           </div>
           <div id="pg-err" class="alert alert-error" hidden role="alert"></div>
           <button type="submit" class="btn btn-primary">Registrar pago</button>

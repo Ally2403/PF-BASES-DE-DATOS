@@ -26,7 +26,9 @@ class CobroAdicionalCreate(BaseModel):
 
 class PagoCreate(BaseModel):
     """Datos para registrar un pago."""
-    id_volante: int = Field(..., description="ID del volante a pagar")
+    id_volante: Optional[int] = Field(None, description="ID del volante a pagar (si existe)")
+    id_estudiante: Optional[int] = Field(None, description="ID del estudiante (alternativa cuando no hay volante)")
+    id_periodo: Optional[int] = Field(None, description="ID del período (alternativa cuando no hay volante)")
     medio_pago: str = Field(..., max_length=30, description="Efectivo, Transferencia, Tarjeta, etc")
     valor: float = Field(..., gt=0, description="Valor pagado")
     referencia: Optional[str] = Field(None, max_length=100, description="Referencia del pago (ej: número de comprobante)")

@@ -101,8 +101,11 @@ async def crear_volante_individual(
             "data": VolanteResponse.model_validate(nuevo_volante)
         }
     except ValueError as e:
-        logger.warning(f"⚠ Validación fallida: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        err_str = str(e)
+        logger.warning(f"⚠ Validación fallida: {err_str}")
+        if err_str.startswith("CONFLICT:"):
+            raise HTTPException(status_code=409, detail=err_str[len("CONFLICT:"):].strip())
+        raise HTTPException(status_code=400, detail=err_str)
     except Exception as e:
         logger.error(f"✗ Error al crear volante individual: {e}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -175,10 +178,11 @@ async def crear_cobro_adicional(
 ):
     """Agrega un cobro adicional a un volante existente (ej: laboratorio, examen, etc)."""
     try:
-        # Validar que el código sea un cobro válido
-        codigos_validos = ["PCAR", "PLAB", "PEXA", "PMAT", "PCRE"]
+        # Validar que el código sea un cobro válido (consulta dinámica a la BD)
+        from app.services.codigo_detalle import get_all_codigos
+        codigos_validos = [c["CODIGO_DETALLE"] for c in get_all_codigos() if c.get("GRUPO") == "COBRO"]
         if cobro.codigo_detalle not in codigos_validos:
-            raise ValueError(f"código_detalle debe ser uno de: {', '.join(codigos_validos)}")
+            raise ValueError(f"código_detalle debe ser uno de: {', '.join(sorted(codigos_validos))}")
         
         if cobro.id_volante is None and (cobro.id_estudiante is None or cobro.id_periodo is None):
             raise ValueError("Debe proporcionar id_volante o (id_estudiante + id_periodo)")
@@ -214,21 +218,33 @@ async def registrar_pago(
     pago: PagoCreate,
     perfil_info: Dict[str, Any] = Depends(require_perfil(["ASISTENTE", "ADMINISTRADOR"]))
 ):
-    """Registra un pago para un volante."""
+    """Registra un pago para un volante o para cobros adicionales sin volante."""
     try:
-        # Validar que el volante exista
-        volante = volante_service.get_volante_by_id(pago.id_volante)
-        if not volante:
-            raise HTTPException(status_code=404, detail=f"Volante {pago.id_volante} no encontrado")
-        
-        # Registrar el pago
-        transaccion = movimiento_service.registrar_pago(
-            id_volante=pago.id_volante,
-            medio_pago=pago.medio_pago,
-            valor=pago.valor,
-            referencia=pago.referencia,
-            codigo_detalle=pago.codigo_detalle
-        )
+        if pago.id_volante is not None:
+            # Ruta normal: pago asociado a un volante de matrícula
+            volante = volante_service.get_volante_by_id(pago.id_volante)
+            if not volante:
+                raise HTTPException(status_code=404, detail=f"Volante {pago.id_volante} no encontrado")
+            transaccion = movimiento_service.registrar_pago(
+                id_volante=pago.id_volante,
+                medio_pago=pago.medio_pago,
+                valor=pago.valor,
+                referencia=pago.referencia,
+                codigo_detalle=pago.codigo_detalle
+            )
+        elif pago.id_estudiante and pago.id_periodo:
+            # Ruta sin volante: estudiante con cobros adicionales pero sin matrícula
+            transaccion = movimiento_service.registrar_pago(
+                id_volante=None,
+                medio_pago=pago.medio_pago,
+                valor=pago.valor,
+                referencia=pago.referencia,
+                codigo_detalle=pago.codigo_detalle,
+                id_estudiante_override=pago.id_estudiante,
+                id_periodo_override=pago.id_periodo
+            )
+        else:
+            raise HTTPException(status_code=400, detail="Se requiere id_volante o (id_estudiante + id_periodo)")
         
         return {
             "success": True,

@@ -24,34 +24,48 @@
             <div class="form-group">
               <label for="u-us">Usuario (Username)</label>
               <input type="text" id="u-us" autocomplete="username" placeholder="ej. jdoe" required />
+              <small class="field-help">3–50 caracteres: letras, números, puntos, guiones y _ (sin espacios).</small>
             </div>
             <div class="form-group">
               <label for="u-pw">Contraseña inicial</label>
               <input type="password" id="u-pw" autocomplete="new-password" placeholder="••••••••" required />
+              <small class="field-help">Mínimo 6 caracteres.</small>
             </div>
             <div class="form-group">
               <label for="u-cc">Número de Cédula</label>
-              <input type="number" id="u-cc" placeholder="Sin puntos ni comas" required />
+              <input type="text" id="u-cc" inputmode="numeric" maxlength="10" placeholder="Entre 6 y 10 dígitos" required />
+              <small class="field-help">Entre 6 y 10 dígitos, solo números. Si la cédula ya existe se vinculará la misma persona.</small>
+              <div id="u-cc-warning"
+                   style="display:none;margin-top:.45rem;padding:.5rem .75rem;background:#fef9c3;border:1px solid #ca8a04;
+                          border-radius:5px;color:#713f12;font-size:.82rem;gap:.45rem;align-items:flex-start">
+                <span style="flex-shrink:0;font-size:1rem">⚠️</span>
+                <span>La cédula <strong id="u-cc-warning-val"></strong> no podrá modificarse una vez registrada. Verifique que el número sea correcto antes de continuar.</span>
+              </div>
             </div>
             <div class="form-group">
               <label for="u-perf">Perfil / Rol</label>
               <select id="u-perf" required></select>
+              <small class="field-help">Requerido. Define los permisos del usuario en el sistema.</small>
             </div>
             <div class="form-group">
               <label for="u-nom">Nombres</label>
-              <input type="text" id="u-nom" placeholder="Nombres completos" required />
+              <input type="text" id="u-nom" placeholder="Nombres completos" required data-capitalize="words" />
+              <small class="field-help">Solo letras y espacios. Requerido si la cédula es nueva en el sistema.</small>
             </div>
             <div class="form-group">
               <label for="u-ape">Apellidos</label>
-              <input type="text" id="u-ape" placeholder="Apellidos completos" required />
+              <input type="text" id="u-ape" placeholder="Apellidos completos" required data-capitalize="words" />
+              <small class="field-help">Solo letras y espacios. Requerido si la cédula es nueva en el sistema.</small>
             </div>
             <div class="form-group">
               <label for="u-mail">Correo electrónico</label>
               <input type="email" id="u-mail" placeholder="usuario@uni.edu.co" required />
+              <small class="field-help">Formato válido, ej. usuario@universidad.edu.co.</small>
             </div>
             <div class="form-group">
               <label for="u-tel">Teléfono</label>
-              <input type="tel" id="u-tel" placeholder="ej. 3001234567" required />
+              <input type="tel" id="u-tel" placeholder="ej. 3001234567" required maxlength="10" inputmode="numeric" />
+              <small class="field-help">Opcional. 10 dígitos empezando por 3 (ej. 3001234567).</small>
             </div>
           </div>
           <button type="submit" class="btn btn-primary" style="width: fit-content">Registrar Usuario</button>
@@ -98,30 +112,37 @@
             <div class="form-group">
               <label for="ue-us">Username</label>
               <input type="text" id="ue-us" required />
+              <small class="field-help">3–50 caracteres: letras, números, puntos, guiones y _ (sin espacios).</small>
             </div>
             <div class="form-group">
-              <label for="ue-pw">Nueva contraseña (dejar vacío para no cambiar)</label>
-              <input type="password" id="ue-pw" placeholder="••••••••" />
+              <label for="ue-pw">Nueva contraseña</label>
+              <input type="password" id="ue-pw" placeholder="Dejar vacío para no cambiar" />
+              <small class="field-help">Opcional. Si se ingresa, mínimo 6 caracteres.</small>
             </div>
             <div class="form-group">
               <label for="ue-nom">Nombres</label>
-              <input type="text" id="ue-nom" required />
+              <input type="text" id="ue-nom" required data-capitalize="words" />
+              <small class="field-help">Solo letras y espacios.</small>
             </div>
             <div class="form-group">
               <label for="ue-ape">Apellidos</label>
-              <input type="text" id="ue-ape" required />
+              <input type="text" id="ue-ape" required data-capitalize="words" />
+              <small class="field-help">Solo letras y espacios.</small>
             </div>
             <div class="form-group">
               <label for="ue-mail">Correo</label>
               <input type="email" id="ue-mail" required />
+              <small class="field-help">Formato válido, ej. usuario@universidad.edu.co.</small>
             </div>
             <div class="form-group">
               <label for="ue-tel">Teléfono</label>
-              <input type="tel" id="ue-tel" required />
+              <input type="tel" id="ue-tel" maxlength="10" inputmode="numeric" />
+              <small class="field-help">Opcional. 10 dígitos empezando por 3.</small>
             </div>
             <div class="form-group">
               <label for="ue-perf">Perfil / Rol</label>
               <select id="ue-perf" required></select>
+              <small class="field-help">Requerido. Cambia los permisos del usuario en el sistema.</small>
             </div>
           </div>
           <div class="btn-row mt-1">
@@ -209,7 +230,11 @@
       };
 
       window.eliminarUsuario = async function(id, name) {
-        if (!await auth.showConfirm("¿Seguro que desea eliminar al usuario " + name + " (ID: " + id + ")? Esta acción no se puede deshacer.")) return;
+        if (!await auth.showConfirm("¿Desea eliminar al usuario " + name + "? Esta acción no se puede deshacer.")) return;
+        if (!await auth.showConfirmCedula(
+          "Está a punto de eliminar al usuario <strong>" + name + "</strong> del sistema.",
+          "Se revocará el acceso de este usuario a todas las funciones del sistema. Sus datos de persona se conservarán si tiene movimientos financieros o registros asociados. Esta acción no se puede deshacer."
+        )) return;
         try {
           await api.deleteUsuario(id);
           auth.showToast("Usuario eliminado correctamente.");
@@ -268,21 +293,69 @@
         return d.innerHTML;
       }
 
+      const SOLO_LETRAS_U = /^[A-Za-z\u00C0-\u024F\s]+$/;
+      const EMAIL_RE_U = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+      const TEL_RE_U = /^3[0-9]{9}$/;
+
+      // Aviso de cédula irrevocable
+      document.getElementById("u-cc").addEventListener("blur", function () {
+        var val = this.value.trim();
+        var warn = document.getElementById("u-cc-warning");
+        var warnVal = document.getElementById("u-cc-warning-val");
+        if (/^[0-9]{6,10}$/.test(val)) {
+          warnVal.textContent = val;
+          warn.style.display = 'flex';
+        } else {
+          warn.style.display = 'none';
+        }
+      });
+      document.getElementById("u-cc").addEventListener("input", function () {
+        document.getElementById("u-cc-warning").style.display = 'none';
+      });
+
       document.getElementById("form-u").addEventListener("submit", async function (ev) {
         ev.preventDefault();
+        const username = document.getElementById("u-us").value.trim();
+        const contrasena = document.getElementById("u-pw").value;
+        const cedula = document.getElementById("u-cc").value.trim();
+        const id_perfil = Number(document.getElementById("u-perf").value);
+        const nombre = document.getElementById("u-nom").value.trim();
+        const apellido = document.getElementById("u-ape").value.trim();
+        const correo = document.getElementById("u-mail").value.trim();
+        const telefono = document.getElementById("u-tel").value.trim();
+
+        if (!username || username.length < 3) { auth.showToast("Usuario debe tener al menos 3 caracteres.", "error"); return; }
+        if (!/^[A-Za-z0-9._-]{3,50}$/.test(username)) { auth.showToast("Usuario: solo letras, números, puntos, guiones y _", "error"); return; }
+        if (!contrasena || contrasena.length < 6) { auth.showToast("Contraseña debe tener al menos 6 caracteres.", "error"); return; }
+        if (!cedula || !/^[0-9]{6,10}$/.test(cedula)) { auth.showToast("La cédula debe tener entre 6 y 10 dígitos numéricos.", "error"); return; }
+        if (!id_perfil) { auth.showToast("Seleccione un perfil.", "error"); return; }
+        if (!nombre || !SOLO_LETRAS_U.test(nombre)) { auth.showToast("Nombre: solo letras y espacios, mínimo 2 caracteres.", "error"); return; }
+        if (!apellido || !SOLO_LETRAS_U.test(apellido)) { auth.showToast("Apellido: solo letras y espacios, mínimo 2 caracteres.", "error"); return; }
+        if (!correo || !EMAIL_RE_U.test(correo)) { auth.showToast("Ingrese un correo electrónico válido.", "error"); return; }
+        if (telefono && !TEL_RE_U.test(telefono)) { auth.showToast("Teléfono: 10 dígitos empezando por 3.", "error"); return; }
+
+        const confirmado = await auth.showConfirm(
+          "\u00bfConfirma que la c\u00e9dula \u201c" + cedula + "\u201d es correcta?\n\nEsta informaci\u00f3n no se podr\u00e1 modificar una vez registrada.",
+          "Confirmar registro",
+          "Registrar",
+          "btn-primary"
+        );
+        if (!confirmado) return;
+
         try {
           await api.postUsuario({
-            username: document.getElementById("u-us").value.trim(),
-            contrasena: document.getElementById("u-pw").value,
-            cedula: Number(document.getElementById("u-cc").value),
-            id_perfil: Number(document.getElementById("u-perf").value),
-            nombre: document.getElementById("u-nom").value.trim(),
-            apellido: document.getElementById("u-ape").value.trim(),
-            correo: document.getElementById("u-mail").value.trim(),
-            telefono: document.getElementById("u-tel").value.trim(),
+            username,
+            contrasena,
+            cedula: Number(cedula),
+            id_perfil,
+            nombre,
+            apellido,
+            correo,
+            telefono: telefono || null,
           });
           auth.showToast("Usuario registrado con éxito.");
           ev.target.reset();
+          document.getElementById("u-cc-warning").style.display = 'none';
           await cargarTabla();
         } catch (e) {
           auth.showToast(e.message, "error");

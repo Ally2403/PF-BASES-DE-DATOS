@@ -106,7 +106,7 @@
           'GESTIONAR_MENUS':       'Gestionar menús',
           'GESTIONAR_PROGRAMAS':   'Programas y planes de estudio',
           'GESTIONAR_ASIGNATURAS': 'Asignaturas (catálogo)',
-          'GESTIONAR_PERIODOS':    'Periodos académicos',
+          'GESTIONAR_PERIODOS':    'Períodos académicos',
           'GESTIONAR_ESTUDIANTES': 'Estudiantes',
           'GESTIONAR_REGLAS':      'Reglas de cobro',
           'GESTIONAR_CODIGOS':     'Códigos de detalle',
@@ -141,7 +141,11 @@
       }
 
       window.eliminarPerfil = async (id, nom) => {
-        if (!await auth.showConfirm(`¿Seguro que desea eliminar el perfil ${nom}?`)) return;
+        if (!await auth.showConfirm(`¿Desea eliminar el perfil ${nom}? Esta acción no se puede deshacer.`)) return;
+        if (!await auth.showConfirmCedula(
+          `Está a punto de eliminar el perfil de rol <strong>${nom}</strong>.`,
+          "Todos los usuarios asignados a este perfil perderán sus permisos de acceso inmediatamente. Si hay usuarios activos con este perfil, no podrán iniciar sesión correctamente hasta que se les reasigne un perfil."
+        )) return;
         await api.deletePerfil(id);
         auth.showToast("Perfil eliminado.");
         if (currentPerfilId === id) {

@@ -124,14 +124,22 @@
       }
 
       window.eliminarMenu = async (id) => {
-        if (!await auth.showConfirm("¿Eliminar este menú? Esto puede afectar la navegación.")) return;
+        if (!await auth.showConfirm("¿Desea eliminar este menú? Esto puede afectar la navegación.")) return;
+        if (!await auth.showConfirmCedula(
+          "Está a punto de eliminar un elemento del menú de navegación.",
+          "Eliminar este menú puede afectar la navegación de los usuarios que lo tienen disponible. Si otros perfiles dependen de este menú, la eliminación podría interrumpir el acceso a secciones del sistema."
+        )) return;
         await api.deleteMenu(id);
         auth.showToast("Menú eliminado.");
         cargarMenus();
       };
 
       window.eliminarPermiso = async (id) => {
-        if (!await auth.showConfirm("¿Eliminar este permiso?")) return;
+        if (!await auth.showConfirm("¿Desea eliminar este permiso?")) return;
+        if (!await auth.showConfirmCedula(
+          "Está a punto de eliminar un permiso del sistema.",
+          "Los perfiles que tengan este permiso asignado dejarán de poder realizar la acción correspondiente. Esto puede afectar a los usuarios que dependen de ese perfil para gestionar cobros, pagos u otras operaciones financieras."
+        )) return;
         await api.deletePermiso(id);
         auth.showToast("Permiso eliminado.");
         cargarPermisos();

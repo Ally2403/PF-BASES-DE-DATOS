@@ -242,7 +242,7 @@ async def actualizar_estudiante_endpoint(id_estudiante: int, data: EstudianteUpd
         telefono = data.telefono if data.telefono is not None else estudiante.get('TELEFONO')
         correo = data.correo if data.correo is not None else estudiante.get('CORREO')
         
-        update_estudiante(id_estudiante, nombre, apellido, telefono, correo)
+        update_estudiante(id_estudiante, nombre, apellido, telefono, correo, data.id_programa)
         logger.info(f"✓ Usuario {current_user.get('username')} actualizó estudiante: {id_estudiante}")
         
         # Obtener y devolver el estudiante actualizado
@@ -425,7 +425,17 @@ async def actualizar_codigo_endpoint(codigo_detalle: str, data: CodigoDetalleUpd
         if not codigo:
             raise HTTPException(status_code=404, detail=f"Código {codigo_detalle} no encontrado")
         nueva_desc = data.descripcion if data.descripcion is not None else codigo['DESCRIPCION']
-        nuevo_val = data.valor_defecto if data.valor_defecto is not None else codigo.get('VALOR_DEFECTO')
+        if codigo['GRUPO'] == 'PAGO':
+            if data.valor_defecto is not None and data.valor_defecto > 0:
+                raise HTTPException(status_code=400, detail="Los códigos de tipo PAGO no pueden tener un valor por defecto.")
+            nuevo_val = None
+        else:
+            # Si el campo fue enviado explícitamente (incluso como null), usar ese valor.
+            # Si no fue enviado en el body, conservar el valor actual de la BD.
+            if 'valor_defecto' in data.model_fields_set:
+                nuevo_val = data.valor_defecto  # None = el usuario lo borró intencionalmente
+            else:
+                nuevo_val = codigo.get('VALOR_DEFECTO')
         update_codigo(codigo_detalle, nueva_desc, nuevo_val)
         actualizado = get_codigo_by_id(codigo_detalle)
         return CodigoDetalleDetailResponse(success=True, message="Código actualizado", data=CodigoDetalleResponse.model_validate(actualizado))

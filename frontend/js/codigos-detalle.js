@@ -67,6 +67,17 @@
     rows.forEach(function (r) {
       var tr = document.createElement("tr");
       var cod = esc(r.codigo_detalle);
+      var bloqueado = !!r.tiene_movimientos;
+      var btnEliminar = bloqueado
+        ? `<span
+             style="display:inline-flex;align-items:center;gap:.35rem;font-size:.8rem;
+                    color:var(--text-muted);background:var(--surface-alt,#f3f4f6);
+                    border:1px solid var(--border,#d1d5db);border-radius:4px;
+                    padding:.2rem .55rem;cursor:default;white-space:nowrap"
+             title="No se puede eliminar: este c\u00f3digo tiene movimientos financieros registrados. Los c\u00f3digos con historial no pueden eliminarse.">
+             \uD83D\uDD12 Sin eliminar
+           </span>`
+        : `<button type="button" class="btn btn-danger btn-del-cd" data-cod="${cod}">Eliminar</button>`;
       tr.innerHTML = `
         <td><code>${cod}</code></td>
         <td>${esc(r.grupo)}</td>
@@ -75,7 +86,7 @@
         <td>
           <div class="btn-row">
             <button type="button" class="btn btn-secondary btn-edit-cd" data-cod="${cod}">Editar</button>
-            <button type="button" class="btn btn-danger btn-del-cd" data-cod="${cod}">Eliminar</button>
+            ${btnEliminar}
           </div>
         </td>
       `;
@@ -87,6 +98,30 @@
     }
   }
 
+  function actualizarEstadoValor() {
+    var grupo = byId("cd-grupo") ? byId("cd-grupo").value : "COBRO";
+    var campoValor = byId("cd-valor");
+    var helpValor = campoValor && campoValor.nextElementSibling;
+    var infoPago = byId("cd-info-pago");
+    if (!campoValor) return;
+    if (grupo === "PAGO") {
+      campoValor.value = "";
+      campoValor.disabled = true;
+      campoValor.placeholder = "No aplica para pagos";
+      if (helpValor && helpValor.tagName === "SMALL") {
+        helpValor.textContent = "Los c\u00f3digos de tipo PAGO no pueden tener un valor por defecto.";
+      }
+      if (infoPago) infoPago.style.display = "block";
+    } else {
+      campoValor.disabled = false;
+      campoValor.placeholder = "Ej: 85000";
+      if (helpValor && helpValor.tagName === "SMALL") {
+        helpValor.textContent = "Opcional. Si se ingresa, debe ser mayor a 0. En pesos colombianos (COP).";
+      }
+      if (infoPago) infoPago.style.display = "none";
+    }
+  }
+
   function limpiarModal() {
     byId("cd-form-mode").value = "new";
     byId("cd-codigo").value = "";
@@ -94,6 +129,7 @@
     byId("cd-grupo").value = "COBRO";
     byId("cd-desc").value = "";
     if (byId("cd-valor")) byId("cd-valor").value = "";
+    actualizarEstadoValor();
   }
 
   function abrirNuevo() {
@@ -117,7 +153,8 @@
     byId("cd-codigo").readOnly = true;
     byId("cd-grupo").value = r.grupo === "PAGO" ? "PAGO" : "COBRO";
     byId("cd-desc").value = r.descripcion || "";
-    if (byId("cd-valor")) byId("cd-valor").value = r.valor_defecto || "";
+    if (byId("cd-valor")) byId("cd-valor").value = r.grupo === "PAGO" ? "" : (r.valor_defecto || "");
+    actualizarEstadoValor();
     var t = byId("cd-modal-title");
     if (t) t.textContent = "Editar código";
     setModal(true);
@@ -143,6 +180,11 @@
     }
     if (desc.length < 3) {
       toast("Descripción debe tener al menos 3 caracteres.", "error");
+      return;
+    }
+    if (grupo === "PAGO" && val !== null) {
+      toast("Los c\u00f3digos de tipo PAGO no pueden tener valor por defecto.", "error");
+      if (byId("cd-valor")) byId("cd-valor").value = "";
       return;
     }
     if (val !== null && val <= 0) {
@@ -176,7 +218,11 @@
 
   async function eliminar(codRaw) {
     var key = String(codRaw || "").trim().toUpperCase();
-    if (!await auth.showConfirm("¿Seguro que desea eliminar el código \u201c" + key + "\u201d?")) return;
+    if (!await auth.showConfirm("¿Desea eliminar el código \u201c" + key + "\u201d? Esta acción no se puede deshacer.")) return;
+    if (!await auth.showConfirmCedula(
+      "Está a punto de eliminar el concepto financiero \u201c" + key + "\u201d del catálogo.",
+      "Este código clasifica movimientos en la cuenta corriente de los estudiantes. Solo puede eliminarse si no tiene movimientos registrados. Si existe algún historial, la eliminación será bloqueada por la base de datos."
+    )) return;
     try {
       await api.deleteCodigoDetalle(key);
       toast("Código eliminado", "success");
@@ -243,6 +289,7 @@
 
     byId("btn-nuevo-cod").addEventListener("click", abrirNuevo);
     byId("filtro-cod").addEventListener("input", renderTabla);
+    if (byId("cd-grupo")) byId("cd-grupo").addEventListener("change", actualizarEstadoValor);
     byId("form-cd-modal").addEventListener("submit", guardar);
     byId("btn-close-cd-modal").addEventListener("click", function () {
       setModal(false);

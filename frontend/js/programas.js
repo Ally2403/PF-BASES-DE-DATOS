@@ -152,7 +152,11 @@
   }
 
   async function eliminarPrograma(id) {
-    if (!await auth.showConfirm("¿Seguro que desea eliminar este programa?")) return;
+    if (!await auth.showConfirm("¿Desea eliminar este programa? Esta acción no se puede deshacer.")) return;
+    if (!await auth.showConfirmCedula(
+      "Está a punto de eliminar un programa académico.",
+      "Se eliminarán el plan de estudios y las reglas de cobro asociadas al programa. Los estudiantes inscritos y sus volantes ya generados impedirán la eliminación si existen dependencias activas."
+    )) return;
     try {
       await api.deletePrograma(id);
       auth.showToast("Programa eliminado");

@@ -96,21 +96,46 @@ def create_estudiante(nombre: str, apellido: str, telefono: Optional[str],
 
 
 def update_estudiante(id_estudiante: int, nombre: str, apellido: str, telefono: Optional[str],
-                     correo: Optional[str]) -> bool:
-    """Actualiza un estudiante."""
+                     correo: Optional[str], id_programa: Optional[int] = None) -> bool:
+    """Actualiza un estudiante. Si se cambia el programa, regenera el carnet."""
     try:
-        query = """
-            UPDATE ESTUDIANTE
-            SET NOMBRE = :nombre, APELLIDO = :apellido, TELEFONO = :telefono, CORREO = :correo
-            WHERE ID_ESTUDIANTE = :id
-        """
-        affected = execute_update(query, {
-            "id": id_estudiante,
-            "nombre": nombre,
-            "apellido": apellido,
-            "telefono": telefono,
-            "correo": correo
-        })
+        actual = get_estudiante_by_id(id_estudiante)
+        if not actual:
+            return False
+
+        # Determinar si hay cambio de programa
+        nuevo_programa = id_programa if id_programa and id_programa != actual['ID_PROGRAMA'] else None
+
+        if nuevo_programa:
+            nuevo_carnet = _generar_carnet(nuevo_programa)
+            query = """
+                UPDATE ESTUDIANTE
+                SET NOMBRE = :nombre, APELLIDO = :apellido, TELEFONO = :telefono,
+                    CORREO = :correo, ID_PROGRAMA = :id_prog, CARNET = :carnet
+                WHERE ID_ESTUDIANTE = :id
+            """
+            affected = execute_update(query, {
+                "id": id_estudiante,
+                "nombre": nombre,
+                "apellido": apellido,
+                "telefono": telefono,
+                "correo": correo,
+                "id_prog": nuevo_programa,
+                "carnet": nuevo_carnet
+            })
+        else:
+            query = """
+                UPDATE ESTUDIANTE
+                SET NOMBRE = :nombre, APELLIDO = :apellido, TELEFONO = :telefono, CORREO = :correo
+                WHERE ID_ESTUDIANTE = :id
+            """
+            affected = execute_update(query, {
+                "id": id_estudiante,
+                "nombre": nombre,
+                "apellido": apellido,
+                "telefono": telefono,
+                "correo": correo
+            })
         return affected > 0
     except Exception as e:
         logger.error(f"✗ Error al actualizar estudiante: {e}")

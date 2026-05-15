@@ -10,6 +10,7 @@
   }
 
   let estudiantesLista = [];
+  let saldoActual = null;
 
   function getFiltradosEstudiantes() {
     const inp = $("pg-filtro-est");
@@ -133,6 +134,17 @@
     }
   }
 
+  function verificarSobrepago() {
+    const warn = $("pg-val-warn");
+    if (!warn) return;
+    const val = Number($("pg-val").value);
+    if (saldoActual && saldoActual.saldo_neto > 0 && val > saldoActual.saldo_neto) {
+      warn.style.display = "block";
+    } else {
+      warn.style.display = "none";
+    }
+  }
+
   async function mostrarSaldo() {
     const est = $("pg-est").value;
     const per = $("pg-per").value;
@@ -140,7 +152,8 @@
     if (!est || !per || !box) return;
     try {
       const saldo = await api.getSaldo({ estudiante: Number(est), periodo: Number(per) });
-      if (!saldo) { box.hidden = true; return; }
+      if (!saldo) { box.hidden = true; saldoActual = null; verificarSobrepago(); return; }
+      saldoActual = saldo;
       const estadoBadges = {
         PAGADO:    { cls: "status-al-dia", txt: "PAGADO" },
         PARCIAL:   { cls: "status-debe",   txt: "PARCIAL" },
@@ -152,8 +165,11 @@
       $("pg-saldo-neto").style.color = saldo.saldo_neto <= 0 ? "var(--success,#27ae60)" : "var(--danger,#e74c3c)";
       $("pg-saldo-estado").innerHTML = `<span class="${badge.cls}">${badge.txt}</span>`;
       box.hidden = false;
+      verificarSobrepago();
     } catch (_) {
       if (box) box.hidden = true;
+      saldoActual = null;
+      verificarSobrepago();
     }
   }
 
@@ -165,8 +181,7 @@
     $("pg-per").value = "";
 
     $("pg-filtro-est").addEventListener("input", renderTablaEstudiantes);
-    $("pg-per").addEventListener("change", mostrarSaldo);
-
+    $("pg-per").addEventListener("change", mostrarSaldo);    $("pg-val").addEventListener("input", verificarSobrepago);
     $("form-pago").addEventListener("submit", async function (ev) {
       ev.preventDefault();
       $("pg-err").hidden = true;
@@ -198,6 +213,15 @@
         return;
       }
 
+      if (saldoActual && saldoActual.saldo_neto > 0 && val > saldoActual.saldo_neto) {
+        const exceso = COP.format(val - saldoActual.saldo_neto);
+        const ok = window.confirm(
+          "El valor ingresado supera el saldo pendiente del estudiante en " + exceso + ".\n" +
+          "Se registrará un saldo a favor del estudiante.\n\n¿Desea continuar?"
+        );
+        if (!ok) return;
+      }
+
       try {
         await api.postPago({
           id_estudiante: Number(est),
@@ -212,6 +236,9 @@
         $("pg-est").value = "";
         $("pg-per").value = "";
         $("pg-med").value = "";
+        saldoActual = null;
+        const warn = $("pg-val-warn");
+        if (warn) warn.style.display = "none";
         const box = $("pg-saldo-box");
         if (box) box.hidden = true;
         renderTablaEstudiantes();

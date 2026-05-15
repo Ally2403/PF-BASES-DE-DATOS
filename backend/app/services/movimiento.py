@@ -127,26 +127,33 @@ def crear_cobro_adicional(id_volante: Optional[int], codigo_detalle: str, valor:
         raise
 
 
-def registrar_pago(id_volante: int, medio_pago: str, valor: float, referencia: Optional[str] = None, codigo_detalle: str = 'MPAG') -> Dict[str, Any]:
+def registrar_pago(id_volante: Optional[int], medio_pago: str, valor: float, referencia: Optional[str] = None,
+                   codigo_detalle: str = 'MPAG', id_estudiante_override: Optional[int] = None,
+                   id_periodo_override: Optional[int] = None) -> Dict[str, Any]:
     """Registra un pago: inserta en MOVIMIENTO y luego en TRANSACCION_PAGO.
-    El trigger TR_ACTUALIZAR_ESTADO_VOLANTE actualizará el estado."""
+    Acepta id_volante (ruta normal) o id_estudiante_override + id_periodo_override
+    cuando el estudiante solo tiene cobros adicionales sin volante de matrícula."""
     try:
-        # Obtener datos del volante
-        volante = execute_query(
-            "SELECT ID_ESTUDIANTE, ID_PERIODO FROM VOLANTE_MATRICULA WHERE ID_VOLANTE = :id",
-            {"id": id_volante}
-        )
+        if id_volante is not None:
+            # Ruta normal: obtener estudiante y período desde el volante
+            volante = execute_query(
+                "SELECT ID_ESTUDIANTE, ID_PERIODO FROM VOLANTE_MATRICULA WHERE ID_VOLANTE = :id",
+                {"id": id_volante}
+            )
+            if not volante:
+                raise ValueError(f"Volante {id_volante} no encontrado")
+            id_estudiante = volante[0]['ID_ESTUDIANTE']
+            id_periodo = volante[0]['ID_PERIODO']
+        else:
+            # Ruta sin volante: pago contra cobros adicionales
+            if not id_estudiante_override or not id_periodo_override:
+                raise ValueError("Se requiere id_volante o (id_estudiante + id_periodo) para registrar el pago")
+            id_estudiante = id_estudiante_override
+            id_periodo = id_periodo_override
         
-        if not volante:
-            raise ValueError(f"Volante {id_volante} no encontrado")
-        
-        id_estudiante = volante[0]['ID_ESTUDIANTE']
-        id_periodo = volante[0]['ID_PERIODO']
-        
-        # Obtener la cuenta
-        id_cuenta = get_cuenta_by_estudiante(id_estudiante)
-        if not id_cuenta:
-            raise ValueError(f"Cuenta corriente no existe")
+        # Obtener o crear la cuenta (ANT y otros pagos sin cobros previos necesitan
+        # que la CC se cree si aún no existe para el estudiante)
+        id_cuenta = _ensure_cuenta_corriente(id_estudiante)
         
         # Obtener ID de movimiento
         seq_mov = execute_query("SELECT SEQ_MOVIMIENTO.NEXTVAL AS ID_MOV FROM DUAL")

@@ -157,7 +157,11 @@
   }
 
   window.eliminarMovimiento = async function (id) {
-    if (!await auth.showConfirm("¿Seguro que desea eliminar este movimiento?")) return;
+    if (!await auth.showConfirm("¿Desea eliminar este movimiento? Esta acción no se puede deshacer.")) return;
+    if (!await auth.showConfirmCedula(
+      "Está a punto de eliminar un movimiento de la cuenta corriente del estudiante.",
+      "Este movimiento afecta directamente el saldo del estudiante. Al eliminarlo, el saldo se recalculará automáticamente. Si es un pago, el estudiante quedará con una deuda pendiente; si es un cobro, se reducirá su deuda. Esta acción no se puede deshacer."
+    )) return;
     try {
       await api.deleteMovimiento(id);
       refrescar();

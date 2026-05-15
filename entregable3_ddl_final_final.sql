@@ -898,7 +898,10 @@ WHERE (bal.TOTAL_COBRADO - bal.TOTAL_PAGADO) > 0;
 
 -- ----------------------------------------------------------
 -- VISTA 8.4: VW_INGRESO_REAL
--- Ingreso Real = Suma de todos los PAGOS del periodo.
+-- Ingreso Real = Suma de los PAGOS reales del periodo.
+-- Se excluye el codigo DESC (Descuento) porque no representa
+-- dinero que realmente ingresa a la empresa: solo reduce la
+-- deuda del estudiante sin generar un flujo de caja real.
 -- ----------------------------------------------------------
 CREATE OR REPLACE VIEW VW_INGRESO_REAL AS
 SELECT
@@ -908,6 +911,7 @@ FROM   MOVIMIENTO          m
 JOIN   CODIGO_DETALLE      cd  ON cd.CODIGO_DETALLE = m.CODIGO_DETALLE
 JOIN   PERIODO_ACADEMICO   per ON per.ID_PERIODO    = m.ID_PERIODO
 WHERE  cd.GRUPO = 'PAGO'
+  AND  cd.CODIGO_DETALLE != 'DESC'
 GROUP BY per.NOMBRE_PERIODO;
 
 -- ----------------------------------------------------------

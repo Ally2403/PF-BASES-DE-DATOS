@@ -16,7 +16,7 @@
 
       <div class="card">
         <h2>Códigos</h2>
-        <div class="btn-row" style="margin-bottom: 0.75rem">
+        <div class="btn-row" style="margin-bottom: 0.75rem; align-items: flex-end">
           <div class="form-group" style="flex: 1; max-width: 520px; margin: 0">
             <label for="filtro-cod">Buscar (filtra mientras escribe)</label>
             <input
@@ -54,8 +54,9 @@
         <form id="form-cd-modal" class="stack" novalidate>
           <input type="hidden" id="cd-form-mode" value="new" />
           <div class="form-group">
-            <label for="cd-codigo">CÓDIGO_DETALLE</label>
+            <label for="cd-codigo">Código de detalle</label>
             <input type="text" id="cd-codigo" required maxlength="20" autocomplete="off" />
+            <small class="field-help">2–4 caracteres: letras mayúsculas, números o guión bajo (ej. MAT, MORA, MOR_A). Se convierte a mayúsculas automáticamente.</small>
           </div>
           <div class="form-group">
             <label for="cd-grupo">Grupo</label>
@@ -64,14 +65,29 @@
               <option value="COBRO">COBRO</option>
               <option value="PAGO">PAGO</option>
             </select>
+            <small class="field-help">COBRO = genera un cargo; PAGO = registra un abono.</small>
+          </div>
+
+          <!-- Nota informativa sobre comportamiento de códigos PAGO -->
+          <div id="cd-info-pago" style="display:none; background:var(--info-bg,#e8f4fd); border-left:3px solid var(--info,#2980b9); border-radius:4px; padding:0.6rem 0.8rem; font-size:0.83rem; color:var(--text,#2c3e50)">
+            <strong>Comportamientos especiales de códigos PAGO:</strong>
+            <ul style="margin:0.4rem 0 0 1.1rem; padding:0">
+              <li><strong>MPAG</strong> — Pago de matrícula: abono estándar; cuenta como ingreso real.</li>
+              <li><strong>ANT</strong> — Anticipo: crea automáticamente la cuenta corriente del estudiante aunque no tenga cobros previos; cuenta como ingreso real.</li>
+              <li><strong>DESC</strong> — Descuento: reduce la deuda del estudiante pero <em>no</em> cuenta como ingreso real en los reportes (no entra dinero a caja).</li>
+              <li><strong>CRED</strong> — Crédito financiero: aparece en el reporte de cartera; cuenta como ingreso real.</li>
+              <li><strong>Códigos nuevos</strong>: se tratan como ingreso real por defecto (equivalente a MPAG). Si necesita comportamiento de descuento, use el código <strong>DESC</strong> existente.</li>
+            </ul>
           </div>
           <div class="form-group">
             <label for="cd-desc">Descripción</label>
             <input type="text" id="cd-desc" required maxlength="200" />
+            <small class="field-help">Requerido. Mínimo 3 caracteres (ej. Matrícula ordinaria).</small>
           </div>
           <div class="form-group">
             <label for="cd-valor">Valor (opcional)</label>
             <input type="number" id="cd-valor" min="0" step="1" placeholder="Ej: 85000" />
+            <small class="field-help">Opcional. Si se ingresa, debe ser mayor a 0. En pesos colombianos (COP).</small>
           </div>
           <div class="btn-row">
             <button type="submit" class="btn btn-secondary">Guardar</button>

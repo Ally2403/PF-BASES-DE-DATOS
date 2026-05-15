@@ -156,6 +156,7 @@ select { cursor: pointer; }
 select option { background: #1e293b; color: var(--text); }
 .input-error { border-color: var(--danger) !important; }
 .field-hint { font-size: 0.75rem; color: var(--danger); margin-top: -0.15rem; }
+.field-help { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; display: block; line-height: 1.35; }
 
 /* ── Buttons ─────────────────────────────── */
 .btn-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
@@ -232,7 +233,7 @@ select option { background: #1e293b; color: var(--text); }
 .alert-info { background: var(--accent-dim); border-color: rgba(99,102,241,0.25); color: var(--accent-light); }
 
 #toast-stack {
-  position: fixed; bottom: 1.25rem; right: 1.25rem; z-index: 9999;
+  position: fixed; bottom: 1.25rem; right: 1.25rem; z-index: 10200;
   display: flex; flex-direction: column; gap: 0.5rem;
   max-width: min(400px, 92vw); pointer-events: none;
 }
@@ -251,7 +252,7 @@ select option { background: #1e293b; color: var(--text); }
 
 /* ── Centered alert overlay (validation / warnings) ── */
 #alert-center-overlay {
-  position: fixed; inset: 0; z-index: 10000;
+  position: fixed; inset: 0; z-index: 10300;
   display: flex; align-items: center; justify-content: center;
   pointer-events: none;
 }

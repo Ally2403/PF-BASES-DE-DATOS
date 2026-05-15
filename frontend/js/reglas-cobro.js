@@ -289,7 +289,11 @@
   }
 
   async function eliminar(prog, per, mod) {
-    if (!await auth.showConfirm("¿Seguro que desea eliminar esta regla de cobro?")) return;
+    if (!await auth.showConfirm("¿Desea eliminar esta regla de cobro? Esta acción no se puede deshacer.")) return;
+    if (!await auth.showConfirmCedula(
+      "Está a punto de eliminar una regla de cobro.",
+      "Esta regla define cómo se calculan los montos de matrícula para el programa y período seleccionados. Sin ella, no se podrán generar nuevos volantes de cobro. Los volantes ya emitidos no se verán afectados, pero futuros cobros quedarán bloqueados."
+    )) return;
     try {
       await api.deleteReglaCobro(prog, per, mod);
       toast("Regla eliminada", "success");

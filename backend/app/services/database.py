@@ -190,6 +190,12 @@ def is_fk_violation(e: Exception) -> bool:
     return "ORA-02292" in msg or ("integrity constraint" in msg.lower() and "violated" in msg.lower())
 
 
+def is_unique_violation(e: Exception) -> bool:
+    """Detecta si una excepción es una violación de restricción única de Oracle (ORA-00001)."""
+    msg = str(e)
+    return "ORA-00001" in msg or "unique constraint" in msg.lower()
+
+
 def execute_transaction(statements: list) -> None:
     """
     Ejecuta múltiples sentencias SQL en una sola transacción atómica.

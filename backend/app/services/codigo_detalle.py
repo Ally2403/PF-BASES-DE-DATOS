@@ -12,7 +12,14 @@ logger = logging.getLogger(__name__)
 def get_all_codigos() -> List[Dict[str, Any]]:
     """Obtiene todos los códigos de detalle."""
     try:
-        query = "SELECT CODIGO_DETALLE, GRUPO, DESCRIPCION, VALOR_DEFECTO FROM CODIGO_DETALLE ORDER BY CODIGO_DETALLE"
+        query = """
+            SELECT CD.CODIGO_DETALLE, CD.GRUPO, CD.DESCRIPCION, CD.VALOR_DEFECTO,
+                   CASE WHEN EXISTS (
+                       SELECT 1 FROM MOVIMIENTO M WHERE M.CODIGO_DETALLE = CD.CODIGO_DETALLE
+                   ) THEN 1 ELSE 0 END AS TIENE_MOVIMIENTOS
+            FROM CODIGO_DETALLE CD
+            ORDER BY CD.CODIGO_DETALLE
+        """
         results = execute_query(query)
         logger.info(f"✓ Se obtuvieron {len(results)} códigos")
         return results
@@ -35,6 +42,8 @@ def get_codigo_by_id(codigo: str) -> Optional[Dict[str, Any]]:
 def create_codigo(codigo_detalle: str, grupo: str, descripcion: str, valor_defecto: Optional[float] = None) -> Dict[str, Any]:
     """Crea un nuevo código de detalle."""
     try:
+        if grupo == "PAGO" and valor_defecto is not None:
+            raise ValueError("Los códigos de tipo PAGO no pueden tener un valor por defecto.")
         query = """
             INSERT INTO CODIGO_DETALLE (CODIGO_DETALLE, GRUPO, DESCRIPCION, VALOR_DEFECTO)
             VALUES (:codigo, :grupo, :descripcion_param, :valor_param)

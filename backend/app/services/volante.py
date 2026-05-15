@@ -2,7 +2,7 @@
 services/volante.py — Lógica de negocio para VOLANTE_MATRICULA
 """
 
-from app.services.database import execute_query, execute_update
+from app.services.database import execute_query, execute_update, is_unique_violation
 from typing import List, Dict, Any, Optional
 import logging
 from datetime import datetime
@@ -72,7 +72,30 @@ def create_volante_individual(id_estudiante: int, id_periodo: int, id_programa: 
     """Crea un volante individual. El trigger TR_CALCULAR_MONTO_VOLANTE calcula el MONTO_TOTAL.
     Para modalidad CREDITOS, inserta asignaturas seleccionadas en VOLANTE_MATRICULA_ASIGNATURA."""
     try:
-        # Obtener el siguiente ID
+        # Validar que existe regla de cobro ANTES de consumir el sequence
+        regla = execute_query(
+            """SELECT VALORGLOBAL, VALORCREDITO FROM REGLA_COBRO
+               WHERE MODALIDAD = :mod AND ID_PROGRAMA = :prog AND ID_PERIODO = :per""",
+            {"mod": modalidad, "prog": id_programa, "per": id_periodo}
+        )
+        if not regla:
+            raise ValueError(
+                f"No existe una regla de cobro '{modalidad}' configurada para "
+                f"el programa {id_programa} en el período {id_periodo}. "
+                f"Cree la regla en 'Reglas de cobro' antes de generar el volante."
+            )
+        if modalidad == 'GLOBAL' and (regla[0]['VALORGLOBAL'] is None or regla[0]['VALORGLOBAL'] <= 0):
+            raise ValueError(
+                f"La regla de cobro GLOBAL para el programa {id_programa} en el período {id_periodo} "
+                f"tiene valor $0. Actualice la regla antes de generar el volante."
+            )
+        if modalidad == 'CREDITOS' and (regla[0]['VALORCREDITO'] is None or regla[0]['VALORCREDITO'] <= 0):
+            raise ValueError(
+                f"La regla de cobro CREDITOS para el programa {id_programa} en el período {id_periodo} "
+                f"tiene valor por crédito $0. Actualice la regla antes de generar el volante."
+            )
+
+        # Obtener el siguiente ID (solo si la validación pasó)
         seq_result = execute_query("SELECT SEQ_VOLANTE.NEXTVAL AS ID_VOLANTE FROM DUAL")
         new_id = seq_result[0]['ID_VOLANTE']
         
@@ -82,16 +105,24 @@ def create_volante_individual(id_estudiante: int, id_periodo: int, id_programa: 
              TIPO_GENERACION, FECHA_GENERACION)
             VALUES (:id, :id_est, :id_per, :id_prog, :mod, :sem, 'INDIVIDUAL', :fecha_gen)
         """
-        execute_update(query, {
-            "id": new_id,
-            "fecha_gen": datetime.now(),
-            "id_est": id_estudiante,
-            "id_per": id_periodo,
-            "id_prog": id_programa,
-            "mod": modalidad,
-            "sem": semestre_que_cobra
-        })
-        
+        try:
+            execute_update(query, {
+                "id": new_id,
+                "fecha_gen": datetime.now(),
+                "id_est": id_estudiante,
+                "id_per": id_periodo,
+                "id_prog": id_programa,
+                "mod": modalidad,
+                "sem": semestre_que_cobra
+            })
+        except Exception as insert_err:
+            if is_unique_violation(insert_err):
+                raise ValueError(
+                    "CONFLICT: Otro usuario generó el volante para este estudiante y período "
+                    "en el mismo instante. Recargue la página y verifique el estado del estudiante."
+                )
+            raise
+
         # Para CREDITOS: insertar las asignaturas seleccionadas
         if modalidad == 'CREDITOS' and asignaturas:
             for id_asig in asignaturas:
@@ -139,14 +170,32 @@ def create_volante_masiva(id_periodo: int, id_programa: int, modalidad: str, sem
     """Crea volantes para todos los estudiantes del programa.
     Retorna dict con creados, omitidos y lista de errores."""
     try:
+        # Pre-validar que exista una regla de cobro antes de iterar estudiantes
+        regla = execute_query(
+            "SELECT VALORGLOBAL, VALORCREDITO FROM REGLA_COBRO "
+            "WHERE MODALIDAD = :mod AND ID_PROGRAMA = :prog AND ID_PERIODO = :per",
+            {"mod": modalidad, "prog": id_programa, "per": id_periodo}
+        )
+        if not regla:
+            raise ValueError(
+                f"No existe una regla de cobro {modalidad} para el programa y período "
+                "seleccionados. Configure la regla de cobro antes de ejecutar el cobro masivo."
+            )
+        valor_regla = float(regla[0].get('VALORGLOBAL') or 0) if modalidad == 'GLOBAL' else float(regla[0].get('VALORCREDITO') or 0)
+        if valor_regla <= 0:
+            raise ValueError(
+                f"La regla de cobro {modalidad} para el programa y período seleccionados "
+                "tiene valor $0. Actualice el valor de la regla antes de ejecutar el cobro masivo."
+            )
+
         # Obtener todos los estudiantes del programa
         query_est = "SELECT ID_ESTUDIANTE FROM ESTUDIANTE WHERE ID_PROGRAMA = :id_prog ORDER BY ID_ESTUDIANTE"
         estudiantes = execute_query(query_est, {"id_prog": id_programa})
-        
+
         if not estudiantes:
             logger.warning(f"⚠ No hay estudiantes en el programa {id_programa}")
             return {"creados": [], "errores": []}
-        
+
         volantes_creados = []
         errores = []
         for est in estudiantes:
