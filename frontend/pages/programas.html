@@ -28,7 +28,8 @@
           <table>
             <thead>
               <tr>
-                <th>NOMBRE_PROGRAMA</th>
+                <th>Código</th>
+                <th>Nombre</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -81,7 +82,11 @@
         <form id="form-prog-modal" class="stack">
           <input type="hidden" id="prog-id" />
           <div class="form-group">
-            <label for="prog-nombre">NOMBRE_PROGRAMA</label>
+            <label for="prog-codigo">Código / Sigla <small style="color:var(--text-muted)">(máx. 10 caracteres, ej. SIS)</small></label>
+            <input type="text" id="prog-codigo" required maxlength="10" style="text-transform:uppercase" />
+          </div>
+          <div class="form-group">
+            <label for="prog-nombre">Nombre del programa</label>
             <input type="text" id="prog-nombre" required maxlength="200" />
           </div>
           <div class="btn-row">

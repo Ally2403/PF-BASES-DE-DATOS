@@ -7,12 +7,11 @@ from typing import Optional
 
 
 class EstudianteCreate(BaseModel):
-    """Datos para crear un estudiante."""
-    carnet: Optional[str] = Field(None, max_length=20, description="Número de carnet")
-    nombre: str = Field(..., min_length=1, max_length=100, description="Nombre")
-    apellido: str = Field(..., min_length=1, max_length=100, description="Apellido")
-    telefono: Optional[str] = Field(None, max_length=20, description="Teléfono")
-    correo: Optional[str] = Field(None, max_length=150, description="Email")
+    """Datos para crear un estudiante. El carnet se genera automáticamente."""
+    nombre: str = Field(..., min_length=1, max_length=100)
+    apellido: str = Field(..., min_length=1, max_length=100)
+    telefono: Optional[str] = Field(None, max_length=20)
+    correo: Optional[str] = Field(None, max_length=150)
     id_programa: int = Field(..., description="ID del programa académico")
 
 

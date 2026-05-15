@@ -51,10 +51,11 @@
         </div>
         <form id="form-est-edit" class="stack">
           <input type="hidden" id="edit-id_estudiante" />
-          <div class="grid-2">
+          <div id="carnet-row" class="grid-2">
             <div class="form-group">
-              <label for="edit-carnet">Carné</label>
-              <input type="text" id="edit-carnet" required />
+              <label for="edit-carnet">Carné <small id="carnet-hint" style="color:var(--text-muted)">(generado automáticamente)</small></label>
+              <input type="text" id="edit-carnet" readonly
+                     style="background:var(--input-bg,#f3f4f6);cursor:default;color:var(--text-muted)" />
             </div>
             <div class="form-group">
               <label for="edit-id_programa">Programa</label>

@@ -114,6 +114,9 @@
   function abrirModalNuevo() {
     limpiarFormularioEdit();
     qs("edit-est-title").textContent = "Nuevo estudiante";
+    // Ocultar la fila del carné (se genera automáticamente en el backend)
+    var row = qs("carnet-row");
+    if (row) row.style.display = "none";
     setModalOpen(true);
   }
 
@@ -122,31 +125,63 @@
       const e = await api.getEstudiante(Number(id));
       llenarEditForm(e);
       qs("edit-est-title").textContent = "Editar estudiante";
+      // Mostrar el carné como readonly (solo lectura, no editable)
+      var row = qs("carnet-row");
+      if (row) row.style.display = "";
       setModalOpen(true);
     } catch (e) {
       auth.showToast(e.message, "error");
     }
   }
 
+  // Validaciones del formulario de estudiantes
+  const SOLO_LETRAS = /^[A-Za-z\u00C0-\u024F\s]+$/;
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const TELEFONO_RE = /^3[0-9]{9}$/
+
+  function validarFormEstudiante(body, esNuevo) {
+    const errs = [];
+    if (!body.nombre) {
+      errs.push("Nombre es obligatorio");
+    } else if (body.nombre.length < 2) {
+      errs.push("Nombre debe tener al menos 2 caracteres");
+    } else if (!SOLO_LETRAS.test(body.nombre)) {
+      errs.push("Nombre solo puede contener letras y espacios");
+    }
+    if (!body.apellido) {
+      errs.push("Apellido es obligatorio");
+    } else if (body.apellido.length < 2) {
+      errs.push("Apellido debe tener al menos 2 caracteres");
+    } else if (!SOLO_LETRAS.test(body.apellido)) {
+      errs.push("Apellido solo puede contener letras y espacios");
+    }
+    if (!body.correo) {
+      errs.push("Correo es obligatorio");
+    } else if (!EMAIL_RE.test(body.correo)) {
+      errs.push("Correo no tiene un formato válido");
+    }
+    if (body.telefono && !TELEFONO_RE.test(body.telefono)) {
+      errs.push("Teléfono debe tener 10 dígitos y empezar por 3 (ej: 3001234567)");
+    }
+    if (!body.id_programa) {
+      errs.push("Debe seleccionar un programa académico");
+    }
+    return errs;
+  }
+
   async function actualizarExistente(ev) {
     ev.preventDefault();
     const id = Number(qs("edit-id_estudiante").value);
     const body = {
-      carnet: qs("edit-carnet").value.trim(),
       nombre: qs("edit-nombre").value.trim(),
       apellido: qs("edit-apellido").value.trim(),
       telefono: qs("edit-telefono").value.trim(),
       correo: qs("edit-correo").value.trim(),
       id_programa: Number(qs("edit-id_programa").value),
     };
-    const errs = [];
-    if (!body.carnet) errs.push("Carné");
-    if (!body.nombre) errs.push("Nombre");
-    if (!body.apellido) errs.push("Apellido");
-    if (!body.correo) errs.push("Correo");
-    if (!body.id_programa) errs.push("Programa");
+    const errs = validarFormEstudiante(body, !id);
     if (errs.length) {
-      auth.showToast("Complete: " + errs.join(", "), "error");
+      auth.showToast(errs[0], "error");
       return;
     }
     try {

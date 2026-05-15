@@ -174,8 +174,20 @@
         });
       }
 
-      window.notificar = function(mail, user) {
-        auth.showToast("Contraseña enviada a " + mail + " (Usuario: " + user + ")");
+      window.notificar = async function(idUser, mail) {
+        if (!await auth.showConfirm(
+          "Se generará una nueva contraseña temporal y se enviará al correo <strong>" + mail + "</strong>. " +
+          "El usuario deberá usar esa contraseña al iniciar sesión. ¿Desea continuar?",
+          "Enviar credenciales",
+          "Enviar",
+          "btn-primary"
+        )) return;
+        try {
+          const res = await api.enviarCredencialesUsuario(idUser);
+          auth.showToast(res.message || "Credenciales enviadas correctamente.");
+        } catch (e) {
+          auth.showToast(e.message || "Error al enviar las credenciales.", "error");
+        }
       };
 
       window.abrirEditar = function(id) {
@@ -227,7 +239,7 @@
             (window.__puedeGestionarUsuarios
               ? "<td class='text-center'>" +
                   "<div class='btn-row' style='justify-content: center; gap: 0.25rem'>" +
-                    "<button class='btn btn-small btn-ghost' title='Notificar' onclick='notificar(\"" + esc(u.correo) + "\", \"" + esc(u.username) + "\")'>🔔</button>" +
+                    "<button class='btn btn-small btn-ghost' title='Enviar credenciales por correo' onclick='notificar(" + u.id_user + ", \"" + esc(u.correo) + "\")'>🔔</button>" +
                     "<button class='btn btn-small btn-secondary' onclick='abrirEditar(" + u.id_user + ")'>✏️</button>" +
                     "<button class='btn btn-small btn-danger' onclick='eliminarUsuario(" + u.id_user + ", \"" + esc(u.username) + "\")'>🗑️</button>" +
                   "</div>" +

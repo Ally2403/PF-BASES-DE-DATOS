@@ -30,6 +30,15 @@ class Settings(BaseSettings):
     jwt_expiration_hours: int = 24
     
     # =============================================
+    # CORREO (SMTP)
+    # =============================================
+    smtp_host: str = "smtp-mail.outlook.com"
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_pass: str = ""
+    smtp_from: str = ""
+
+    # =============================================
     # GENERAL
     # =============================================
     environment: str = "development"

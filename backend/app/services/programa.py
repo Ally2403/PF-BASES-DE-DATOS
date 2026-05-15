@@ -27,7 +27,7 @@ def get_all_programas() -> List[Dict[str, Any]]:
         Exception: Si hay error en la BD
     """
     try:
-        query = "SELECT ID_PROGRAMA, NOMBRE_PROGRAMA FROM PROGRAMA_ACADEMICO ORDER BY ID_PROGRAMA"
+        query = "SELECT ID_PROGRAMA, NOMBRE_PROGRAMA, CODIGO_PROGRAMA FROM PROGRAMA_ACADEMICO ORDER BY ID_PROGRAMA"
         results = execute_query(query)
         logger.info(f"✓ Se obtuvieron {len(results)} programas")
         return results
@@ -50,7 +50,7 @@ def get_programa_by_id(id_programa: int) -> Optional[Dict[str, Any]]:
         Exception: Si hay error en la BD
     """
     try:
-        query = "SELECT ID_PROGRAMA, NOMBRE_PROGRAMA FROM PROGRAMA_ACADEMICO WHERE ID_PROGRAMA = :id"
+        query = "SELECT ID_PROGRAMA, NOMBRE_PROGRAMA, CODIGO_PROGRAMA FROM PROGRAMA_ACADEMICO WHERE ID_PROGRAMA = :id"
         results = execute_query(query, {"id": id_programa})
         
         if results:
@@ -64,68 +64,52 @@ def get_programa_by_id(id_programa: int) -> Optional[Dict[str, Any]]:
         raise
 
 
-def create_programa(nombre_programa: str) -> Dict[str, Any]:
+def create_programa(nombre_programa: str, codigo_programa: str) -> Dict[str, Any]:
     """
     Crea un nuevo programa académico.
-    
-    La BD genera automáticamente el ID usando la secuencia SEQ_PROGRAMA.
-    
-    Args:
-        nombre_programa: Nombre del programa
-        
-    Returns:
-        Diccionario con los datos del programa creado (incluye ID generado)
-        
-    Raises:
-        Exception: Si hay error en la BD
     """
     try:
-        # Obtener el siguiente ID de la secuencia
         seq_result = execute_query("SELECT SEQ_PROGRAMA.NEXTVAL AS ID_PROGRAMA FROM DUAL")
         new_id = seq_result[0]['ID_PROGRAMA']
-        
-        # Insertar con el ID obtenido
+
         query = """
-            INSERT INTO PROGRAMA_ACADEMICO (ID_PROGRAMA, NOMBRE_PROGRAMA)
-            VALUES (:id, :nombre)
+            INSERT INTO PROGRAMA_ACADEMICO (ID_PROGRAMA, NOMBRE_PROGRAMA, CODIGO_PROGRAMA)
+            VALUES (:id, :nombre, :codigo)
         """
-        execute_update(query, {"id": new_id, "nombre": nombre_programa})
-        
-        # Retornar el programa creado (con keys en mayúsculas para Pydantic alias)
+        execute_update(query, {"id": new_id, "nombre": nombre_programa, "codigo": codigo_programa.upper()})
+
         return {
             "ID_PROGRAMA": new_id,
-            "NOMBRE_PROGRAMA": nombre_programa
+            "NOMBRE_PROGRAMA": nombre_programa,
+            "CODIGO_PROGRAMA": codigo_programa.upper()
         }
-            
     except Exception as e:
         logger.error(f"✗ Error al crear programa: {e}")
         raise
 
 
-def update_programa(id_programa: int, nombre_programa: str) -> bool:
+def update_programa(id_programa: int, nombre_programa: Optional[str] = None, codigo_programa: Optional[str] = None) -> bool:
     """
     Actualiza un programa académico.
-    
-    Args:
-        id_programa: ID del programa
-        nombre_programa: Nuevo nombre
-        
-    Returns:
-        True si se actualizó correctamente
-        
-    Raises:
-        Exception: Si hay error en la BD
     """
     try:
-        query = "UPDATE PROGRAMA_ACADEMICO SET NOMBRE_PROGRAMA = :nombre WHERE ID_PROGRAMA = :id"
-        affected = execute_update(query, {"nombre": nombre_programa, "id": id_programa})
-        
+        sets = []
+        params: Dict[str, Any] = {"id": id_programa}
+        if nombre_programa is not None:
+            sets.append("NOMBRE_PROGRAMA = :nombre")
+            params["nombre"] = nombre_programa
+        if codigo_programa is not None:
+            sets.append("CODIGO_PROGRAMA = :codigo")
+            params["codigo"] = codigo_programa.upper()
+        if not sets:
+            return False
+        query = f"UPDATE PROGRAMA_ACADEMICO SET {', '.join(sets)} WHERE ID_PROGRAMA = :id"
+        affected = execute_update(query, params)
         if affected > 0:
             logger.info(f"✓ Programa actualizado: ID {id_programa}")
             return True
-        else:
-            logger.warning(f"✗ Programa no encontrado para actualizar: ID {id_programa}")
-            return False
+        logger.warning(f"✗ Programa no encontrado para actualizar: ID {id_programa}")
+        return False
     except Exception as e:
         logger.error(f"✗ Error al actualizar programa: {e}")
         raise

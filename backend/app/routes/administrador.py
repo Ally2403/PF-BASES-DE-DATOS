@@ -10,7 +10,7 @@ from app.schemas.usuario import UsuarioCreate, UsuarioUpdate, UsuarioResponse, U
 from app.schemas.perfil import PerfilCreate, PerfilResponse, PerfilConPermisosResponse, PerfilListResponse, PerfilDetailResponse
 from app.schemas.menu import MenuCreate, MenuResponse, MenuListResponse, MenuDetailResponse, PermisoCreate, PermisoResponse, PermisoListResponse
 from app.services.persona import get_all_personas, get_persona_by_cedula, create_persona, update_persona, delete_persona
-from app.services.usuario import get_all_usuarios, get_usuario_by_id, create_usuario, update_usuario, delete_usuario
+from app.services.usuario import get_all_usuarios, get_usuario_by_id, create_usuario, update_usuario, delete_usuario, reset_and_email_contrasena
 from app.services.perfil import get_all_perfiles, get_perfil_by_id, get_permisos_by_perfil, create_perfil, assign_permission, remove_permission, get_all_permisos, create_permiso, delete_permiso
 from app.services.menu import get_all_menus, get_menu_by_id, create_menu, update_menu, delete_menu
 from app.services.database import is_fk_violation
@@ -179,6 +179,22 @@ async def eliminar_usuario_endpoint(id_user: int, current_user: dict = Depends(r
         if is_fk_violation(e):
             raise HTTPException(status_code=409, detail="No se puede eliminar el usuario: tiene datos dependientes que impiden su eliminación.")
         raise HTTPException(status_code=500, detail="Error al eliminar usuario")
+
+
+@router.post("/usuarios/{id_user}/enviar-credenciales")
+async def enviar_credenciales_endpoint(id_user: int, current_user: dict = Depends(require_perfil(PERMISOS))):
+    """Genera una nueva contraseña temporal y la envía al correo del usuario."""
+    try:
+        correo = reset_and_email_contrasena(id_user)
+        logger.info(f"✓ {current_user.get('username')} envió credenciales al usuario {id_user}")
+        return {"success": True, "message": f"Credenciales enviadas a {correo}"}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        logger.error(f"✗ Error al enviar credenciales: {e}")
+        raise HTTPException(status_code=500, detail="Error al enviar las credenciales")
 
 
 # ==========================================

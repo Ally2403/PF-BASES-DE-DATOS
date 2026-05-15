@@ -108,9 +108,10 @@ def crear_cobro_adicional(id_volante: Optional[int], codigo_detalle: str, valor:
 
         execute_update(
             """INSERT INTO MOVIMIENTO (ID_MOV, FECHA, VALOR, CODIGO_DETALLE, ID_VOLANTE, ID_PERIODO, ID_CUENTA)
-               VALUES (:id, SYSDATE, :valor, :cod_det, :id_vol, :id_per, :id_cuenta)""",
+               VALUES (:id, :fecha, :valor, :cod_det, :id_vol, :id_per, :id_cuenta)""",
             {
                 "id": new_id,
+                "fecha": datetime.now(),
                 "valor": valor,
                 "cod_det": codigo_detalle,
                 "id_vol": id_volante,
@@ -152,12 +153,14 @@ def registrar_pago(id_volante: int, medio_pago: str, valor: float, referencia: O
         id_mov = seq_mov[0]['ID_MOV']
         
         # Insertar en MOVIMIENTO con el código de pago recibido
+        ahora = datetime.now()
         query_mov = """
             INSERT INTO MOVIMIENTO (ID_MOV, FECHA, VALOR, CODIGO_DETALLE, ID_VOLANTE, ID_PERIODO, ID_CUENTA)
-            VALUES (:id, SYSDATE, :valor, :cod_det, :id_vol, :id_per, :id_cuenta)
+            VALUES (:id, :fecha, :valor, :cod_det, :id_vol, :id_per, :id_cuenta)
         """
         execute_update(query_mov, {
             "id": id_mov,
+            "fecha": ahora,
             "valor": valor,
             "cod_det": codigo_detalle,
             "id_vol": id_volante,
@@ -172,13 +175,14 @@ def registrar_pago(id_volante: int, medio_pago: str, valor: float, referencia: O
         # Insertar en TRANSACCION_PAGO
         query_pago = """
             INSERT INTO TRANSACCION_PAGO (ID_TRANSACCION, ID_MOV, MEDIO_PAGO, REFERENCIA, FECHA_PAGO)
-            VALUES (:id_trans, :id_mov, :medio, :ref, SYSDATE)
+            VALUES (:id_trans, :id_mov, :medio, :ref, :fecha_pago)
         """
         execute_update(query_pago, {
             "id_trans": id_trans,
             "id_mov": id_mov,
             "medio": medio_pago,
-            "ref": referencia
+            "ref": referencia,
+            "fecha_pago": ahora
         })
         
         logger.info(f"✓ Pago registrado: ${valor} para volante {id_volante} via {medio_pago}")

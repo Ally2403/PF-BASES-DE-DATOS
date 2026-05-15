@@ -159,11 +159,15 @@ CREATE TABLE PERMISO (
 
 -- ----------------------------------------------------------
 -- 4.4 PROGRAMA_ACADEMICO
+-- CODIGO_PROGRAMA: sigla del programa (ej. SIS, ADM, MED).
+-- Se usa como componente central del carnet auto-generado.
 -- ----------------------------------------------------------
 CREATE TABLE PROGRAMA_ACADEMICO (
-    ID_PROGRAMA     NUMBER          DEFAULT SEQ_PROGRAMA.NEXTVAL,
-    NOMBRE_PROGRAMA VARCHAR2(200)   NOT NULL,
-    CONSTRAINT PK_PROGRAMA  PRIMARY KEY (ID_PROGRAMA)
+    ID_PROGRAMA      NUMBER          DEFAULT SEQ_PROGRAMA.NEXTVAL,
+    NOMBRE_PROGRAMA  VARCHAR2(200)   NOT NULL,
+    CODIGO_PROGRAMA  VARCHAR2(10)    NOT NULL,
+    CONSTRAINT PK_PROGRAMA       PRIMARY KEY (ID_PROGRAMA),
+    CONSTRAINT UQ_PROG_CODIGO    UNIQUE (CODIGO_PROGRAMA)
 );
 
 -- ----------------------------------------------------------
@@ -1138,8 +1142,8 @@ PROMPT ============================================
 INSERT INTO CODIGO_DETALLE VALUES ('T_COB', 'COBRO', 'Cobro prueba DDL', NULL);
 INSERT INTO CODIGO_DETALLE VALUES ('T_PAG', 'PAGO',  'Pago prueba DDL',  NULL);
 -- Programa y periodo de prueba
-INSERT INTO PROGRAMA_ACADEMICO (ID_PROGRAMA, NOMBRE_PROGRAMA)
-    VALUES (99999, '_TEST_DDL_');
+INSERT INTO PROGRAMA_ACADEMICO (ID_PROGRAMA, NOMBRE_PROGRAMA, CODIGO_PROGRAMA)
+    VALUES (99999, '_TEST_DDL_', 'TST');
 INSERT INTO PERIODO_ACADEMICO (ID_PERIODO, NOMBRE_PERIODO, FECHA_INICIO, FECHA_FIN)
     VALUES (99999, '_TEST_DDL_', DATE '2026-01-01', DATE '2026-06-30');
 -- Plan de estudio (semestre 1) y regla de cobro GLOBAL = 8.500.000

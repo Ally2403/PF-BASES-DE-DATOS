@@ -82,7 +82,9 @@ async def crear_programa_endpoint(data: ProgramaCreate, current_user: dict = Dep
     try:
         if not data.nombre_programa.strip():
             raise HTTPException(status_code=400, detail="Nombre no puede estar vacío")
-        nuevo = create_programa(data.nombre_programa)
+        if not data.codigo_programa.strip():
+            raise HTTPException(status_code=400, detail="Código no puede estar vacío")
+        nuevo = create_programa(data.nombre_programa, data.codigo_programa)
         logger.info(f"✓ Usuario {current_user.get('username')} creó programa: {nuevo['ID_PROGRAMA']}")
         return ProgramaDetailResponse(success=True, message="Programa creado", data=ProgramaResponse.model_validate(nuevo), status_code=201)
     except HTTPException:
@@ -217,7 +219,7 @@ async def obtener_estudiante(id_estudiante: int, current_user: dict = Depends(re
 async def crear_estudiante_endpoint(data: EstudianteCreate, current_user: dict = Depends(require_perfil(PERMISOS))):
     """Crear nuevo estudiante."""
     try:
-        nuevo = create_estudiante(data.carnet, data.nombre, data.apellido, data.telefono, data.correo, data.id_programa)
+        nuevo = create_estudiante(data.nombre, data.apellido, data.telefono, data.correo, data.id_programa)
         logger.info(f"✓ Usuario {current_user.get('username')} creó estudiante: {nuevo['ID_ESTUDIANTE']}")
         return EstudianteDetailResponse(success=True, message="Estudiante creado", data=EstudianteResponse.model_validate(nuevo))
     except Exception as e:
@@ -465,8 +467,7 @@ async def actualizar_programa_endpoint(id_programa: int, data: ProgramaUpdate, c
         programa = get_programa_by_id(id_programa)
         if not programa:
             raise HTTPException(status_code=404, detail=f"Programa {id_programa} no encontrado")
-        nuevo_nombre = data.nombre_programa if data.nombre_programa else programa['NOMBRE_PROGRAMA']
-        update_programa(id_programa, nuevo_nombre)
+        update_programa(id_programa, data.nombre_programa or None, data.codigo_programa or None)
         actualizado = get_programa_by_id(id_programa)
         return ProgramaDetailResponse(success=True, message="Programa actualizado", data=ProgramaResponse.model_validate(actualizado))
     except HTTPException:

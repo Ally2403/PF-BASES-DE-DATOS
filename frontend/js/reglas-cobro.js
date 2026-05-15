@@ -244,6 +244,22 @@
 
     try {
       if (!window.api) throw new Error("api no disponible");
+      if (!pid) {
+        toast("Seleccione un programa académico.", "error");
+        return;
+      }
+      if (!per) {
+        toast("Seleccione un período.", "error");
+        return;
+      }
+      if (mod === "GLOBAL" && (!vg || Number(vg) <= 0)) {
+        toast("Ingrese un valor global mayor a 0.", "error");
+        return;
+      }
+      if (mod === "CREDITO" && (!vc || Number(vc) <= 0)) {
+        toast("Ingrese un valor por crédito mayor a 0.", "error");
+        return;
+      }
       if (modo === "new") {
         var body = {
           id_programa: pid,

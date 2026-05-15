@@ -126,6 +126,14 @@
       auth.showToast("Nombre obligatorio", "error");
       return;
     }
+    if (nombre.length < 3) {
+      auth.showToast("Nombre debe tener al menos 3 caracteres", "error");
+      return;
+    }
+    if (!Number.isInteger(cred) || cred < 1 || cred > 20) {
+      auth.showToast("Créditos debe ser un número entero entre 1 y 20", "error");
+      return;
+    }
     try {
       if (!id) {
         await api.postAsignaturaCatalog({ nombre: nombre, cant_creditos: cred });

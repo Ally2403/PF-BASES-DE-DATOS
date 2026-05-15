@@ -137,6 +137,18 @@
       toast("Complete código y descripción.", "error");
       return;
     }
+    if (!/^[A-Z0-9_]{2,4}$/.test(codIn)) {
+      toast("Código: 2–4 caracteres, solo letras, números o _", "error");
+      return;
+    }
+    if (desc.length < 3) {
+      toast("Descripción debe tener al menos 3 caracteres.", "error");
+      return;
+    }
+    if (val !== null && val <= 0) {
+      toast("El valor por defecto debe ser mayor a 0.", "error");
+      return;
+    }
     try {
       if (modo === "new") {
         await api.postCodigoDetalle({

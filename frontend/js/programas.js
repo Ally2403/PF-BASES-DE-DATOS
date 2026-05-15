@@ -28,7 +28,10 @@
     var q = $("filtro-prog").value.trim().toLowerCase();
     if (!q) return [...programasCache];
     return programasCache.filter(function (p) {
-      return String(p.nombre_programa || "").toLowerCase().includes(q);
+      return (
+        String(p.nombre_programa || "").toLowerCase().includes(q) ||
+        String(p.codigo_programa || "").toLowerCase().includes(q)
+      );
     });
   }
 
@@ -39,7 +42,9 @@
     list.forEach(function (p) {
       var tr = document.createElement("tr");
       tr.innerHTML =
-        "<td>" +
+        "<td><code>" +
+        esc(p.codigo_programa) +
+        "</code></td><td>" +
         esc(p.nombre_programa) +
         "</td><td>" +
         '<div class="btn-row">' +
@@ -83,6 +88,7 @@
   function limpiarFormProgramaModal() {
     $("prog-id").value = "";
     $("prog-nombre").value = "";
+    $("prog-codigo").value = "";
   }
 
   function abrirModalNuevo() {
@@ -96,28 +102,43 @@
       var list = await api.getProgramas({ id_programa: id });
       if (!list.length) throw new Error("Programa no encontrado");
       $("prog-id").value = String(list[0].id_programa);
-      $("prog-nombre").value = list[0].nombre_programa || "";
-      $("prog-modal-title").textContent = "Editar programa";
+      $("prog-nombre").value = list[0].nombre_programa || "";      $('prog-codigo').value = list[0].codigo_programa || "";      $("prog-modal-title").textContent = "Editar programa";
       setModalOpen("prog-modal", true);
     } catch (e) {
       auth.showToast(e.message, "error");
     }
   }
 
+  var PROG_NOMBRE_RE = /^[A-Za-z\u00C0-\u024F\s]{3,200}$/;
+  var PROG_CODIGO_RE = /^[A-Z0-9]{3}$/;
+
   async function guardarPrograma(ev) {
     ev.preventDefault();
     var id = Number($("prog-id").value);
     var nombre = $("prog-nombre").value.trim();
+    var codigo = $("prog-codigo").value.trim().toUpperCase();
     if (!nombre) {
       auth.showToast("Nombre del programa obligatorio", "error");
       return;
     }
+    if (!PROG_NOMBRE_RE.test(nombre)) {
+      auth.showToast("Nombre: solo letras y espacios, mínimo 3 caracteres", "error");
+      return;
+    }
+    if (!codigo) {
+      auth.showToast("Código del programa obligatorio", "error");
+      return;
+    }
+    if (!PROG_CODIGO_RE.test(codigo)) {
+      auth.showToast("Código: exactamente 3 caracteres alfanuméricos (ej: SIS, ADM)", "error");
+      return;
+    }
     try {
       if (!id) {
-        await api.postPrograma({ nombre_programa: nombre });
+        await api.postPrograma({ nombre_programa: nombre, codigo_programa: codigo });
         auth.showToast("Programa creado");
       } else {
-        await api.putPrograma(id, { nombre_programa: nombre });
+        await api.putPrograma(id, { nombre_programa: nombre, codigo_programa: codigo });
         auth.showToast("Programa actualizado");
       }
       setModalOpen("prog-modal", false);

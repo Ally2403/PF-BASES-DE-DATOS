@@ -80,10 +80,11 @@ def create_volante_individual(id_estudiante: int, id_periodo: int, id_programa: 
             INSERT INTO VOLANTE_MATRICULA 
             (ID_VOLANTE, ID_ESTUDIANTE, ID_PERIODO, ID_PROGRAMA, MODALIDAD, SEMESTRE_QUE_COBRA, 
              TIPO_GENERACION, FECHA_GENERACION)
-            VALUES (:id, :id_est, :id_per, :id_prog, :mod, :sem, 'INDIVIDUAL', SYSDATE)
+            VALUES (:id, :id_est, :id_per, :id_prog, :mod, :sem, 'INDIVIDUAL', :fecha_gen)
         """
         execute_update(query, {
             "id": new_id,
+            "fecha_gen": datetime.now(),
             "id_est": id_estudiante,
             "id_per": id_periodo,
             "id_prog": id_programa,
@@ -119,8 +120,8 @@ def create_volante_individual(id_estudiante: int, id_periodo: int, id_programa: 
             new_mov_id = seq_mov[0]['ID_MOV']
             execute_update(
                 """INSERT INTO MOVIMIENTO (ID_MOV, FECHA, VALOR, CODIGO_DETALLE, ID_VOLANTE, ID_PERIODO, ID_CUENTA)
-                   VALUES (:id, SYSDATE, :valor, :cod, :id_vol, :id_per, :id_cta)""",
-                {"id": new_mov_id, "valor": monto_total, "cod": codigo_cobro,
+                   VALUES (:id, :fecha, :valor, :cod, :id_vol, :id_per, :id_cta)""",
+                {"id": new_mov_id, "fecha": datetime.now(), "valor": monto_total, "cod": codigo_cobro,
                  "id_vol": new_id, "id_per": id_periodo, "id_cta": id_cuenta}
             )
             logger.info(f"✓ Movimiento cobro {codigo_cobro} creado: id={new_mov_id}, valor={monto_total}")

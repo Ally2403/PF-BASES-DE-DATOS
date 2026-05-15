@@ -165,6 +165,10 @@
       toast("Complete nombre, inicio y fin.", "error");
       return;
     }
+    if (body.fecha_fin <= body.fecha_inicio) {
+      toast("La fecha de fin debe ser posterior a la fecha de inicio.", "error");
+      return;
+    }
     try {
       if (typeof api.postPeriodo !== "function" || typeof api.putPeriodo !== "function") {
         toast("api.postPeriodo / putPeriodo no están disponibles.", "error");

@@ -4,9 +4,32 @@ services/estudiante.py — Lógica de negocio para ESTUDIANTE
 
 from app.services.database import execute_query, execute_update
 from typing import List, Dict, Any, Optional
+from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def _generar_carnet(id_programa: int) -> str:
+    """Genera un carnet único con formato AÑO-CODIGO-NNN."""
+    anio = datetime.now().year
+    prog = execute_query(
+        "SELECT CODIGO_PROGRAMA FROM PROGRAMA_ACADEMICO WHERE ID_PROGRAMA = :id",
+        {"id": id_programa}
+    )
+    if not prog:
+        raise ValueError(f"Programa {id_programa} no encontrado")
+    codigo = prog[0]['CODIGO_PROGRAMA']
+    prefix = f"{anio}-{codigo}-"
+    max_result = execute_query(
+        """SELECT NVL(MAX(TO_NUMBER(SUBSTR(CARNET, :offset))), 0) AS MAX_SEQ
+              FROM ESTUDIANTE
+             WHERE ID_PROGRAMA = :id_prog
+               AND CARNET LIKE :prefix_like""",
+        {"offset": len(prefix) + 1, "id_prog": id_programa, "prefix_like": prefix + "%"}
+    )
+    seq = (max_result[0]['MAX_SEQ'] or 0) + 1
+    return f"{prefix}{seq:03d}"
 
 
 def get_all_estudiantes() -> List[Dict[str, Any]]:
@@ -44,13 +67,14 @@ def get_estudiante_by_id(id_estudiante: int) -> Optional[Dict[str, Any]]:
         raise
 
 
-def create_estudiante(carnet: Optional[str], nombre: str, apellido: str, telefono: Optional[str],
+def create_estudiante(nombre: str, apellido: str, telefono: Optional[str],
                      correo: Optional[str], id_programa: int) -> Dict[str, Any]:
-    """Crea un nuevo estudiante."""
+    """Crea un nuevo estudiante. El carnet se genera automáticamente."""
     try:
+        carnet = _generar_carnet(id_programa)
         seq_result = execute_query("SELECT SEQ_ESTUDIANTE.NEXTVAL AS ID_ESTUDIANTE FROM DUAL")
         new_id = seq_result[0]['ID_ESTUDIANTE']
-        
+
         query = """
             INSERT INTO ESTUDIANTE (ID_ESTUDIANTE, CARNET, NOMBRE, APELLIDO, TELEFONO, CORREO, ID_PROGRAMA)
             VALUES (:id, :carnet, :nombre, :apellido, :telefono, :correo, :id_prog)

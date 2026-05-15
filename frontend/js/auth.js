@@ -284,8 +284,10 @@ function showAlert(message, title) {
   backdrop.addEventListener("click", dismiss);
 }
 
-function showConfirm(message, title) {
+function showConfirm(message, title, confirmText, confirmClass) {
   title = title || "Confirmar eliminación";
+  confirmText = confirmText || "Eliminar";
+  confirmClass = confirmClass || "btn-danger";
   return new Promise(function (resolve) {
     var backdrop = document.createElement("div");
     backdrop.className = "modal-backdrop open";
@@ -295,7 +297,7 @@ function showConfirm(message, title) {
         '<p style="margin:0 0 1.5rem;color:var(--text-muted)">' + message + '</p>' +
         '<div class="btn-row" style="justify-content:flex-end;gap:0.6rem">' +
           '<button class="btn btn-secondary" data-action="cancel">Cancelar</button>' +
-          '<button class="btn btn-danger" data-action="ok">Eliminar</button>' +
+          '<button class="btn ' + confirmClass + '" data-action="ok">' + confirmText + '</button>' +
         '</div>' +
       '</div>';
     document.body.appendChild(backdrop);

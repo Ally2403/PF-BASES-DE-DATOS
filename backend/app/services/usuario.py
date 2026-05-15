@@ -166,3 +166,31 @@ def delete_usuario(id_user: int) -> bool:
     except Exception as e:
         logger.error(f"✗ Error al eliminar usuario: {e}")
         raise
+
+
+def reset_and_email_contrasena(id_user: int) -> str:
+    """Genera una nueva contraseña temporal, la guarda en la BD y envía un correo al usuario.
+    Retorna el correo al que se envió."""
+    from app.services.email_service import generar_contrasena_temporal, enviar_credenciales
+
+    usuario = get_usuario_by_id(id_user)
+    if not usuario:
+        raise ValueError(f"Usuario {id_user} no encontrado")
+
+    correo = usuario.get('CORREO')
+    if not correo:
+        raise ValueError("El usuario no tiene correo electrónico registrado")
+
+    nueva_contrasena = generar_contrasena_temporal()
+    nuevo_hash = hash_password_sha256(nueva_contrasena)
+
+    execute_update(
+        "UPDATE USUARIO SET CONTRASENA = :pw WHERE ID_USER = :id",
+        {"pw": nuevo_hash, "id": id_user}
+    )
+    logger.info(f"✓ Contraseña reseteada para usuario {id_user}")
+
+    nombre_completo = f"{usuario.get('NOMBRE', '')} {usuario.get('APELLIDO', '')}".strip()
+    enviar_credenciales(correo, nombre_completo, usuario['USERNAME'], nueva_contrasena)
+
+    return correo
