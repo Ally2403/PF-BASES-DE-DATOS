@@ -341,11 +341,13 @@
       const asigList = Array.isArray(asig) ? asig : [];
       if (!asigList.length) {
         $('gc-msg').innerHTML =
-          '<strong>Sin asignaturas disponibles.</strong> No hay asignaturas registradas en el cat\u00e1logo ' +
-          'para el semestre ' + semestre + ' del programa de este estudiante. ' +
-          'Vaya a <em>Asignaturas (cat\u00e1logo)</em> y agr\u00e9guelas antes de generar el volante.';
+          '<strong>Sin asignaturas en el plan de estudio.</strong> El semestre ' + semestre +
+          ' del programa de este estudiante no tiene asignaturas asignadas en el plan de estudio. ' +
+          'Vaya a <em>Programas y planes</em>, seleccione el programa, abra el semestre ' + semestre +
+          ' y agr\u00e9guele las asignaturas correspondientes. ' +
+          'Una vez hecho esto, vuelva a intentar generar el volante.';
         $('gc-msg').hidden = false;
-        $('gc-msg').className = 'alert alert-error';
+        $('gc-msg').className = 'alert alert-warn';
         $('btn-gen-paso1').disabled = true;
         return;
       }

@@ -453,7 +453,7 @@ function _refreshPermisosBackground(activeFile) {
     if (t.getAttribute("data-capitalize") === "words") {
       var start = t.selectionStart;
       var end = t.selectionEnd;
-      var capped = t.value.replace(/\b\S/g, function (c) { return c.toUpperCase(); });
+      var capped = t.value.replace(/(^|\s)\S/g, function (c) { return c.toUpperCase(); });
       if (capped !== t.value) {
         t.value = capped;
         t.setSelectionRange(start, end);

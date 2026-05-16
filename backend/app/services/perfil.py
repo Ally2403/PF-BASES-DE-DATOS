@@ -142,6 +142,17 @@ def create_permiso(nombre_operacion: str, descripcion: Optional[str], id_menu: O
         raise
 
 
+def delete_perfil(id_perfil: int) -> bool:
+    """Elimina un perfil (cascade elimina PERFIL_PERMISO y los USUARIO con ese perfil)."""
+    try:
+        affected = execute_update("DELETE FROM PERFIL WHERE ID_PERFIL = :id", {"id": id_perfil})
+        logger.info(f"✓ Perfil {id_perfil} eliminado")
+        return affected > 0
+    except Exception as e:
+        logger.error(f"✗ Error al eliminar perfil: {e}")
+        raise
+
+
 def delete_permiso(id_permiso: int) -> bool:
     """Elimina un permiso del catálogo (cascade elimina PERFIL_PERMISO)."""
     try:

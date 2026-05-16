@@ -141,18 +141,23 @@
       }
 
       window.eliminarPerfil = async (id, nom) => {
-        if (!await auth.showConfirm(`¿Desea eliminar el perfil ${nom}? Esta acción no se puede deshacer.`)) return;
-        if (!await auth.showConfirmCedula(
-          `Está a punto de eliminar el perfil de rol <strong>${nom}</strong>.`,
-          "Todos los usuarios asignados a este perfil perderán sus permisos de acceso inmediatamente. Si hay usuarios activos con este perfil, no podrán iniciar sesión correctamente hasta que se les reasigne un perfil."
+        if (!await auth.showConfirm(
+          `¿Desea eliminar el perfil <strong>${nom}</strong>? Todos los usuarios asignados a este perfil perderán su acceso inmediatamente. Esta acción no se puede deshacer.`,
+          "Confirmar eliminación de perfil",
+          "Eliminar",
+          "btn-danger"
         )) return;
-        await api.deletePerfil(id);
-        auth.showToast("Perfil eliminado.");
-        if (currentPerfilId === id) {
-          currentPerfilId = null;
-          document.getElementById("permisos-cont").style.display = "none";
+        try {
+          await api.deletePerfil(id);
+          auth.showToast("Perfil eliminado.");
+          if (currentPerfilId === id) {
+            currentPerfilId = null;
+            document.getElementById("permisos-cont").style.display = "none";
+          }
+          cargar();
+        } catch (err) {
+          auth.showToast(err.message || "No se pudo eliminar el perfil.", "error");
         }
-        cargar();
       };
 
       document.getElementById("form-perfil").addEventListener("submit", async (e) => {

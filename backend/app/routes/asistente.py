@@ -133,13 +133,14 @@ async def crear_volantes_masiva(
         
         ids_creados = resultado["creados"]
         errores = resultado["errores"]
+        omitidos = resultado.get("omitidos", 0)
         return {
             "success": True,
-            "message": f"Se crearon {len(ids_creados)} volantes. {len(errores)} omitidos.",
+            "message": f"Se crearon {len(ids_creados)} volantes. {omitidos} omitidos.",
             "data": {
                 "volantes_creados": ids_creados,
                 "cantidad": len(ids_creados),
-                "omitidos": len(errores),
+                "omitidos": omitidos,
                 "errores": errores
             }
         }

@@ -118,7 +118,7 @@ async function fetchJson(path, opts = {}) {
     }
     // Detectar error de constraint único de Oracle que llegue desde rutas no controladas
     if (/ORA-00001|unique constraint/i.test(msg)) {
-      msg = "Operación duplicada: otro usuario realizó el mismo registro al mismo tiempo. Recargue la página y verifique el estado actual.";
+      msg = "Este registro ya existe o está duplicado. Verifique los datos ingresados e intente de nuevo.";
     }
     const err = new Error(msg);
     err.status = res.status;

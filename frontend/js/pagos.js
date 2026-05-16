@@ -136,12 +136,23 @@
 
   function verificarSobrepago() {
     const warn = $("pg-val-warn");
+    const info = $("pg-val-info");
     if (!warn) return;
     const val = Number($("pg-val").value);
-    if (saldoActual && saldoActual.saldo_neto > 0 && val > saldoActual.saldo_neto) {
-      warn.style.display = "block";
+    if (saldoActual && saldoActual.saldo_neto > 0 && val > 0) {
+      if (val > saldoActual.saldo_neto) {
+        warn.style.display = "block";
+        if (info) info.style.display = "none";
+      } else if (val < saldoActual.saldo_neto) {
+        warn.style.display = "none";
+        if (info) info.style.display = "block";
+      } else {
+        warn.style.display = "none";
+        if (info) info.style.display = "none";
+      }
     } else {
       warn.style.display = "none";
+      if (info) info.style.display = "none";
     }
   }
 

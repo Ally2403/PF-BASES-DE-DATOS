@@ -116,27 +116,7 @@ def update_programa(id_programa: int, nombre_programa: Optional[str] = None, cod
 
 
 def delete_programa(id_programa: int) -> bool:
-    """
-    Elimina un programa académico.
-    
-    NOTA: Esto solo funciona si no hay registros dependientes.
-    Oracle validará las foreign keys.
-    
-    Args:
-        id_programa: ID del programa
-        
-    Returns:
-        True si se eliminó correctamente
-        
-    Raises:
-        Exception: Si hay error en la BD (ej: hay dependencias)
-    """
-def delete_programa(id_programa: int) -> bool:
-    """
-    Elimina un programa académico.
-    Oracle CASCADE elimina: ESTUDIANTE → CUENTA_CORRIENTE → MOVIMIENTO → TRANSACCION_PAGO,
-    VOLANTE_MATRICULA → VOLANTE_MATRICULA_ASIGNATURA, REGLA_COBRO, PLAN_ESTUDIO → PLAN_ESTUDIO_ASIGNATURA.
-    """
+    """Elimina un programa académico. Oracle CASCADE elimina todo lo asociado."""
     try:
         query = "DELETE FROM PROGRAMA_ACADEMICO WHERE ID_PROGRAMA = :id"
         affected = execute_update(query, {"id": id_programa})

@@ -187,6 +187,10 @@
       if (byId("cd-valor")) byId("cd-valor").value = "";
       return;
     }
+    if (grupo === "COBRO" && (val === null || val <= 0)) {
+      toast("Los c\u00f3digos de tipo COBRO requieren un valor por defecto mayor a 0.", "error");
+      return;
+    }
     if (val !== null && val <= 0) {
       toast("El valor por defecto debe ser mayor a 0.", "error");
       return;

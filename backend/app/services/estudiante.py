@@ -97,7 +97,9 @@ def create_estudiante(nombre: str, apellido: str, telefono: Optional[str],
 
 def update_estudiante(id_estudiante: int, nombre: str, apellido: str, telefono: Optional[str],
                      correo: Optional[str], id_programa: Optional[int] = None) -> bool:
-    """Actualiza un estudiante. Si se cambia el programa, regenera el carnet."""
+    """Actualiza un estudiante. Si se cambia el programa, regenera el carnet.
+    Los registros financieros existentes (volantes, movimientos) se conservan intactos;
+    los volantes nuevos de periodos sin cobro previo usarán el nuevo programa."""
     try:
         actual = get_estudiante_by_id(id_estudiante)
         if not actual:
@@ -137,6 +139,8 @@ def update_estudiante(id_estudiante: int, nombre: str, apellido: str, telefono: 
                 "correo": correo
             })
         return affected > 0
+    except ValueError:
+        raise
     except Exception as e:
         logger.error(f"✗ Error al actualizar estudiante: {e}")
         raise

@@ -842,6 +842,8 @@ GROUP BY e.ID_ESTUDIANTE, e.CARNET, e.NOMBRE, e.APELLIDO, pa.NOMBRE_PROGRAMA, pe
 -- ----------------------------------------------------------
 -- VISTA 8.2: VW_INGRESO_ESPERADO
 -- Ingreso esperado = Suma de todos los COBROS del periodo.
+-- Usa ID_PROGRAMA del VOLANTE (programa vigente al generar el cobro)
+-- para conservar la atribucion historica si el estudiante cambia de programa.
 -- ----------------------------------------------------------
 CREATE OR REPLACE VIEW VW_INGRESO_ESPERADO AS
 SELECT
@@ -852,7 +854,8 @@ FROM   MOVIMIENTO          m
 JOIN   CODIGO_DETALLE      cd  ON cd.CODIGO_DETALLE = m.CODIGO_DETALLE
 JOIN   CUENTA_CORRIENTE    cc  ON cc.ID_CUENTA      = m.ID_CUENTA
 JOIN   ESTUDIANTE          e   ON e.ID_ESTUDIANTE   = cc.ID_ESTUDIANTE
-JOIN   PROGRAMA_ACADEMICO  pa  ON pa.ID_PROGRAMA    = e.ID_PROGRAMA
+LEFT JOIN VOLANTE_MATRICULA vm ON vm.ID_VOLANTE     = m.ID_VOLANTE
+JOIN   PROGRAMA_ACADEMICO  pa  ON pa.ID_PROGRAMA    = NVL(vm.ID_PROGRAMA, e.ID_PROGRAMA)
 JOIN   PERIODO_ACADEMICO   per ON per.ID_PERIODO    = m.ID_PERIODO
 WHERE  cd.GRUPO = 'COBRO'
 GROUP BY per.NOMBRE_PERIODO, pa.NOMBRE_PROGRAMA;
@@ -892,16 +895,19 @@ FROM (
 ) bal
 JOIN CUENTA_CORRIENTE cc ON bal.ID_CUENTA = cc.ID_CUENTA
 JOIN ESTUDIANTE e ON cc.ID_ESTUDIANTE = e.ID_ESTUDIANTE
-JOIN PROGRAMA_ACADEMICO pa ON e.ID_PROGRAMA = pa.ID_PROGRAMA
+LEFT JOIN VOLANTE_MATRICULA vm ON vm.ID_ESTUDIANTE = e.ID_ESTUDIANTE AND vm.ID_PERIODO = bal.ID_PERIODO
+JOIN PROGRAMA_ACADEMICO pa ON pa.ID_PROGRAMA = NVL(vm.ID_PROGRAMA, e.ID_PROGRAMA)
 JOIN PERIODO_ACADEMICO per ON bal.ID_PERIODO = per.ID_PERIODO
 WHERE (bal.TOTAL_COBRADO - bal.TOTAL_PAGADO) > 0;
 
 -- ----------------------------------------------------------
 -- VISTA 8.4: VW_INGRESO_REAL
--- Ingreso Real = Suma de los PAGOS reales del periodo.
--- Se excluye el codigo DESC (Descuento) porque no representa
--- dinero que realmente ingresa a la empresa: solo reduce la
--- deuda del estudiante sin generar un flujo de caja real.
+-- Ingreso Real = Suma de los PAGOS reales (caja) del periodo.
+-- Se excluyen:
+--   DESC: Descuento — solo reduce deuda, no genera flujo de caja.
+--   CRED: Crédito financiero — es cuenta por cobrar (cartera),
+--         no dinero recibido; el estudiante queda al día en su
+--         cuenta pero la empresa aún no ha recibido el efectivo.
 -- ----------------------------------------------------------
 CREATE OR REPLACE VIEW VW_INGRESO_REAL AS
 SELECT
@@ -911,11 +917,12 @@ FROM   MOVIMIENTO          m
 JOIN   CODIGO_DETALLE      cd  ON cd.CODIGO_DETALLE = m.CODIGO_DETALLE
 JOIN   PERIODO_ACADEMICO   per ON per.ID_PERIODO    = m.ID_PERIODO
 WHERE  cd.GRUPO = 'PAGO'
-  AND  cd.CODIGO_DETALLE != 'DESC'
+  AND  cd.CODIGO_DETALLE NOT IN ('DESC', 'CRED')
 GROUP BY per.NOMBRE_PERIODO;
 
 -- ----------------------------------------------------------
 -- VISTA 8.5: VW_CARTERA
+-- Usa ID_PROGRAMA del VOLANTE para conservar atribucion historica.
 -- ----------------------------------------------------------
 CREATE OR REPLACE VIEW VW_CARTERA AS
 SELECT
@@ -931,7 +938,8 @@ FROM   MOVIMIENTO          m
 JOIN   CODIGO_DETALLE      cd  ON cd.CODIGO_DETALLE = m.CODIGO_DETALLE
 JOIN   CUENTA_CORRIENTE    cc  ON cc.ID_CUENTA      = m.ID_CUENTA
 JOIN   ESTUDIANTE          e   ON e.ID_ESTUDIANTE   = cc.ID_ESTUDIANTE
-JOIN   PROGRAMA_ACADEMICO  pa  ON pa.ID_PROGRAMA    = e.ID_PROGRAMA
+LEFT JOIN VOLANTE_MATRICULA vm ON vm.ID_VOLANTE     = m.ID_VOLANTE
+JOIN   PROGRAMA_ACADEMICO  pa  ON pa.ID_PROGRAMA    = NVL(vm.ID_PROGRAMA, e.ID_PROGRAMA)
 JOIN   PERIODO_ACADEMICO   per ON per.ID_PERIODO    = m.ID_PERIODO
 WHERE  cd.CODIGO_DETALLE = 'CRED'
 GROUP BY e.ID_ESTUDIANTE, e.CARNET, e.NOMBRE, e.APELLIDO, e.CORREO,
@@ -941,6 +949,8 @@ GROUP BY e.ID_ESTUDIANTE, e.CARNET, e.NOMBRE, e.APELLIDO, e.CORREO,
 -- ----------------------------------------------------------
 -- VISTA 8.6: VW_CUENTA_CORRIENTE_DETALLE
 -- Incluye SALDO_ACUMULADO linea por linea usando funcion ventana.
+-- Usa ID_PROGRAMA del VOLANTE vinculado al movimiento para conservar
+-- la atribucion historica al programa vigente cuando se generó el cobro.
 -- ----------------------------------------------------------
 CREATE OR REPLACE VIEW VW_CUENTA_CORRIENTE_DETALLE AS
 SELECT
@@ -969,7 +979,8 @@ FROM   MOVIMIENTO          m
 JOIN   CODIGO_DETALLE      cd  ON cd.CODIGO_DETALLE = m.CODIGO_DETALLE
 JOIN   CUENTA_CORRIENTE    cc  ON cc.ID_CUENTA      = m.ID_CUENTA
 JOIN   ESTUDIANTE          e   ON e.ID_ESTUDIANTE   = cc.ID_ESTUDIANTE
-JOIN   PROGRAMA_ACADEMICO  pa  ON pa.ID_PROGRAMA    = e.ID_PROGRAMA
+LEFT JOIN VOLANTE_MATRICULA vm ON vm.ID_VOLANTE     = m.ID_VOLANTE
+JOIN   PROGRAMA_ACADEMICO  pa  ON pa.ID_PROGRAMA    = NVL(vm.ID_PROGRAMA, e.ID_PROGRAMA)
 JOIN   PERIODO_ACADEMICO   per ON per.ID_PERIODO    = m.ID_PERIODO
 ;
 
@@ -1008,7 +1019,7 @@ PROMPT   SCRIPT COMPLETO EJECUTADO EXITOSAMENTE
 PROMPT   Entregable #3: 19 tablas | 12 secuencias
 PROMPT                  10 indices
 PROMPT   Entregable #4: datos semilla insertados
-PROMPT   Entregable #5: 5 triggers | 7 vistas
+PROMPT   Entregable #5: 7 triggers | 8 vistas
 PROMPT ==============================================
 
 
@@ -1085,12 +1096,12 @@ WHERE  TRIGGER_NAME IN (
 ORDER BY TABLE_NAME, TRIGGER_NAME;
 
 PROMPT ============================================
-PROMPT  6. VISTAS (esperado: 7)
+PROMPT  6. VISTAS (esperado: 8)
 PROMPT ============================================
 SELECT VIEW_NAME
 FROM   USER_VIEWS
 WHERE  VIEW_NAME IN (
-    'VW_LISTADO_ESTUDIANTES','VW_INGRESO_ESPERADO',
+    'VW_CONSULTA_PAGOS','VW_LISTADO_ESTUDIANTES','VW_INGRESO_ESPERADO',
     'VW_PENDIENTES_PAGO','VW_INGRESO_REAL',
     'VW_CARTERA','VW_CUENTA_CORRIENTE_DETALLE',
     'VW_SALDO_PERIODO'

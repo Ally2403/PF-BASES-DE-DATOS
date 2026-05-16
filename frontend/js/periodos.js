@@ -302,7 +302,7 @@
     if (!await auth.showConfirm("¿Desea eliminar este período académico? Esta acción no se puede deshacer.")) return;
     if (!await auth.showConfirmCedula(
       "Está a punto de eliminar un período académico.",
-      "Si existen volantes de matrícula, movimientos financieros o cobros registrados en este período, la eliminación será bloqueada. De eliminarse, se perderá la referencia temporal de todos los registros asociados."
+      "Los volantes de matrícula, movimientos financieros, reglas de cobro y cobros asociados a este período serán eliminados permanentemente junto con él. Esta acción no se puede revertir."
     )) return;
     try {
       await api.deletePeriodo(id);

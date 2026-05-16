@@ -267,42 +267,7 @@
       void pintarPlanVista();
     });
 
-    $("btn-add-sem").addEventListener("click", function () {
-      var pid = programaSeleccionadoId();
-      if (!pid) {
-        auth.showToast("Seleccione un programa.", "error");
-        return;
-      }
-      $("sem-num").value = "";
-      setModalOpen("sem-modal", true);
-    });
-    $("form-sem-modal").addEventListener("submit", async function (ev) {
-      ev.preventDefault();
-      var pid = programaSeleccionadoId();
-      if (!pid) {
-        auth.showToast("Seleccione un programa.", "error");
-        return;
-      }
-      try {
-        await api.postPlanEstudioSemestre(pid, Number($("sem-num").value));
-        auth.showToast("Semestre agregado al plan");
-        $("sem-num").value = "";
-        setModalOpen("sem-modal", false);
-        await pintarPlanVista();
-      } catch (e) {
-        auth.showToast(e.message, "error");
-      }
-    });
-    $("btn-close-sem-modal").addEventListener("click", function () {
-      setModalOpen("sem-modal", false);
-    });
-    $("btn-cancel-sem-modal").addEventListener("click", function () {
-      setModalOpen("sem-modal", false);
-    });
-    $("sem-modal").addEventListener("click", function (ev) {
-      if (ev.target === $("sem-modal")) setModalOpen("sem-modal", false);
-    });
-    // Quitar semestre: use el modal o la vista de semestres en Asignaturas (catálogo) si se requiere.
+    // Los semestres se crean automáticamente al vincular la primera asignatura desde Asignaturas (catálogo).
 
     await llenarSelectorProgramas();
     renderTabla();

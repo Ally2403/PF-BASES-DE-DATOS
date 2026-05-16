@@ -36,7 +36,7 @@ from app.services.regla_cobro import get_reglas_by_programa_periodo, create_regl
 from app.services.codigo_detalle import get_all_codigos, get_codigo_by_id, create_codigo, update_codigo, delete_codigo
 
 from app.services.permissions import require_perfil
-from app.services.database import is_fk_violation
+from app.services.database import is_fk_violation, is_unique_violation
 import logging
 
 logger = logging.getLogger(__name__)
@@ -181,6 +181,8 @@ async def crear_periodo_endpoint(data: PeriodoCreate, current_user: dict = Depen
         logger.error(f"✗ Error en crear_periodo_endpoint: {str(e)}")
         import traceback
         logger.error(traceback.format_exc())
+        if is_unique_violation(e):
+            raise HTTPException(status_code=409, detail=f"Ya existe un período con el nombre '{data.nombre_periodo}'. Cambie el año o el semestre e intente de nuevo.")
         raise HTTPException(status_code=500, detail=f"Error al crear período: {str(e)}")
 
 
@@ -250,6 +252,11 @@ async def actualizar_estudiante_endpoint(id_estudiante: int, data: EstudianteUpd
         return EstudianteDetailResponse(success=True, message="Estudiante actualizado", data=EstudianteResponse.model_validate(estudiante_actualizado))
     except HTTPException:
         raise
+    except ValueError as e:
+        err_str = str(e)
+        if err_str.startswith("CONFLICT:"):
+            raise HTTPException(status_code=409, detail=err_str[len("CONFLICT:"):].strip())
+        raise HTTPException(status_code=400, detail=err_str)
     except Exception as e:
         logger.error(f"✗ Error: {e}")
         raise HTTPException(status_code=500, detail="Error al actualizar estudiante")
@@ -407,6 +414,8 @@ async def obtener_codigo(codigo_detalle: str, current_user: dict = Depends(requi
 async def crear_codigo_endpoint(data: CodigoDetalleCreate, current_user: dict = Depends(require_perfil(PERMISOS))):
     """Crear nuevo código de detalle."""
     try:
+        if data.grupo == 'COBRO' and (data.valor_defecto is None or data.valor_defecto <= 0):
+            raise HTTPException(status_code=400, detail="Los códigos de tipo COBRO deben tener un valor por defecto mayor a 0.")
         nuevo = create_codigo(data.codigo_detalle, data.grupo, data.descripcion, data.valor_defecto)
         logger.info(f"[OK] Usuario {current_user.get('username')} creó código: {nuevo['CODIGO_DETALLE']}")
         return CodigoDetalleDetailResponse(success=True, message="Codigo creado", data=CodigoDetalleResponse.model_validate(nuevo))
@@ -436,6 +445,8 @@ async def actualizar_codigo_endpoint(codigo_detalle: str, data: CodigoDetalleUpd
                 nuevo_val = data.valor_defecto  # None = el usuario lo borró intencionalmente
             else:
                 nuevo_val = codigo.get('VALOR_DEFECTO')
+            if nuevo_val is None or nuevo_val <= 0:
+                raise HTTPException(status_code=400, detail="Los códigos de tipo COBRO deben tener un valor por defecto mayor a 0.")
         update_codigo(codigo_detalle, nueva_desc, nuevo_val)
         actualizado = get_codigo_by_id(codigo_detalle)
         return CodigoDetalleDetailResponse(success=True, message="Código actualizado", data=CodigoDetalleResponse.model_validate(actualizado))
@@ -499,8 +510,6 @@ async def eliminar_programa_endpoint(id_programa: int, current_user: dict = Depe
         raise
     except Exception as e:
         logger.error(f"✗ Error: {e}")
-        if is_fk_violation(e):
-            raise HTTPException(status_code=409, detail="No se puede eliminar el programa: tiene datos dependientes que impiden su eliminación.")
         raise HTTPException(status_code=500, detail=f"Error al eliminar programa: {str(e)}")
 
 
@@ -539,8 +548,6 @@ async def eliminar_asignatura_endpoint(id_asignatura: int, current_user: dict = 
         raise
     except Exception as e:
         logger.error(f"✗ Error: {e}")
-        if is_fk_violation(e):
-            raise HTTPException(status_code=409, detail="No se puede eliminar la asignatura: tiene datos dependientes que impiden su eliminación.")
         raise HTTPException(status_code=500, detail=f"Error al eliminar asignatura: {str(e)}")
 
 
@@ -565,6 +572,8 @@ async def actualizar_periodo_endpoint(id_periodo: int, data: PeriodoUpdate, curr
         raise
     except Exception as e:
         logger.error(f"✗ Error: {e}")
+        if is_unique_violation(e):
+            raise HTTPException(status_code=409, detail=f"Ya existe un período con el nombre '{nuevo_nombre}'. Cambie el año o el semestre e intente de nuevo.")
         raise HTTPException(status_code=500, detail=f"Error al actualizar período: {str(e)}")
 
 
@@ -580,8 +589,6 @@ async def eliminar_periodo_endpoint(id_periodo: int, current_user: dict = Depend
         raise
     except Exception as e:
         logger.error(f"✗ Error: {e}")
-        if is_fk_violation(e):
-            raise HTTPException(status_code=409, detail="No se puede eliminar el período: tiene datos dependientes que impiden su eliminación.")
         raise HTTPException(status_code=500, detail=f"Error al eliminar período: {str(e)}")
 
 

@@ -11,7 +11,7 @@ from app.schemas.perfil import PerfilCreate, PerfilResponse, PerfilConPermisosRe
 from app.schemas.menu import MenuCreate, MenuResponse, MenuListResponse, MenuDetailResponse, PermisoCreate, PermisoResponse, PermisoListResponse
 from app.services.persona import get_all_personas, get_persona_by_cedula, create_persona, update_persona, delete_persona
 from app.services.usuario import get_all_usuarios, get_usuario_by_id, create_usuario, update_usuario, delete_usuario, reset_and_email_contrasena
-from app.services.perfil import get_all_perfiles, get_perfil_by_id, get_permisos_by_perfil, create_perfil, assign_permission, remove_permission, get_all_permisos, create_permiso, delete_permiso
+from app.services.perfil import get_all_perfiles, get_perfil_by_id, get_permisos_by_perfil, create_perfil, assign_permission, remove_permission, get_all_permisos, create_permiso, delete_permiso, delete_perfil
 from app.services.menu import get_all_menus, get_menu_by_id, create_menu, update_menu, delete_menu
 from app.services.database import is_fk_violation
 import logging
@@ -279,6 +279,20 @@ async def crear_perfil_endpoint(data: PerfilCreate, current_user: dict = Depends
         logger.error(f"✗ Error: {e}")
         raise HTTPException(status_code=500, detail="Error al crear perfil")
 
+@router.delete("/perfiles/{id_perfil}")
+async def eliminar_perfil_endpoint(id_perfil: int, current_user: dict = Depends(require_perfil(PERMISOS))):
+    """Eliminar perfil (cascade elimina PERFIL_PERMISO y los usuarios asignados a ese perfil)."""
+    try:
+        if not get_perfil_by_id(id_perfil):
+            raise HTTPException(status_code=404, detail="Perfil no encontrado")
+        delete_perfil(id_perfil)
+        logger.info(f"\u2713 {current_user.get('username')} elimin\u00f3 perfil {id_perfil}")
+        return {"success": True, "message": f"Perfil {id_perfil} eliminado"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"\u2717 Error al eliminar perfil: {e}")
+        raise HTTPException(status_code=500, detail="Error al eliminar perfil")
 
 # ==========================================
 # MENU

@@ -194,28 +194,47 @@ def create_volante_masiva(id_periodo: int, id_programa: int, modalidad: str, sem
 
         if not estudiantes:
             logger.warning(f"⚠ No hay estudiantes en el programa {id_programa}")
-            return {"creados": [], "errores": []}
+            return {"creados": [], "omitidos": 0, "errores": []}
+
+        # Pre-cargar estudiantes que ya tienen volante en este periodo para omitirlos
+        # sin llegar al INSERT (evita consumir sequences y disparar errores de constraint)
+        ya_con_volante = execute_query(
+            """SELECT ID_ESTUDIANTE FROM VOLANTE_MATRICULA
+               WHERE ID_PERIODO = :id_per
+               AND ID_ESTUDIANTE IN (SELECT ID_ESTUDIANTE FROM ESTUDIANTE WHERE ID_PROGRAMA = :id_prog)""",
+            {"id_per": id_periodo, "id_prog": id_programa}
+        )
+        ya_tienen_set = {row['ID_ESTUDIANTE'] for row in ya_con_volante}
 
         volantes_creados = []
         errores = []
+        omitidos = len(ya_tienen_set)
+
         for est in estudiantes:
+            id_est = est['ID_ESTUDIANTE']
+            if id_est in ya_tienen_set:
+                continue  # ya contabilizado en omitidos
             try:
                 volante = create_volante_individual(
-                    est['ID_ESTUDIANTE'], 
-                    id_periodo, 
-                    id_programa, 
-                    modalidad, 
+                    id_est,
+                    id_periodo,
+                    id_programa,
+                    modalidad,
                     semestre_que_cobra
                 )
                 if volante:
                     volantes_creados.append(volante['ID_VOLANTE'])
             except Exception as e:
                 msg = str(e)
-                logger.warning(f"⚠ No se pudo crear volante para estudiante {est['ID_ESTUDIANTE']}: {msg}")
-                errores.append({"id_estudiante": est['ID_ESTUDIANTE'], "error": msg})
+                if msg.startswith("CONFLICT:"):
+                    # Carrera: otro proceso creó el volante entre el pre-check y el INSERT
+                    omitidos += 1
+                else:
+                    logger.warning(f"⚠ No se pudo crear volante para estudiante {id_est}: {msg}")
+                    errores.append({"id_estudiante": id_est, "error": msg})
         
-        logger.info(f"✓ Volantes masivos creados: {len(volantes_creados)} de {len(estudiantes)}")
-        return {"creados": volantes_creados, "errores": errores}
+        logger.info(f"✓ Volantes masivos creados: {len(volantes_creados)} de {len(estudiantes)} ({omitidos} ya tenían volante)")
+        return {"creados": volantes_creados, "omitidos": omitidos, "errores": errores}
     except Exception as e:
         logger.error(f"✗ Error al crear volantes masivos: {e}")
         raise

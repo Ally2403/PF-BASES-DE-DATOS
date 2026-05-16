@@ -118,6 +118,17 @@
     const rows = await api.reportePendientes(prog, per);
     const tb = $("r3-tb");
     tb.innerHTML = "";
+    if (!rows.length) {
+      const tr = document.createElement("tr");
+      const perText = per
+        ? (() => { const o = $("r3-per").options[$("r3-per").selectedIndex]; return o && o.value ? " en el período <strong>" + esc(o.textContent) + "</strong>" : ""; })()
+        : "";
+      tr.innerHTML = "<td colspan='6' style='text-align:center;color:var(--text-muted);padding:1.2rem 0'>" +
+        "No hay estudiantes con pagos pendientes" + perText + " para este programa." +
+        "</td>";
+      tb.appendChild(tr);
+      return;
+    }
     rows.forEach(function (r) {
       const tr = document.createElement("tr");
       tr.innerHTML =

@@ -97,18 +97,23 @@
               "Estudiantes ya con volante en el período (omitidos): <strong>" +
               r.omitidos +
               "</strong>.</p>";
-          } else if (n === 0 && errores.length === 0) {
+          } else if (n === 0 && (errores.length === 0 || (typeof r.omitidos === "number" && r.omitidos > 0))) {
             htmlSum +=
               "<p style='margin:.35rem 0 0;font-size:.85rem;color:var(--text-muted)'>" +
-              "No se generaron volantes nuevos para este programa/período (posiblemente todos los estudiantes ya tenían volante)." +
+              "Todos los estudiantes del programa ya tenían volante en este período." +
               "</p>";
           }
 
-          // Mostrar advertencia si hubo errores en la generación de estudiantes
-          if (errores.length > 0) {
+          // Filtrar errores reales (excluir los de tipo CONFLICT, que son omisiones esperadas)
+          var erroresReales = errores.filter(function(e) {
+            return !String(e.error || "").startsWith("CONFLICT:");
+          });
+
+          // Mostrar advertencia si hubo errores reales en la generación de estudiantes
+          if (erroresReales.length > 0) {
             // Extraer mensajes únicos para no repetir el mismo texto N veces
             var mensajesUnicos = [];
-            errores.forEach(function(e) {
+            erroresReales.forEach(function(e) {
               var m = e.error || "Error desconocido";
               if (mensajesUnicos.indexOf(m) === -1) mensajesUnicos.push(m);
             });
@@ -122,7 +127,7 @@
             var warnClass = n === 0 ? "alert alert-error" : "alert alert-warning";
             var warnTitle = n === 0
               ? "<strong>No se pudo generar ningún volante</strong>"
-              : "<strong>Advertencia: " + errores.length + " estudiante(s) no pudieron ser procesados</strong>";
+              : "<strong>Advertencia: " + erroresReales.length + " estudiante(s) no pudieron ser procesados</strong>";
 
             var warnBody = "";
             if (esRegla) {

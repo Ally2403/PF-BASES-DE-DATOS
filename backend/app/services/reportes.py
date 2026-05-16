@@ -33,6 +33,8 @@ def get_listado_estudiantes() -> List[Dict[str, Any]]:
             LEFT JOIN VW_SALDO_PERIODO sp
                    ON sp.ID_ESTUDIANTE  = le.ID_ESTUDIANTE
                   AND sp.NOMBRE_PERIODO = le.NOMBRE_PERIODO
+            WHERE le.MONTO_TOTAL > 0
+              AND le.NOMBRE_PERIODO IS NOT NULL
             ORDER BY le.NOMBRE_PROGRAMA, le.NOMBRE_ESTUDIANTE
         """
         results = execute_query(query)
