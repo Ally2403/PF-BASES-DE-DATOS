@@ -237,8 +237,6 @@ PF-BASES-DE-DATOS/
 ├── docker-compose.yml               ← Orquestación de contenedores
 ├── .env                             ← Variables de entorno
 ├── entregable3_ddl_final_final.sql  ← Esquema de la base de datos
-├── ENTREGABLES_1_Y_2.drawio         ← Diagramas MER y Modelo Relacional
-├── PROYECTO_FINAL_202610.docx       ← Documento del proyecto
 └── README.md
 ```
 
