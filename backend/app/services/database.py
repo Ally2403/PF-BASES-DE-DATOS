@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 # =====================================================
 # Modo thin: se conecta directamente sin Oracle Client instalado
 # Más ligero, ideal para Docker
-oracledb.init_oracle_client(lib_dir=None)  # None = usar thin mode
 
 
 class OracleConnection:

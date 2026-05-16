@@ -94,7 +94,9 @@ app.include_router(reportes.router)
 # Se monta DESPUÉS de las rutas para que /api/* tenga precedencia
 # =============================================
 # Ruta a la carpeta frontend (relativa a este archivo o absoluta)
-frontend_path = os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
+# Dentro del contenedor Docker el frontend queda en /app/frontend
+# porque el Dockerfile lo copia ahí con: COPY frontend/ ./frontend/
+frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend")
 if os.path.exists(frontend_path):
     app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
     logger.info(f"✓ Archivos estáticos servidos desde: {frontend_path}")

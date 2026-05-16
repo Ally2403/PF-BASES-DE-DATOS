@@ -3,31 +3,18 @@ version: '3.8'
 services:
   backend:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
     container_name: backend-universidad
     ports:
       - "8000:8000"
     environment:
-      # Override para Docker: usa nombre del servicio Oracle en la red
       - DB_HOST=oracle-universidad
       - DB_PORT=1521
       - DB_SERVICE=XEPDB1
       - DB_USER=app_user
       - DB_PASSWORD=AppPass1234
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-    networks:
-      - universidad-net
-    volumes:
-      - ./backend:/app
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    depends_on:
-      - oracle-check
-
-  oracle-check:
-    image: alpine:latest
-    container_name: oracle-health-check
-    entrypoint: sh -c "echo 'Oracle debe estar corriendo en la red universidad-net'"
     networks:
       - universidad-net
 
