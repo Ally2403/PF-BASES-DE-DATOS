@@ -160,7 +160,7 @@
     <script src="../js/api.js"></script>
     <script src="../js/auth.js"></script>
     <script>
-      auth.initPage({ perm: "VER_USUARIOS", activeFile: "usuarios.html" });
+      auth.initPage({ perm: "GESTIONAR_USUARIOS", activeFile: "usuarios.html" });
       // Ocultar sección de escritura si no tiene permiso de gestión
       if (!auth.can("GESTIONAR_USUARIOS")) {
         document.getElementById("card-registro-usuario").style.display = "none";
@@ -364,16 +364,28 @@
 
       document.getElementById("form-u-edit").addEventListener("submit", async function (ev) {
         ev.preventDefault();
+        const username = document.getElementById("ue-us").value.trim();
+        const nombre   = document.getElementById("ue-nom").value.trim();
+        const apellido = document.getElementById("ue-ape").value.trim();
+        const correo   = document.getElementById("ue-mail").value.trim();
+        const telefono = document.getElementById("ue-tel").value.trim();
+        const id_perfil = Number(document.getElementById("ue-perf").value);
+        const pw = document.getElementById("ue-pw").value;
+
+        if (!username || username.length < 3) { auth.showToast("Usuario debe tener al menos 3 caracteres.", "error"); return; }
+        if (!/^[A-Za-z0-9._-]{3,50}$/.test(username)) { auth.showToast("Usuario: solo letras, números, puntos, guiones y _ (sin espacios).", "error"); return; }
+        if (!nombre || nombre.length < 2) { auth.showToast("Nombre es obligatorio y debe tener al menos 2 caracteres.", "error"); return; }
+        if (!SOLO_LETRAS_U.test(nombre)) { auth.showToast("Nombre: solo letras y espacios, sin números ni caracteres especiales.", "error"); return; }
+        if (!apellido || apellido.length < 2) { auth.showToast("Apellido es obligatorio y debe tener al menos 2 caracteres.", "error"); return; }
+        if (!SOLO_LETRAS_U.test(apellido)) { auth.showToast("Apellido: solo letras y espacios, sin números ni caracteres especiales.", "error"); return; }
+        if (!correo || !EMAIL_RE_U.test(correo)) { auth.showToast("Ingrese un correo electrónico válido.", "error"); return; }
+        if (telefono && !TEL_RE_U.test(telefono)) { auth.showToast("Teléfono: 10 dígitos empezando por 3.", "error"); return; }
+        if (!id_perfil) { auth.showToast("Seleccione un perfil.", "error"); return; }
+        if (pw && pw.length < 6) { auth.showToast("Si ingresa contraseña, debe tener al menos 6 caracteres.", "error"); return; }
+
         try {
-          const body = {
-            username: document.getElementById("ue-us").value.trim(),
-            nombre: document.getElementById("ue-nom").value.trim(),
-            apellido: document.getElementById("ue-ape").value.trim(),
-            correo: document.getElementById("ue-mail").value.trim(),
-            telefono: document.getElementById("ue-tel").value.trim(),
-            id_perfil: Number(document.getElementById("ue-perf").value),
-          };
-          const pw = document.getElementById("ue-pw").value;
+          const body = { username, nombre, apellido, correo, id_perfil,
+            telefono: telefono || null };
           if (pw) body.contrasena = pw;
 
           await api.putUsuario(Number(document.getElementById("ue-id").value), body);

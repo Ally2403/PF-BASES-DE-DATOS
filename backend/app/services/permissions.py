@@ -93,6 +93,47 @@ def require_perfil(perfiles_permitidos: List[str]):
     return verify_user
 
 
+def require_permiso(permiso_requerido: str):
+    """
+    Dependencia FastAPI que valida que el usuario tenga un permiso específico
+    en su lista de permisos (incluida en el JWT).
+
+    Uso:
+        @router.post("/usuarios")
+        async def crear(current_user = Depends(require_permiso("GESTIONAR_USUARIOS"))):
+            ...
+    """
+    async def verify_user(authorization: Optional[str] = Header(None)) -> dict:
+        token = extract_token_from_header(authorization)
+        if not token:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No autorizado. Proporciona token en header Authorization: Bearer <token>"
+            )
+        payload = verify_token(token)
+        if not payload:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token inválido o expirado"
+            )
+        permisos = payload.get("permisos", [])
+        if permiso_requerido not in permisos:
+            logger.warning(
+                f"✗ Usuario {payload.get('username')} sin permiso '{permiso_requerido}' "
+                f"(tiene: {permisos})"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Acceso denegado. Se requiere el permiso: {permiso_requerido}"
+            )
+        logger.info(
+            f"✓ Permiso '{permiso_requerido}' concedido a {payload.get('username')}"
+        )
+        return payload
+
+    return verify_user
+
+
 def require_any_auth(authorization: Optional[str] = Header(None)) -> dict:
     """
     Dependencia que solo valida autenticación (cualquier usuario autenticado).

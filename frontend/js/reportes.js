@@ -6,6 +6,8 @@
   });
 
   let periodosCache = [];
+  var _r1Data = null, _r2Data = null, _r3Data = null, _r4Data = null, _r5Data = null;
+  var _r1Meta = {}, _r2Meta = {}, _r3Meta = {}, _r5Meta = {};
 
   function $(id) {
     return document.getElementById(id);
@@ -87,6 +89,10 @@
         "</span></td>";
       tb.appendChild(tr);
     });
+    _r1Data = rows;
+    var _s1 = $("r1-per");
+    _r1Meta = { periodo: _s1.value && _s1.selectedIndex >= 0 ? _s1.options[_s1.selectedIndex].text : "Todos los períodos" };
+    if ($("btn-r1-pdf")) $("btn-r1-pdf").disabled = !rows.length;
   }
 
   async function run2() {
@@ -106,6 +112,10 @@
         "</td>";
       tb.appendChild(tr);
     });
+    _r2Data = rows;
+    var _s2 = $("r2-per");
+    _r2Meta = { periodo: _s2.value && _s2.selectedIndex >= 0 ? _s2.options[_s2.selectedIndex].text : "Todos los períodos" };
+    if ($("btn-r2-pdf")) $("btn-r2-pdf").disabled = !rows.length;
   }
 
   async function run3() {
@@ -127,6 +137,8 @@
         "No hay estudiantes con pagos pendientes" + perText + " para este programa." +
         "</td>";
       tb.appendChild(tr);
+      _r3Data = null;
+      if ($("btn-r3-pdf")) $("btn-r3-pdf").disabled = true;
       return;
     }
     rows.forEach(function (r) {
@@ -147,6 +159,13 @@
         "</td>";
       tb.appendChild(tr);
     });
+    _r3Data = rows;
+    var _p3 = $("r3-prog"), _s3 = $("r3-per");
+    _r3Meta = {
+      programa: _p3.selectedIndex >= 0 ? _p3.options[_p3.selectedIndex].text : "",
+      periodo: _s3.value && _s3.selectedIndex >= 0 ? _s3.options[_s3.selectedIndex].text : "Todos los períodos"
+    };
+    if ($("btn-r3-pdf")) $("btn-r3-pdf").disabled = false;
   }
 
   async function run4() {
@@ -161,6 +180,8 @@
           "<td class='numeric'>" + COP.format(r.total_recaudado) + "</td>";
         tb.appendChild(tr);
       });
+      _r4Data = rows;
+      if ($("btn-r4-pdf")) $("btn-r4-pdf").disabled = !rows.length;
     } catch (e) {
       console.error(e);
       auth.showToast("Error al generar reporte de ingresos.", "error");
@@ -191,6 +212,114 @@
         "</td>";
       tb.appendChild(tr);
     });
+    _r5Data = rows;
+    var _s5 = $("r5-per");
+    _r5Meta = { periodo: _s5.value && _s5.selectedIndex >= 0 ? _s5.options[_s5.selectedIndex].text : "Todos los períodos" };
+    if ($("btn-r5-pdf")) $("btn-r5-pdf").disabled = !rows.length;
+  }
+
+  // ─── PDF export ───────────────────────────────────────────────────────────────────
+  function exportPDF(n) {
+    var dataMap = { 1: _r1Data, 2: _r2Data, 3: _r3Data, 4: _r4Data, 5: _r5Data };
+    var d = dataMap[n];
+    if (!d || !d.length) { auth.showToast("No hay datos para exportar.", "error"); return; }
+    if (!window.jspdf) { auth.showToast("Librería PDF no cargada.", "error"); return; }
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    var pageW = doc.internal.pageSize.getWidth();
+    var primary = [26, 58, 92];
+    var accent  = [41, 98, 155];
+    var TITLES = {
+      1: "Reporte 1 · Listado General por Período",
+      2: "Reporte 2 · Ingreso Esperado por Período",
+      3: "Reporte 3 · Pendientes de Pago",
+      4: "Reporte 4 · Ingreso Real de Caja",
+      5: "Reporte 5 · Cartera (Crédito Financiero)"
+    };
+    // Banda de encabezado
+    doc.setFillColor(primary[0], primary[1], primary[2]);
+    doc.rect(0, 0, pageW, 24, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(255, 255, 255);
+    doc.text(TITLES[n], 14, 11);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("Generado: " + new Date().toLocaleString("es-CO"), 14, 18);
+    // Línea de contexto (filtros aplicados)
+    var y = 32;
+    var meta = "";
+    if (n === 1 && _r1Meta.periodo) meta = "Período: " + _r1Meta.periodo;
+    if (n === 2 && _r2Meta.periodo) meta = "Período: " + _r2Meta.periodo;
+    if (n === 3) {
+      var parts = [];
+      if (_r3Meta.programa) parts.push("Programa: " + _r3Meta.programa);
+      if (_r3Meta.periodo) parts.push("Período: " + _r3Meta.periodo);
+      meta = parts.join("   ·   ");
+    }
+    if (n === 5 && _r5Meta.periodo) meta = "Período: " + _r5Meta.periodo;
+    if (meta) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(primary[0], primary[1], primary[2]);
+      doc.text(meta, 14, y);
+      y += 7;
+    }
+    // Datos de la tabla según reporte
+    var head, body, colStyles = {};
+    if (n === 1) {
+      head = [["Carné", "Estudiante", "Programa", "Modalidad", "Monto volante", "Estado"]];
+      body = d.map(function(r) {
+        return [r.carnet, (r.nombre_estudiante||"")+" "+(r.apellido_estudiante||""), r.nombre_programa, r.modalidad, COP.format(r.monto_total), r.estado||"PENDIENTE"];
+      });
+      colStyles = { 4: { halign: "right" } };
+    } else if (n === 2) {
+      var tot2 = 0;
+      body = d.map(function(r) { tot2 += Number(r.total_esperado||0); return [r.nombre_periodo, r.nombre_programa, COP.format(r.total_esperado)]; });
+      body.push(["", { content: "TOTAL", styles: { fontStyle: "bold" } }, { content: COP.format(tot2), styles: { fontStyle: "bold", halign: "right" } }]);
+      head = [["Período", "Programa", "Total esperado"]];
+      colStyles = { 2: { halign: "right" } };
+    } else if (n === 3) {
+      head = [["Carné", "Estudiante", "Cobrado", "Pagado", "Saldo pendiente", "Estado"]];
+      body = d.map(function(r) {
+        return [r.carnet, (r.nombre_estudiante||"")+" "+(r.apellido_estudiante||""), COP.format(r.total_cobrado), COP.format(r.total_pagado), COP.format(r.saldo_pendiente), r.estado];
+      });
+      colStyles = { 2: { halign: "right" }, 3: { halign: "right" }, 4: { halign: "right" } };
+    } else if (n === 4) {
+      var tot4 = 0;
+      body = d.map(function(r) { tot4 += Number(r.total_recaudado||0); return [r.nombre_periodo, COP.format(r.total_recaudado)]; });
+      body.push([{ content: "TOTAL", styles: { fontStyle: "bold" } }, { content: COP.format(tot4), styles: { fontStyle: "bold", halign: "right" } }]);
+      head = [["Período", "Total recaudado"]];
+      colStyles = { 1: { halign: "right" } };
+    } else if (n === 5) {
+      var tot5 = 0;
+      body = d.map(function(r) { tot5 += Number(r.valor_credito||0); return [r.carnet, (r.nombre_estudiante||"")+" "+(r.apellido_estudiante||""), r.nombre_programa, COP.format(r.valor_credito)]; });
+      body.push(["", "", { content: "TOTAL CARTERA", styles: { fontStyle: "bold" } }, { content: COP.format(tot5), styles: { fontStyle: "bold", halign: "right" } }]);
+      head = [["Carné", "Estudiante", "Programa", "Valor crédito"]];
+      colStyles = { 3: { halign: "right" } };
+    }
+    doc.autoTable({
+      startY: y,
+      head: head,
+      body: body,
+      theme: "striped",
+      headStyles: { fillColor: accent, textColor: [255, 255, 255], fontStyle: "bold", fontSize: 8.5 },
+      styles: { fontSize: 8, cellPadding: 2.5 },
+      columnStyles: colStyles
+    });
+    // Pie de página con numeración
+    var totalPages = doc.internal.getNumberOfPages();
+    for (var i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(120, 120, 120);
+      doc.text("Sistema de Gestión Académica · Reportes", pageW / 2, 289, { align: "center" });
+      doc.text("Página " + i + " de " + totalPages, pageW / 2, 293, { align: "center" });
+    }
+    var PREFIXES = { 1: "listado-general", 2: "ingreso-esperado", 3: "pendientes-pago", 4: "ingreso-real", 5: "cartera" };
+    var sfx = (meta || "").replace(/[^a-zA-Z0-9]/g, "_").replace(/_+/g, "_").replace(/^_+|_+$/g, "");
+    doc.save("reporte-" + PREFIXES[n] + (sfx ? "_" + sfx : "") + ".pdf");
   }
 
   document.addEventListener("DOMContentLoaded", async function () {
@@ -215,6 +344,11 @@
     $("btn-r3").addEventListener("click", run3);
     $("btn-r4").addEventListener("click", run4);
     $("btn-r5").addEventListener("click", run5);
+    $("btn-r1-pdf").addEventListener("click", function() { exportPDF(1); });
+    $("btn-r2-pdf").addEventListener("click", function() { exportPDF(2); });
+    $("btn-r3-pdf").addEventListener("click", function() { exportPDF(3); });
+    $("btn-r4-pdf").addEventListener("click", function() { exportPDF(4); });
+    $("btn-r5-pdf").addEventListener("click", function() { exportPDF(5); });
 
     $("p2").hidden = true;
     $("p3").hidden = true;

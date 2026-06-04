@@ -102,7 +102,7 @@ const NAV = [
   {
     label: "Usuarios",
     page: "usuarios.html",
-    perm: "VER_USUARIOS",
+    perm: "GESTIONAR_USUARIOS",
     icon: "👤",
     desc: "Seguridad y control de acceso.",
   },

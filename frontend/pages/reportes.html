@@ -23,7 +23,10 @@
       </div>
 
       <section id="p1" class="card">
-        <h2>Listado por período</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+          <h2 style="margin:0">Listado por período</h2>
+          <button type="button" class="btn btn-secondary" id="btn-r1-pdf" disabled title="Exportar a PDF">⬇&nbsp;Descargar PDF</button>
+        </div>
         <div class="form-group" style="max-width: 280px">
           <label for="r1-per">Período</label>
           <select id="r1-per"></select>
@@ -47,7 +50,10 @@
       </section>
 
       <section id="p2" class="card" hidden>
-        <h2>Ingreso esperado</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+          <h2 style="margin:0">Ingreso esperado</h2>
+          <button type="button" class="btn btn-secondary" id="btn-r2-pdf" disabled title="Exportar a PDF">⬇&nbsp;Descargar PDF</button>
+        </div>
         <div class="form-group" style="max-width: 280px">
           <label for="r2-per">Período</label>
           <select id="r2-per"></select>
@@ -68,7 +74,10 @@
       </section>
 
       <section id="p3" class="card" hidden>
-        <h2>Pendientes de pago</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+          <h2 style="margin:0">Pendientes de pago</h2>
+          <button type="button" class="btn btn-secondary" id="btn-r3-pdf" disabled title="Exportar a PDF">⬇&nbsp;Descargar PDF</button>
+        </div>
         <div class="grid-2" style="max-width: 520px">
           <div class="form-group">
             <label for="r3-prog">Programa (obligatorio)</label>
@@ -98,7 +107,10 @@
       </section>
 
       <section id="p4" class="card" hidden>
-        <h2>Ingreso real</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+          <h2 style="margin:0">Ingreso real</h2>
+          <button type="button" class="btn btn-secondary" id="btn-r4-pdf" disabled title="Exportar a PDF">⬇&nbsp;Descargar PDF</button>
+        </div>
         <p>Recaudación efectiva de caja por período académico. Excluye descuentos y pagos con crédito financiero (cartera), ya que estos últimos son cuentas por cobrar, no dinero recibido. Consulte el reporte <strong>Cartera (crédito)</strong> para ver los montos pendientes de cobro a entidades financieras.</p>
         <button type="button" class="btn btn-primary mt-1" id="btn-r4">Actualizar reporte</button>
         <div class="table-wrap mt-1">
@@ -115,7 +127,10 @@
       </section>
 
       <section id="p5" class="card" hidden>
-        <h2>Cartera (crédito financiero)</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+          <h2 style="margin:0">Cartera (crédito financiero)</h2>
+          <button type="button" class="btn btn-secondary" id="btn-r5-pdf" disabled title="Exportar a PDF">⬇&nbsp;Descargar PDF</button>
+        </div>
         <div class="form-group" style="max-width: 280px">
           <label for="r5-per">Período</label>
           <select id="r5-per"></select>
@@ -148,6 +163,8 @@
     <script>
       auth.initPage({ perm: "VER_REPORTES", activeFile: "reportes.html" });
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="../js/reportes.js"></script>
   </body>
 </html>

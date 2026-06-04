@@ -4,7 +4,7 @@ Gestión de usuarios, personas, perfiles y menús.
 """
 
 from fastapi import APIRouter, Depends, HTTPException
-from app.services.permissions import require_perfil, require_any_auth
+from app.services.permissions import require_perfil, require_any_auth, require_permiso
 from app.schemas.persona import PersonaCreate, PersonaResponse, PersonaListResponse, PersonaDetailResponse
 from app.schemas.usuario import UsuarioCreate, UsuarioUpdate, UsuarioResponse, UsuarioListResponse, UsuarioDetailResponse
 from app.schemas.perfil import PerfilCreate, PerfilResponse, PerfilConPermisosResponse, PerfilListResponse, PerfilDetailResponse
@@ -20,8 +20,10 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["administrador"])
 
-# Solo ADMINISTRADOR puede acceder a estos endpoints
+# Solo ADMINISTRADOR puede acceder a endpoints sensibles (personas, perfiles, menús)
 PERMISOS = ["ADMINISTRADOR"]
+# Endpoints de usuarios: cualquier perfil con permiso GESTIONAR_USUARIOS
+PERM_USUARIOS = "GESTIONAR_USUARIOS"
 
 
 # ==========================================
@@ -117,7 +119,7 @@ async def obtener_usuario(id_user: int, current_user: dict = Depends(require_any
 
 
 @router.post("/usuarios", response_model=UsuarioDetailResponse, status_code=201)
-async def crear_usuario_endpoint(data: UsuarioCreate, current_user: dict = Depends(require_perfil(PERMISOS))):
+async def crear_usuario_endpoint(data: UsuarioCreate, current_user: dict = Depends(require_permiso(PERM_USUARIOS))):
     """Crear nuevo usuario."""
     try:
         nuevo = create_usuario(
@@ -143,7 +145,7 @@ async def crear_usuario_endpoint(data: UsuarioCreate, current_user: dict = Depen
 
 
 @router.put("/usuarios/{id_user}", response_model=UsuarioDetailResponse)
-async def actualizar_usuario_endpoint(id_user: int, data: UsuarioUpdate, current_user: dict = Depends(require_perfil(PERMISOS))):
+async def actualizar_usuario_endpoint(id_user: int, data: UsuarioUpdate, current_user: dict = Depends(require_permiso(PERM_USUARIOS))):
     """Actualizar usuario."""
     try:
         usuario = get_usuario_by_id(id_user)
@@ -164,7 +166,7 @@ async def actualizar_usuario_endpoint(id_user: int, data: UsuarioUpdate, current
 
 
 @router.delete("/usuarios/{id_user}")
-async def eliminar_usuario_endpoint(id_user: int, current_user: dict = Depends(require_perfil(PERMISOS))):
+async def eliminar_usuario_endpoint(id_user: int, current_user: dict = Depends(require_permiso(PERM_USUARIOS))):
     """Eliminar usuario."""
     try:
         if not get_usuario_by_id(id_user):
@@ -182,7 +184,7 @@ async def eliminar_usuario_endpoint(id_user: int, current_user: dict = Depends(r
 
 
 @router.post("/usuarios/{id_user}/enviar-credenciales")
-async def enviar_credenciales_endpoint(id_user: int, current_user: dict = Depends(require_perfil(PERMISOS))):
+async def enviar_credenciales_endpoint(id_user: int, current_user: dict = Depends(require_permiso(PERM_USUARIOS))):
     """Genera una nueva contraseña temporal y la envía al correo del usuario."""
     try:
         correo = reset_and_email_contrasena(id_user)

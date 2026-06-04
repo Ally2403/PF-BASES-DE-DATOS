@@ -10,6 +10,7 @@
   }
 
   let estudiantesLista = [];
+  let _pdfData = null;
 
   function getFiltradosEstudiantes() {
     const inp = $("cc-filtro-est");
@@ -111,6 +112,21 @@
       }
 
       const movs = Array.isArray(movsAll) ? movsAll : [];
+      // Guardar snapshot para exportar PDF
+      var _selPer = $("cc-per");
+      var _estObj = estudiantesLista.find(function (e) {
+        return String(e.id_estudiante) === String(idEst);
+      });
+      _pdfData = {
+        saldo: saldo,
+        movs: movs,
+        estado: estado,
+        nombreEst:     _estObj ? (_estObj.nombre + " " + _estObj.apellido) : "",
+        carnetEst:     _estObj ? (_estObj.carnet || "") : "",
+        programaEst:   _estObj ? (_estObj.nombre_programa || "") : "",
+        nombrePeriodo: _selPer.selectedIndex >= 0 ? _selPer.options[_selPer.selectedIndex].text : "",
+      };
+      if ($("btn-pdf")) $("btn-pdf").disabled = false;
       const cobros = movs.filter(function (m) {
         return m.grupo === "COBRO";
       });
@@ -147,6 +163,8 @@
       $("cc-msg").textContent = e.message;
       $("cc-msg").hidden = false;
       $("cc-msg").className = "alert alert-error";
+      _pdfData = null;
+      if ($("btn-pdf")) $("btn-pdf").disabled = true;
     }
   }
 
@@ -205,4 +223,139 @@
     $("cc-filtro-est").addEventListener("input", renderTablaEstudiantes);
     sP.addEventListener("change", refrescar);
   });
+
+  window.descargarPDF = function () {
+    if (!_pdfData) {
+      if (typeof auth !== "undefined" && typeof auth.showToast === "function") {
+        auth.showToast("Primero consulte los movimientos de un estudiante.", "error");
+      }
+      return;
+    }
+    if (typeof window.jspdf === "undefined") {
+      alert("La librería PDF no está disponible. Verifique su conexión a internet.");
+      return;
+    }
+    var d = _pdfData;
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    var pageW = doc.internal.pageSize.getWidth();
+    var primary = [26, 58, 92];
+    var accent  = [37, 99, 168];
+
+    // ── Banda de encabezado
+    doc.setFillColor(primary[0], primary[1], primary[2]);
+    doc.rect(0, 0, pageW, 26, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.text("Estado de Cuenta Corriente", 14, 11);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.text("Sistema de Gestión Universitaria", 14, 19);
+    doc.text(
+      new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "long", year: "numeric" }),
+      pageW - 14, 19, { align: "right" }
+    );
+
+    // ── Bloque de datos del estudiante
+    doc.setFillColor(244, 248, 255);
+    doc.roundedRect(12, 32, pageW - 24, 22, 2, 2, "F");
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(primary[0], primary[1], primary[2]);
+    doc.text("Estudiante",   18, 39);
+    doc.text("Carné",        95, 39);
+    doc.text("Programa",    125, 39);
+    doc.text("Período",     175, 39);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(30, 30, 30);
+    doc.text(String(d.nombreEst     || "—"),                   18, 47);
+    doc.text(String(d.carnetEst     || "—"),                   95, 47);
+    doc.text(String(d.programaEst   || "—").substring(0, 24), 125, 47);
+    doc.text(String(d.nombrePeriodo || "—"),                  175, 47);
+
+    // ── Resumen financiero
+    var estadosLabel = {
+      PAGADO:    "PAGADO — Al día",
+      PARCIAL:   "PARCIAL — Pago incompleto",
+      PENDIENTE: "PENDIENTE — Sin pagos",
+    };
+    doc.autoTable({
+      startY: 60,
+      head: [["Resumen", ""]],
+      body: [
+        ["Total Cobros (Débito)",  COP.format(d.saldo.total_cobros)],
+        ["Total Pagos (Crédito)",  COP.format(d.saldo.total_pagos)],
+        ["Saldo Pendiente",        COP.format(Math.max(0, d.saldo.saldo_neto))],
+        ["Estado",                 estadosLabel[d.estado] || d.estado],
+      ],
+      theme: "grid",
+      headStyles: { fillColor: primary, textColor: [255, 255, 255], fontStyle: "bold", fontSize: 8.5 },
+      styles: { fontSize: 9, cellPadding: 3 },
+      columnStyles: {
+        0: { fontStyle: "bold", cellWidth: 65 },
+        1: { halign: "right" },
+      },
+      margin: { left: 12, right: 12 },
+      tableWidth: 100,
+    });
+
+    // ── Detalle de movimientos
+    var cobros  = d.movs.filter(function (m) { return m.grupo === "COBRO"; });
+    var pagos   = d.movs.filter(function (m) { return m.grupo === "PAGO";  });
+    var allMovs = cobros.concat(pagos);
+    var movsBody = allMovs.map(function (m) {
+      return [
+        String(m.fecha || ""),
+        String(m.codigo_detalle || ""),
+        String(m.descripcion_movimiento || ""),
+        m.debito  != null ? COP.format(m.debito)  : "—",
+        m.credito != null ? COP.format(m.credito) : "—",
+      ];
+    });
+
+    var nextY = doc.lastAutoTable.finalY + 9;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10.5);
+    doc.setTextColor(primary[0], primary[1], primary[2]);
+    doc.text("Detalle de Movimientos", 14, nextY);
+
+    doc.autoTable({
+      startY: nextY + 4,
+      head: [["Fecha", "Código", "Descripción", "Cobro", "Pago"]],
+      body: movsBody.length ? movsBody : [["" , "", "Sin movimientos registrados.", "", ""]],
+      theme: "striped",
+      headStyles: { fillColor: accent, textColor: [255, 255, 255], fontStyle: "bold", fontSize: 8.5 },
+      styles: { fontSize: 8, cellPadding: 2.5 },
+      columnStyles: {
+        0: { cellWidth: 22 },
+        1: { cellWidth: 24 },
+        2: { cellWidth: "auto" },
+        3: { halign: "right", cellWidth: 30 },
+        4: { halign: "right", cellWidth: 30 },
+      },
+      alternateRowStyles: { fillColor: [245, 248, 255] },
+      margin: { left: 12, right: 12 },
+    });
+
+    // ── Pie de página en todas las hojas
+    var totalPages = doc.internal.getNumberOfPages();
+    for (var i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7.5);
+      doc.setTextColor(160, 160, 160);
+      doc.text(
+        "Documento generado automáticamente — Sistema de Gestión Universitaria",
+        pageW / 2, 289, { align: "center" }
+      );
+      doc.text("Página " + i + " de " + totalPages, pageW / 2, 293, { align: "center" });
+    }
+
+    var filename = "cuenta-corriente_"
+      + (d.carnetEst || "estudiante").replace(/[^a-zA-Z0-9]/g, "_")
+      + "_" + (d.nombrePeriodo || "periodo").replace(/[^a-zA-Z0-9]/g, "_")
+      + ".pdf";
+    doc.save(filename);
+  };
 })();

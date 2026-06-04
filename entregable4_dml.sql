@@ -25,7 +25,7 @@ INSERT INTO PERFIL (ID_PERFIL, NOMBRE_PERFIL) VALUES (SEQ_PERFIL.NEXTVAL, 'ASIST
 
 -- 0.2 MENU
 -- IDs asignados por secuencia. Orden = ID_MENU esperado:
---  1  Gestion de Usuarios        => perm VER_USUARIOS / CREAR_USUARIO / EDITAR_USUARIO / ELIMINAR_USUARIO
+--  1  Gestion de Usuarios        => perm GESTIONAR_USUARIOS
 --  2  Gestion de Perfiles        => perm GESTIONAR_PERFILES
 --  3  Gestion de Menus           => perm GESTIONAR_MENUS
 --  4  Gestion de Programas       => perm GESTIONAR_PROGRAMAS
@@ -61,10 +61,7 @@ INSERT INTO MENU (ID_MENU, NOMBRE_FUNCION, URL_ACCESO) VALUES (SEQ_MENU.NEXTVAL,
 -- 0.3 PERMISO
 -- Un permiso por menu. Los permisos de usuarios (CRUD) apuntan al mismo menu.
 -- ID_MENU ahora con 16 menus; permisos de usuario siguen en menu 1.
-INSERT INTO PERMISO (ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU) VALUES (SEQ_PERMISO.NEXTVAL, 'VER_USUARIOS',          'Ver y consultar lista de usuarios',              1);
-INSERT INTO PERMISO (ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU) VALUES (SEQ_PERMISO.NEXTVAL, 'CREAR_USUARIO',         'Crear nuevo usuario del sistema',                1);
-INSERT INTO PERMISO (ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU) VALUES (SEQ_PERMISO.NEXTVAL, 'EDITAR_USUARIO',        'Modificar datos de usuario',                     1);
-INSERT INTO PERMISO (ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU) VALUES (SEQ_PERMISO.NEXTVAL, 'ELIMINAR_USUARIO',      'Eliminar usuario del sistema',                   1);
+INSERT INTO PERMISO (ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU) VALUES (SEQ_PERMISO.NEXTVAL, 'GESTIONAR_USUARIOS',    'Crear, editar y eliminar cuentas de usuario del sistema', 1);
 INSERT INTO PERMISO (ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU) VALUES (SEQ_PERMISO.NEXTVAL, 'GESTIONAR_PERFILES',    'Crear/editar perfiles y asignar permisos',       2);
 INSERT INTO PERMISO (ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU) VALUES (SEQ_PERMISO.NEXTVAL, 'GESTIONAR_MENUS',       'Crear/editar opciones de menu del sistema',      3);
 INSERT INTO PERMISO (ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU) VALUES (SEQ_PERMISO.NEXTVAL, 'GESTIONAR_PROGRAMAS',   'Administrar programas academicos y planes',      4);
@@ -80,8 +77,6 @@ INSERT INTO PERMISO (ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU) VALUES 
 INSERT INTO PERMISO (ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU) VALUES (SEQ_PERMISO.NEXTVAL, 'VER_CUENTA',            'Consultar cuenta corriente del estudiante',      14);
 INSERT INTO PERMISO (ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU) VALUES (SEQ_PERMISO.NEXTVAL, 'CONSULTAR_PAGOS',       'Consultar historial de pagos y transacciones',   15);
 INSERT INTO PERMISO (ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU) VALUES (SEQ_PERMISO.NEXTVAL, 'VER_REPORTES',          'Ver reportes financieros y consultar pagos realizados', 16);
-INSERT INTO PERMISO (ID_PERMISO, NOMBRE_OPERACION, DESCRIPCION, ID_MENU) VALUES (SEQ_PERMISO.NEXTVAL, 'GESTIONAR_USUARIOS',    'Crear, editar y eliminar cuentas de usuario del sistema', 1);
-
 -- 0.4 PERFIL_PERMISO
 -- ADMINISTRADOR: todos los permisos
 DECLARE v_id NUMBER;

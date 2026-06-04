@@ -130,6 +130,7 @@
       auth.showToast("Nombre debe tener al menos 3 caracteres", "error");
       return;
     }
+
     if (!Number.isInteger(cred) || cred < 1 || cred > 20) {
       auth.showToast("Créditos debe ser un número entero entre 1 y 20", "error");
       return;

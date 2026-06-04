@@ -232,11 +232,12 @@ def login_user(username: str, password: str) -> Optional[Dict[str, Any]]:
     if not user:
         return None
     
-    # Crear token JWT con datos básicos
+    # Crear token JWT con datos básicos + permisos
     token_data = {
         "id_user": user["id_user"],
         "username": user["username"],
-        "perfil": user["perfil"]
+        "perfil": user["perfil"],
+        "permisos": user.get("permisos", [])
     }
     access_token = create_access_token(token_data)
     

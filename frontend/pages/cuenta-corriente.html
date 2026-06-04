@@ -75,7 +75,13 @@
       </div>
 
       <div class="card">
-        <h2>Movimientos</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+          <h2 style="margin:0">Movimientos</h2>
+          <button class="btn btn-secondary" id="btn-pdf" onclick="descargarPDF()" disabled
+                  title="Descarga el estado de cuenta de este período en PDF">
+            ⬇&nbsp;Descargar PDF
+          </button>
+        </div>
         <div class="table-wrap">
           <table>
             <thead>
@@ -102,6 +108,8 @@
     <script>
       auth.initPage({ perm: "VER_CUENTA", activeFile: "cuenta-corriente.html" });
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="../js/cuenta-corriente.js?t=1715200000"></script>
   </body>
 </html>
